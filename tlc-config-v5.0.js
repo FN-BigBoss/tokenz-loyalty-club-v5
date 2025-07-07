@@ -10,12 +10,12 @@ window.TLC_CONFIG = {
     
     // MODULE URLS - Replace with your Google Drive shareable URLs
     modules: {
-        manager: 'https://drive.google.com/uc?export=download&id=1eqvdJCSF9tzIX0TAKvFoZ9mQF05DgyPa',
-        data: 'https://drive.google.com/uc?export=download&id=16fjFZiJpqjxvHeS7i85wys1dnhpJy9_v',
-        utils: 'https://drive.google.com/uc?export=download&id=1J4VI9F88SUZ-60gKv_Zj5e7705bbBYCH',
-        core: 'https://drive.google.com/uc?export=download&id=1ug7w7cB5LNugJizw54VfynAbIt9XRsDT',
-        ui: 'https://drive.google.com/uc?export=download&id=1z0nTAocw803q2G2VRIWeXUcmhMxtbli1',
-        styles: 'https://drive.google.com/uc?export=download&id=1dIxR_Df9G2H5At6KRLKnGYK3F4owT81f'
+        manager: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-module-manager-v5.0.js',
+        data: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-sample-data-v5.0.js',
+        utils: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-utils-v5.0.js',
+        core: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-core-v5.0.js',
+        ui: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-ui-components-v5.0.js',
+        styles: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-styles-v5.0.js'
     },
     
     // APP SETTINGS
