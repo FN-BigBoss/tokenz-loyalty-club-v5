@@ -1,1198 +1,896 @@
-// TokenZ Loyalty Club - UI Components Module v5.0
-// Complete user interface components and interactions for TLC application
-// Upload this file to Google Drive and use the share URL in the module manager
-
+// TokenZ Loyalty Club v5.0 - UI Components Module
 console.log('🎨 Loading TLC UI Components Module v5.0...');
 
-// Global UI namespace
 window.TLC_UI = {
     version: '5.0',
-    loadedAt: new Date().toISOString(),
+    initialized: false,
+    currentModal: null,
     
-    // UI state
-    state: {
-        currentModal: null,
-        mobileMenuOpen: false,
-        loadingStates: {},
-        animations: {
-            enabled: true,
-            duration: 300
-        }
-    },
-
-    // Application initialization
-    init: function() {
-        console.log('🎨 Initializing TLC UI v5.0...');
+    // Initialize UI module
+    init: function(container) {
+        if (this.initialized) return;
         
-        // Hide splash screen after delay
-        setTimeout(() => {
-            this.hideSplashScreen();
-        }, 2000);
-
-        // Setup event listeners
+        console.log('🚀 Initializing TLC UI Components...');
+        this.container = container || document.body;
         this.setupEventListeners();
-        
-        // Initialize components
-        this.initializeComponents();
-        
-        console.log('✅ TLC UI v5.0 initialized successfully');
+        this.showSplashScreen();
+        this.initialized = true;
+        console.log('✅ TLC UI Components initialized');
     },
-
-    // Hide splash screen and show appropriate screen
-    hideSplashScreen: function() {
-        const splashScreen = document.getElementById('splashScreen');
-        const loginScreen = document.getElementById('loginScreen');
-        const mainApp = document.getElementById('mainApp');
+    
+    // Splash Screen (3 seconds)
+    showSplashScreen: function() {
+        const splashHtml = `
+            <div id="splashScreen" class="fixed inset-0 bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center z-50">
+                <div class="text-center text-white">
+                    <div class="mb-8">
+                        <div class="w-24 h-24 mx-auto mb-4 bg-white rounded-full flex items-center justify-center animate-pulse">
+                            <span class="text-4xl">🎯</span>
+                        </div>
+                        <h1 class="text-4xl font-bold mb-2 animate-fade-in">TokenZ Loyalty Club</h1>
+                        <p class="text-xl opacity-90 animate-fade-in-delay">Discover Amazing Subscriptions</p>
+                    </div>
+                    <div class="flex justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        if (splashScreen) {
-            splashScreen.style.opacity = '0';
-            setTimeout(() => {
-                splashScreen.style.display = 'none';
-                
-                // Check if user is logged in
-                if (window.TLC_CORE && window.TLC_CORE.state.isLoggedIn) {
-                    this.showMainApp();
-                } else {
-                    this.showLoginScreen();
-                }
-            }, 500);
-        }
+        this.container.innerHTML = splashHtml;
+        
+        // Auto-transition to login after 3 seconds
+        setTimeout(() => {
+            this.showLoginScreen();
+        }, window.TLC_CONFIG?.app?.splashDuration || 3000);
     },
-
-    // Show login screen
+    
+    // Login Screen
     showLoginScreen: function() {
-        const loginScreen = document.getElementById('loginScreen');
-        const mainApp = document.getElementById('mainApp');
-        
-        if (loginScreen) {
-            loginScreen.classList.remove('hidden');
-            loginScreen.style.display = 'flex';
-        }
-        
-        if (mainApp) {
-            mainApp.classList.add('hidden');
-        }
-    },
-
-    // Show main application
-    showMainApp: function() {
-        const loginScreen = document.getElementById('loginScreen');
-        const mainApp = document.getElementById('mainApp');
-        
-        if (loginScreen) {
-            loginScreen.classList.add('hidden');
-            loginScreen.style.display = 'none';
-        }
-        
-        if (mainApp) {
-            mainApp.classList.remove('hidden');
-            this.showSection('home');
-            this.updateUserInterface();
-        }
-    },
-
-    // Setup event listeners
-    setupEventListeners: function() {
-        // Login form
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.addEventListener('submit', this.handleLogin.bind(this));
-        }
-
-        // Invite form
-        const inviteForm = document.getElementById('inviteForm');
-        if (inviteForm) {
-            inviteForm.addEventListener('submit', this.handleInvite.bind(this));
-        }
-
-        // Search and filter inputs
-        const sortProducts = document.getElementById('sortProducts');
-        if (sortProducts) {
-            sortProducts.addEventListener('change', (e) => {
-                window.TLC_CORE.filters.update({ sortBy: e.target.value });
-                this.updateProductDisplay();
-            });
-        }
-
-        const filterCategory = document.getElementById('filterCategory');
-        if (filterCategory) {
-            filterCategory.addEventListener('change', (e) => {
-                window.TLC_CORE.filters.update({ category: e.target.value });
-                this.updateProductDisplay();
-            });
-        }
-
-        const sortMerchants = document.getElementById('sortMerchants');
-        if (sortMerchants) {
-            sortMerchants.addEventListener('change', (e) => {
-                this.updateMerchantDisplay(e.target.value);
-            });
-        }
-
-        // Modal backdrop clicks
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-backdrop')) {
-                this.closeAllModals();
-            }
-        });
-
-        // Escape key to close modals
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.closeAllModals();
-            }
-        });
-    },
-
-    // Initialize components
-    initializeComponents: function() {
-        // Load initial data displays
-        this.updateProductDisplay();
-        this.updateMerchantDisplay();
-        this.updateStatsDisplay();
-    },
-
-    // Handle login form submission
-    handleLogin: function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        
-        if (!email || !password) {
-            this.showNotification({ message: 'Please enter both email and password', type: 'error' });
-            return;
-        }
-
-        // Show loading state
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Signing in...';
-        submitBtn.disabled = true;
-
-        // Attempt login
-        setTimeout(() => {
-            if (window.TLC_CORE && window.TLC_CORE.auth) {
-                const result = window.TLC_CORE.auth.login(email, password);
-                
-                if (result.success) {
-                    this.showNotification({ message: result.message, type: 'success' });
-                    setTimeout(() => {
-                        this.showMainApp();
-                    }, 1000);
-                } else {
-                    this.showNotification({ message: result.message, type: 'error' });
-                }
-            } else {
-                this.showNotification({ message: 'System error: Core not loaded', type: 'error' });
-            }
-            
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 1000);
-    },
-
-    // Handle invite form submission
-    handleInvite: function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('inviteEmail').value;
-        const mobile = document.getElementById('inviteMobile').value;
-        const message = document.getElementById('inviteMessage').value;
-        
-        if (!email) {
-            this.showNotification({ message: 'Please enter an email address', type: 'error' });
-            return;
-        }
-
-        // Show loading state
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Sending...';
-        submitBtn.disabled = true;
-
-        // Send invite
-        setTimeout(() => {
-            if (window.TLC_CORE && window.TLC_CORE.invites) {
-                const success = window.TLC_CORE.invites.send(email, mobile, message);
-                
-                if (success) {
-                    // Reset form
-                    e.target.reset();
-                    this.closeModal('inviteModal');
-                }
-            }
-            
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 1500);
-    },
-
-    // Show section
-    showSection: function(sectionName) {
-        // Hide all sections
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(section => {
-            section.classList.add('hidden');
-        });
-
-        // Show target section
-        const targetSection = document.getElementById(sectionName + 'Section');
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
-            window.TLC_CORE.state.currentSection = sectionName;
-        }
-
-        // Update navigation
-        this.updateNavigation(sectionName);
-        
-        // Close mobile menu
-        this.closeMobileMenu();
-        
-        // Track navigation
-        if (window.TLC_CORE && window.TLC_CORE.analytics) {
-            window.TLC_CORE.analytics.track('navigation', { section: sectionName });
-        }
-
-        // Load section-specific data
-        this.loadSectionData(sectionName);
-    },
-
-    // Update navigation active state
-    updateNavigation: function(activeSection) {
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-            link.classList.remove('text-indigo-600', 'bg-indigo-50');
-            link.classList.add('text-gray-700');
-        });
-
-        // Find and highlight active link
-        navLinks.forEach(link => {
-            const linkText = link.textContent.toLowerCase();
-            if (linkText.includes(activeSection) || 
-                (activeSection === 'home' && linkText.includes('home')) ||
-                (activeSection === 'products' && linkText.includes('products')) ||
-                (activeSection === 'merchants' && linkText.includes('merchants')) ||
-                (activeSection === 'subscriptions' && linkText.includes('subscriptions')) ||
-                (activeSection === 'about' && linkText.includes('about'))) {
-                link.classList.remove('text-gray-700');
-                link.classList.add('text-indigo-600', 'bg-indigo-50');
-            }
-        });
-    },
-
-    // Load section-specific data
-    loadSectionData: function(sectionName) {
-        switch(sectionName) {
-            case 'home':
-                this.updateFeaturedProducts();
-                break;
-            case 'products':
-                this.updateProductDisplay();
-                break;
-            case 'merchants':
-                this.updateMerchantDisplay();
-                break;
-            case 'subscriptions':
-                this.updateSubscriptionDisplay();
-                break;
-        }
-    },
-
-    // Update featured products display
-    updateFeaturedProducts: function() {
-        const container = document.getElementById('featuredProducts');
-        if (!container || !window.TLC_CORE) return;
-
-        const products = window.TLC_CORE.products.getFeatured(4);
-        
-        if (products.length === 0) {
-            container.innerHTML = `
-                <div class="col-span-full text-center py-8">
-                    <div class="text-4xl mb-4">📦</div>
-                    <p class="text-gray-600">No featured products available</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = products.map(product => this.createProductCard(product)).join('');
-    },
-
-    // Update product display
-    updateProductDisplay: function() {
-        const container = document.getElementById('allProducts');
-        if (!container || !window.TLC_CORE) return;
-
-        const filters = window.TLC_CORE.filters.get();
-        const products = window.TLC_CORE.products.getAll(filters);
-        
-        if (products.length === 0) {
-            container.innerHTML = `
-                <div class="col-span-full text-center py-8">
-                    <div class="text-4xl mb-4">🔍</div>
-                    <p class="text-gray-600">No products found matching your criteria</p>
-                    <button onclick="window.TLC_CORE.filters.reset(); window.TLC_UI.updateProductDisplay();" 
-                            class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium">
-                        Clear Filters
-                    </button>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = products.map(product => this.createProductCard(product)).join('');
-    },
-
-    // Create product card HTML
-    createProductCard: function(product) {
-        const isWishlisted = window.TLC_CORE.state.wishlist.includes(product.id);
-        const isSubscribed = window.TLC_CORE.state.subscriptions.some(
-            sub => sub.productId === product.id && sub.status === 'active'
-        );
-        
-        return `
-            <div class="product-card bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow p-6">
-                <div class="aspect-w-16 aspect-h-9 mb-4">
-                    <div class="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
-                        <span class="text-3xl">${this.getCategoryIcon(product.category)}</span>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-semibold text-gray-900 text-lg">${product.name}</h3>
-                        <button onclick="window.TLC_UI.toggleWishlist(${product.id})" 
-                                class="text-xl ${isWishlisted ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition-colors">
-                            ${isWishlisted ? '❤️' : '🤍'}
-                        </button>
-                    </div>
-                    
-                    <p class="text-gray-600 text-sm line-clamp-2">${product.shortDescription}</p>
-                    
-                    <div class="flex items-center space-x-2">
-                        <div class="flex items-center">
-                            <span class="text-yellow-400">⭐</span>
-                            <span class="text-sm font-medium text-gray-700 ml-1">${product.rating}</span>
-                        </div>
-                        <span class="text-gray-300">•</span>
-                        <span class="text-sm text-gray-600">${product.reviewCount} reviews</span>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <span class="text-2xl font-bold text-gray-900">
-                                ${window.TLC_CORE.utils.formatCurrency(product.price)}
-                            </span>
-                            <span class="text-sm text-gray-600">/${product.billingCycle}</span>
-                        </div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                            ${product.category}
-                        </span>
-                    </div>
-                    
-                    <div class="flex space-x-2 pt-2">
-                        <button onclick="window.TLC_UI.showProductModal(${product.id})" 
-                                class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                            View Details
-                        </button>
-                        <button onclick="window.TLC_UI.handleSubscribe(${product.id})" 
-                                class="flex-1 ${isSubscribed ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                            ${isSubscribed ? '✓ Subscribed' : 'Subscribe'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    },
-
-    // Update merchant display
-    updateMerchantDisplay: function(sortBy = 'name') {
-        const container = document.getElementById('allMerchants');
-        if (!container || !window.TLC_CORE) return;
-
-        const merchants = window.TLC_CORE.merchants.getAll(sortBy);
-        
-        if (merchants.length === 0) {
-            container.innerHTML = `
-                <div class="col-span-full text-center py-8">
-                    <div class="text-4xl mb-4">🏪</div>
-                    <p class="text-gray-600">No merchants available</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = merchants.map(merchant => this.createMerchantCard(merchant)).join('');
-    },
-
-    // Create merchant card HTML
-    createMerchantCard: function(merchant) {
-        const isFollowing = window.TLC_CORE.state.following.includes(merchant.id);
-        
-        return `
-            <div class="merchant-card bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow overflow-hidden">
-                <div class="h-32 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                    <span class="text-4xl">${this.getMerchantIcon(merchant.name)}</span>
-                </div>
-                
-                <div class="p-6 space-y-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-semibold text-gray-900 text-lg">${merchant.name}</h3>
-                            ${merchant.isVerified ? '<span class="text-blue-500 text-sm">✓ Verified</span>' : ''}
-                        </div>
-                        <button onclick="window.TLC_UI.toggleFollow(${merchant.id})" 
-                                class="px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                                    isFollowing 
-                                        ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }">
-                            ${isFollowing ? '✓ Following' : '+ Follow'}
-                        </button>
-                    </div>
-                    
-                    <p class="text-gray-600 text-sm line-clamp-3">${merchant.description}</p>
-                    
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-500">Products:</span>
-                            <span class="font-medium text-gray-900 ml-1">${merchant.totalProducts}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">Followers:</span>
-                            <span class="font-medium text-gray-900 ml-1">${merchant.followers.toLocaleString()}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">Rating:</span>
-                            <span class="font-medium text-gray-900 ml-1">⭐ ${merchant.averageRating}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">Founded:</span>
-                            <span class="font-medium text-gray-900 ml-1">${merchant.founded}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2 pt-2">
-                        <button onclick="window.TLC_UI.showMerchantModal(${merchant.id})" 
-                                class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                            View Details
-                        </button>
-                        <button onclick="window.TLC_UI.showMerchantProducts(${merchant.id})" 
-                                class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                            View Products
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    },
-
-    // Update subscription display
-    updateSubscriptionDisplay: function() {
-        const container = document.getElementById('userSubscriptions');
-        if (!container || !window.TLC_CORE) return;
-
-        const subscriptions = window.TLC_CORE.subscriptions.getUserSubscriptions();
-        
-        if (subscriptions.length === 0) {
-            container.innerHTML = `
-                <div class="col-span-full text-center py-12">
-                    <div class="text-6xl mb-4">📋</div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No Active Subscriptions</h3>
-                    <p class="text-gray-600 mb-6">Start exploring our premium products to find your perfect subscription</p>
-                    <button onclick="window.TLC_UI.showSection('products')" 
-                            class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                        Browse Products
-                    </button>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = subscriptions.map(subscription => {
-            const product = window.TLC_CORE.products.getDetails(subscription.productId);
-            if (!product) return '';
-            
+        const roles = window.TLC_CONFIG?.roles || {};
+        const credentialsHtml = Object.keys(roles).map(roleKey => {
+            const role = roles[roleKey];
             return `
-                <div class="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-semibold text-gray-900 text-lg">${product.name}</h3>
-                            <p class="text-gray-600 text-sm">${product.merchant}</p>
-                        </div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Active
-                        </span>
-                    </div>
-                    
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-500">Amount:</span>
-                            <span class="font-medium">${window.TLC_CORE.utils.formatCurrency(subscription.amount)}/${product.billingCycle}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-500">Started:</span>
-                            <span class="font-medium">${window.TLC_CORE.utils.formatDate(subscription.startDate)}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-500">Next Billing:</span>
-                            <span class="font-medium">${window.TLC_CORE.utils.formatDate(subscription.nextBilling)}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2 pt-2">
-                        <button onclick="window.TLC_UI.showProductModal(${product.id})" 
-                                class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                            View Product
-                        </button>
-                        <button onclick="window.TLC_UI.handleCancelSubscription('${subscription.id}')" 
-                                class="flex-1 bg-red-100 text-red-700 px-4 py-2 rounded-lg font-medium hover:bg-red-200 transition-colors">
-                            Cancel
-                        </button>
+                <div class="bg-gray-50 p-3 rounded-lg mb-2">
+                    <div class="font-medium text-sm text-gray-700">${role.name}</div>
+                    <div class="text-xs text-gray-500">
+                        Email: ${role.sampleCredentials.email}<br>
+                        Password: ${role.sampleCredentials.password}
                     </div>
                 </div>
             `;
         }).join('');
-    },
-
-    // Update stats display
-    updateStatsDisplay: function() {
-        if (!window.TLC_DATA) return;
-
-        const stats = window.TLC_DATA.stats;
         
-        // Update home page stats
-        const totalProducts = document.getElementById('totalProducts');
-        const totalMerchants = document.getElementById('totalMerchants');
-        const totalUsers = document.getElementById('totalUsers');
-        
-        if (totalProducts) totalProducts.textContent = stats.totalProducts + '+';
-        if (totalMerchants) totalMerchants.textContent = stats.totalMerchants + '+';
-        if (totalUsers) totalUsers.textContent = stats.totalUsers.toLocaleString() + '+';
-    },
-
-    // Modal management
-    showModal: function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.style.display = 'flex';
-            this.state.currentModal = modalId;
-            
-            // Add animation class
-            const modalContent = modal.querySelector('.modal-enter');
-            if (modalContent) {
-                modalContent.style.transform = 'scale(0.95)';
-                modalContent.style.opacity = '0';
-                
-                setTimeout(() => {
-                    modalContent.style.transform = 'scale(1)';
-                    modalContent.style.opacity = '1';
-                    modalContent.style.transition = 'all 0.2s ease-out';
-                }, 10);
-            }
-        }
-    },
-
-    closeModal: function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            const modalContent = modal.querySelector('.modal-enter');
-            if (modalContent) {
-                modalContent.style.transform = 'scale(0.95)';
-                modalContent.style.opacity = '0';
-                
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    modal.style.display = 'none';
-                    this.state.currentModal = null;
-                }, 200);
-            } else {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-                this.state.currentModal = null;
-            }
-        }
-    },
-
-    closeAllModals: function() {
-        const modals = document.querySelectorAll('.modal-backdrop');
-        modals.forEach(modal => {
-            if (!modal.classList.contains('hidden')) {
-                this.closeModal(modal.id);
-            }
-        });
-    },
-
-    // Product modal
-    showProductModal: function(productId) {
-        const product = window.TLC_CORE.products.getDetails(productId);
-        if (!product) return;
-
-        const content = document.getElementById('productContent');
-        if (!content) return;
-
-        const isWishlisted = window.TLC_CORE.state.wishlist.includes(product.id);
-        const isSubscribed = window.TLC_CORE.state.subscriptions.some(
-            sub => sub.productId === product.id && sub.status === 'active'
-        );
-
-        content.innerHTML = `
-            <div class="grid md:grid-cols-2 gap-8">
-                <div>
-                    <div class="aspect-w-16 aspect-h-9 mb-6">
-                        <div class="w-full h-64 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
-                            <span class="text-6xl">${this.getCategoryIcon(product.category)}</span>
+        const loginHtml = `
+            <div id="loginScreen" class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-md w-full space-y-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-full flex items-center justify-center">
+                            <span class="text-2xl text-white">🎯</span>
                         </div>
+                        <h2 class="text-3xl font-bold text-gray-900">Welcome to TLC</h2>
+                        <p class="mt-2 text-gray-600">Sign in to your account</p>
                     </div>
                     
-                    <div class="space-y-4">
-                        <h4 class="font-semibold text-gray-900">Features:</h4>
-                        <ul class="space-y-2">
-                            ${product.features.map(feature => `
-                                <li class="flex items-center text-gray-700">
-                                    <span class="text-green-500 mr-2">✓</span>
-                                    ${feature}
-                                </li>
-                            `).join('')}
-                        </ul>
+                    <form id="loginForm" class="mt-8 space-y-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                                <input id="email" name="email" type="email" required 
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                                <input id="password" name="password" type="password" required 
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Sign In
+                        </button>
+                    </form>
+                    
+                    <div class="mt-6">
+                        <div class="text-sm text-gray-600 mb-3">Sample Credentials for Testing:</div>
+                        ${credentialsHtml}
                     </div>
                 </div>
-                
-                <div class="space-y-6">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900">${product.name}</h2>
-                                <p class="text-gray-600">${product.merchant}</p>
+            </div>
+        `;
+        
+        this.container.innerHTML = loginHtml;
+        this.setupLoginForm();
+    },
+    
+    // Main Application Interface
+    showMainApp: function() {
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        const config = window.TLC_CONFIG?.ui || {};
+        
+        const mainAppHtml = `
+            <div id="mainApp" class="min-h-screen bg-gray-50">
+                <!-- Header -->
+                <header class="bg-white shadow-sm sticky top-0 z-40">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-center h-16">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">🎯</div>
+                                <h1 class="text-xl font-bold text-gray-900">TokenZ Loyalty Club</h1>
                             </div>
-                            <button onclick="window.TLC_UI.toggleWishlist(${product.id})" 
-                                    class="text-2xl ${isWishlisted ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition-colors">
-                                ${isWishlisted ? '❤️' : '🤍'}
+                            
+                            <!-- Desktop Navigation -->
+                            <nav class="hidden md:flex space-x-8">
+                                <button onclick="TLC_UI.showAbout()" class="text-gray-500 hover:text-gray-900">About</button>
+                                <button onclick="TLC_UI.showSubscriptions()" class="text-gray-500 hover:text-gray-900">Subscriptions</button>
+                                <button onclick="TLC_UI.showInviteModal('members')" class="text-gray-500 hover:text-gray-900">Invite Members</button>
+                                <button onclick="TLC_UI.showInviteModal('merchants')" class="text-gray-500 hover:text-gray-900">Invite Merchants</button>
+                            </nav>
+                            
+                            <!-- User Menu -->
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-600">Welcome, ${user?.fullName || 'User'}</span>
+                                <button onclick="TLC_UI.showProfileModal()" class="text-gray-500 hover:text-gray-900">
+                                    👤 Profile
+                                </button>
+                                <button onclick="TLC_UI.logout()" class="text-gray-500 hover:text-gray-900">
+                                    🚪 Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Hero Section -->
+                <section id="heroSection" class="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-16 transition-all duration-300">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <h2 class="text-4xl font-bold mb-4">${config.heroSection?.title || 'Welcome to TokenZ Loyalty Club'}</h2>
+                        <p class="text-xl mb-8 opacity-90">${config.heroSection?.subtitle || 'Discover amazing subscription products'}</p>
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <button onclick="TLC_UI.showAbout()" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100">
+                                ℹ️ About
+                            </button>
+                            <button onclick="TLC_UI.showSubscriptions()" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100">
+                                📦 Subscriptions
+                            </button>
+                            <button onclick="TLC_UI.showInviteModal('members')" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100">
+                                👥 Invite Members
+                            </button>
+                            <button onclick="TLC_UI.showInviteModal('merchants')" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100">
+                                🏪 Invite Merchants
                             </button>
                         </div>
-                        
-                        <div class="flex items-center space-x-4 mb-4">
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 text-lg">⭐</span>
-                                <span class="font-medium text-gray-700 ml-1">${product.rating}</span>
-                            </div>
-                            <span class="text-gray-300">•</span>
-                            <span class="text-gray-600">${product.reviewCount} reviews</span>
-                            <span class="text-gray-300">•</span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                ${product.category}
-                            </span>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <div class="text-3xl font-bold text-gray-900 mb-1">
-                                ${window.TLC_CORE.utils.formatCurrency(product.price)}
-                                <span class="text-lg font-normal text-gray-600">/${product.billingCycle}</span>
+                    </div>
+                </section>
+                
+                <!-- Main Content -->
+                <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                    <!-- Featured Products Section -->
+                    <section class="mb-12">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900">Featured Products</h3>
+                            <div class="flex space-x-4">
+                                <button onclick="TLC_UI.showAllProducts()" class="text-blue-600 hover:text-blue-800 font-medium">
+                                    View All Products
+                                </button>
+                                <button onclick="TLC_UI.showAllMerchants()" class="text-blue-600 hover:text-blue-800 font-medium">
+                                    View All Merchants
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <h4 class="font-semibold text-gray-900 mb-2">Description</h4>
-                        <p class="text-gray-700 leading-relaxed">${product.longDescription}</p>
-                    </div>
-                    
-                    <div class="flex space-x-4">
-                        <button onclick="window.TLC_UI.handleSubscribe(${product.id})" 
-                                class="flex-1 ${isSubscribed ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                            ${isSubscribed ? '✓ Subscribed' : 'Subscribe Now'}
+                        
+                        <!-- Product Gallery -->
+                        <div id="featuredProducts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <!-- Products will be loaded here -->
+                        </div>
+                    </section>
+                </main>
+                
+                <!-- Mobile Menu -->
+                <div id="mobileMenu" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden">
+                    <div class="grid grid-cols-4 gap-1 p-2">
+                        <button onclick="TLC_UI.showAbout()" class="p-3 text-center text-gray-600">
+                            <div class="text-lg">ℹ️</div>
+                            <div class="text-xs">About</div>
                         </button>
-                        <button onclick="window.TLC_UI.showMerchantModal(${product.merchantId})" 
-                                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                            View Merchant
+                        <button onclick="TLC_UI.showSubscriptions()" class="p-3 text-center text-gray-600">
+                            <div class="text-lg">📦</div>
+                            <div class="text-xs">Subscriptions</div>
+                        </button>
+                        <button onclick="TLC_UI.showInviteModal('members')" class="p-3 text-center text-gray-600">
+                            <div class="text-lg">👥</div>
+                            <div class="text-xs">Invite</div>
+                        </button>
+                        <button onclick="TLC_UI.showProfileModal()" class="p-3 text-center text-gray-600">
+                            <div class="text-lg">👤</div>
+                            <div class="text-xs">Profile</div>
                         </button>
                     </div>
                 </div>
             </div>
         `;
-
-        this.showModal('productModal');
+        
+        this.container.innerHTML = mainAppHtml;
+        this.loadFeaturedProducts();
+        this.setupScrollHandler();
     },
-
-    // Merchant modal
-    showMerchantModal: function(merchantId) {
-        const merchant = window.TLC_CORE.merchants.getDetails(merchantId);
-        if (!merchant) return;
-
-        const content = document.getElementById('merchantContent');
-        if (!content) return;
-
-        const isFollowing = window.TLC_CORE.state.following.includes(merchant.id);
-        const merchantProducts = window.TLC_DATA.utils.getProductsByMerchant(merchant.id);
-
-        content.innerHTML = `
-            <div class="space-y-8">
-                <div class="text-center">
-                    <div class="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-4xl">${this.getMerchantIcon(merchant.name)}</span>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">${merchant.name}</h2>
-                    ${merchant.isVerified ? '<span class="text-blue-500">✓ Verified Partner</span>' : ''}
-                    <p class="text-gray-600 mt-2">${merchant.description}</p>
+    
+    // Product Components
+    createProductTile: function(product) {
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        const status = window.TLC_CORE.products.getStatusForUser(product.id, user?.id);
+        
+        return `
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                    <img src="${window.TLC_UTILS.images.convertGoogleDriveUrl(product.imageUrl)}" 
+                         alt="${product.name}" 
+                         class="w-full h-48 object-cover"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                 </div>
-                
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="space-y-4">
-                        <h4 class="font-semibold text-gray-900">Company Information</h4>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Founded:</span>
-                                <span class="font-medium">${merchant.founded}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Headquarters:</span>
-                                <span class="font-medium">${merchant.headquarters}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Employees:</span>
-                                <span class="font-medium">${merchant.employees}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Website:</span>
-                                <a href="${merchant.website}" target="_blank" class="text-indigo-600 hover:text-indigo-800">Visit Site</a>
-                            </div>
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold text-gray-900 text-sm">${product.name}</h4>
+                        <button onclick="TLC_UI.toggleWishlist('${product.id}')" 
+                                class="text-lg ${status.wishlisted ? 'text-red-500' : 'text-gray-400'} hover:text-red-500">
+                            ${status.wishlisted ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-2">${product.sku}</p>
+                    <p class="text-sm text-blue-600 mb-2 cursor-pointer hover:underline" 
+                       onclick="TLC_UI.showMerchantModal('${product.merchantId}')">${product.merchantName}</p>
+                    <p class="text-sm text-gray-600 mb-3">${window.TLC_UTILS.format.truncate(product.shortDescription, 80)}</p>
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-lg font-bold text-gray-900">${window.TLC_UTILS.format.currency(product.price)}</span>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="text-yellow-500">${window.TLC_UTILS.format.stars(product.rating)}</span>
+                            <span class="ml-1">(${product.reviewCount})</span>
                         </div>
                     </div>
                     
-                    <div class="space-y-4">
-                        <h4 class="font-semibold text-gray-900">Platform Stats</h4>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Products:</span>
-                                <span class="font-medium">${merchant.totalProducts}</span>
+                    <div class="flex space-x-2">
+                        <button onclick="TLC_UI.toggleSubscription('${product.id}')" 
+                                class="flex-1 px-3 py-2 text-sm font-medium rounded-md ${status.subscribed ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} hover:opacity-90">
+                            ${status.subscribed ? '✅ Subscribed' : '📦 Subscribe'}
+                        </button>
+                        <button onclick="TLC_UI.showProductModal('${product.id}')" 
+                                class="px-3 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50">
+                            View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    
+    // Product Gallery with Filters
+    showAllProducts: function() {
+        const products = window.TLC_CORE.products.getAll();
+        const categories = window.TLC_DATA?.categories || [];
+        const sortOptions = window.TLC_CONFIG?.productGallery?.sortOptions || [];
+        const filterOptions = window.TLC_CONFIG?.productGallery?.filterOptions || [];
+        
+        const galleryHtml = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-900">All Products</h2>
+                            <button onclick="TLC_UI.closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                        
+                        <!-- Filters and Sort -->
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <select id="productFilter" onchange="TLC_UI.filterProducts()" class="px-3 py-2 border border-gray-300 rounded-md">
+                                ${filterOptions.map(option => `<option value="${option.value}">${option.label}</option>`).join('')}
+                            </select>
+                            <select id="productSort" onchange="TLC_UI.sortProducts()" class="px-3 py-2 border border-gray-300 rounded-md">
+                                ${sortOptions.map(option => `<option value="${option.value}">${option.label}</option>`).join('')}
+                            </select>
+                            <input type="text" id="productSearch" placeholder="Search products..." 
+                                   onkeyup="TLC_UI.searchProducts()" 
+                                   class="px-3 py-2 border border-gray-300 rounded-md flex-1 min-w-0">
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                        <div id="productGallery" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${products.map(product => this.createProductTile(product)).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.showModal(galleryHtml);
+    },
+    
+    // Product Detail Modal
+    showProductModal: function(productId) {
+        const product = window.TLC_CORE.products.getById(productId);
+        if (!product) return;
+        
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        const status = window.TLC_CORE.products.getStatusForUser(productId, user?.id);
+        const merchant = window.TLC_CORE.merchants.getById(product.merchantId);
+        
+        const modalHtml = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 mb-2">${product.name}</h2>
+                                <p class="text-gray-600">SKU: ${product.sku}</p>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Followers:</span>
-                                <span class="font-medium">${merchant.followers.toLocaleString()}</span>
+                            <button onclick="TLC_UI.closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Product Image -->
+                            <div>
+                                <img src="${window.TLC_UTILS.images.convertGoogleDriveUrl(product.imageUrl)}" 
+                                     alt="${product.name}" 
+                                     class="w-full h-64 object-cover rounded-lg"
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Average Rating:</span>
-                                <span class="font-medium">⭐ ${merchant.averageRating}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Joined:</span>
-                                <span class="font-medium">${window.TLC_CORE.utils.formatDate(merchant.joinedAt)}</span>
+                            
+                            <!-- Product Details -->
+                            <div>
+                                <div class="mb-4">
+                                    <span class="text-3xl font-bold text-gray-900">${window.TLC_UTILS.format.currency(product.price)}</span>
+                                    <span class="text-gray-600 ml-2">per ${product.customAttributes?.subscriptionType || 'month'}</span>
+                                </div>
+                                
+                                <div class="flex items-center mb-4">
+                                    <span class="text-yellow-500 text-lg">${window.TLC_UTILS.format.stars(product.rating)}</span>
+                                    <span class="ml-2 text-gray-600">${product.rating} (${product.reviewCount} reviews)</span>
+                                    <button class="ml-4 text-blue-600 hover:underline">Write Review</button>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <span class="text-gray-600">By: </span>
+                                    <button onclick="TLC_UI.showMerchantModal('${product.merchantId}')" 
+                                            class="text-blue-600 hover:underline font-medium">${product.merchantName}</button>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <h4 class="font-semibold text-gray-900 mb-2">Description</h4>
+                                    <p class="text-gray-600">${product.longDescription}</p>
+                                </div>
+                                
+                                <!-- Custom Attributes -->
+                                ${Object.keys(product.customAttributes || {}).length > 0 ? `
+                                    <div class="mb-6">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Details</h4>
+                                        <div class="space-y-2">
+                                            ${Object.entries(product.customAttributes).map(([key, value]) => `
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600 capitalize">${key.replace(/([A-Z])/g, ' $1')}:</span>
+                                                    <span class="font-medium">${value}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Action Buttons -->
+                                <div class="flex space-x-4">
+                                    <button onclick="TLC_UI.toggleSubscription('${product.id}')" 
+                                            class="flex-1 px-6 py-3 font-medium rounded-lg ${status.subscribed ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} hover:opacity-90">
+                                        ${status.subscribed ? '✅ Unsubscribe' : '📦 Subscribe'}
+                                    </button>
+                                    <button onclick="TLC_UI.toggleWishlist('${product.id}')" 
+                                            class="px-6 py-3 font-medium border rounded-lg ${status.wishlisted ? 'border-red-500 text-red-500' : 'border-gray-300 text-gray-700'} hover:bg-gray-50">
+                                        ${status.wishlisted ? '❤️ Remove' : '🤍 Wishlist'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div>
-                    <h4 class="font-semibold text-gray-900 mb-4">About ${merchant.name}</h4>
-                    <p class="text-gray-700 leading-relaxed">${merchant.longDescription}</p>
+            </div>
+        `;
+        
+        this.showModal(modalHtml);
+    },
+    
+    // Merchant Detail Modal
+    showMerchantModal: function(merchantId) {
+        const merchant = window.TLC_CORE.merchants.getById(merchantId);
+        if (!merchant) return;
+        
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        const status = window.TLC_CORE.merchants.getStatusForUser(merchantId, user?.id);
+        const products = window.TLC_CORE.products.getByMerchant(merchantId);
+        
+        const modalHtml = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center">
+                                <img src="${window.TLC_UTILS.images.convertGoogleDriveUrl(merchant.logoUrl)}" 
+                                     alt="${merchant.name}" 
+                                     class="w-16 h-16 rounded-lg mr-4"
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Mb2dvPC90ZXh0Pjwvc3ZnPg=='">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-900">${merchant.name}</h2>
+                                    <p class="text-gray-600">${merchant.category}</p>
+                                </div>
+                            </div>
+                            <button onclick="TLC_UI.closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- Merchant Info -->
+                            <div class="lg:col-span-2">
+                                <div class="mb-6">
+                                    <h4 class="font-semibold text-gray-900 mb-2">About</h4>
+                                    <p class="text-gray-600">${merchant.description}</p>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <h4 class="font-semibold text-gray-900 mb-2">Contact</h4>
+                                    <div class="space-y-2">
+                                        <div><span class="text-gray-600">Website:</span> 
+                                            <a href="${merchant.website}" target="_blank" class="text-blue-600 hover:underline ml-2">${merchant.website}</a>
+                                        </div>
+                                        <div><span class="text-gray-600">Email:</span> 
+                                            <a href="mailto:${merchant.contactEmail}" class="text-blue-600 hover:underline ml-2">${merchant.contactEmail}</a>
+                                        </div>
+                                        ${merchant.phone ? `<div><span class="text-gray-600">Phone:</span> <span class="ml-2">${merchant.phone}</span></div>` : ''}
+                                    </div>
+                                </div>
+                                
+                                ${merchant.specialties?.length > 0 ? `
+                                    <div class="mb-6">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Specialties</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${merchant.specialties.map(specialty => `
+                                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">${specialty}</span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Products -->
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-4">Products (${products.length})</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        ${products.map(product => `
+                                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md cursor-pointer" 
+                                                 onclick="TLC_UI.closeModal(); setTimeout(() => TLC_UI.showProductModal('${product.id}'), 100)">
+                                                <h5 class="font-medium text-gray-900">${product.name}</h5>
+                                                <p class="text-sm text-gray-600 mt-1">${window.TLC_UTILS.format.truncate(product.shortDescription, 60)}</p>
+                                                <div class="flex justify-between items-center mt-2">
+                                                    <span class="font-bold text-blue-600">${window.TLC_UTILS.format.currency(product.price)}</span>
+                                                    <span class="text-yellow-500 text-sm">${window.TLC_UTILS.format.stars(product.rating)}</span>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sidebar -->
+                            <div>
+                                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                    <div class="text-center mb-4">
+                                        <div class="text-2xl font-bold text-gray-900">${merchant.rating}</div>
+                                        <div class="text-yellow-500">${window.TLC_UTILS.format.stars(merchant.rating)}</div>
+                                        <div class="text-sm text-gray-600">${merchant.followerCount} followers</div>
+                                    </div>
+                                    
+                                    <button onclick="TLC_UI.toggleMerchantFollow('${merchant.id}')" 
+                                            class="w-full px-4 py-2 font-medium rounded-lg ${status.followed ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} hover:opacity-90">
+                                        ${status.followed ? '✅ Following' : '👥 Follow'}
+                                    </button>
+                                </div>
+                                
+                                ${merchant.certifications?.length > 0 ? `
+                                    <div class="mb-6">
+                                        <h5 class="font-semibold text-gray-900 mb-2">Certifications</h5>
+                                        <div class="space-y-2">
+                                            ${merchant.certifications.map(cert => `
+                                                <div class="flex items-center">
+                                                    <span class="text-green-500 mr-2">✓</span>
+                                                    <span class="text-sm text-gray-600">${cert}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                ${Object.keys(merchant.socialMedia || {}).length > 0 ? `
+                                    <div>
+                                        <h5 class="font-semibold text-gray-900 mb-2">Social Media</h5>
+                                        <div class="space-y-2">
+                                            ${Object.entries(merchant.socialMedia).map(([platform, handle]) => `
+                                                <div class="text-sm">
+                                                    <span class="text-gray-600 capitalize">${platform}:</span>
+                                                    <span class="text-blue-600 ml-1">${handle}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                ${merchantProducts.length > 0 ? `
-                    <div>
-                        <h4 class="font-semibold text-gray-900 mb-4">Products (${merchantProducts.length})</h4>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            ${merchantProducts.slice(0, 4).map(product => `
-                                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                                    <h5 class="font-medium text-gray-900">${product.name}</h5>
-                                    <p class="text-sm text-gray-600 mt-1">${product.shortDescription}</p>
-                                    <div class="flex justify-between items-center mt-2">
-                                        <span class="font-semibold text-indigo-600">${window.TLC_CORE.utils.formatCurrency(product.price)}</span>
-                                        <button onclick="window.TLC_UI.showProductModal(${product.id})" 
-                                                class="text-sm text-indigo-600 hover:text-indigo-800">
-                                            View Details
+            </div>
+        `;
+        
+        this.showModal(modalHtml);
+    },
+    
+    // Profile Modal
+    showProfileModal: function() {
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        if (!user) return;
+        
+        const profile = window.TLC_CORE.members.getProfile(user.id);
+        const subscriptions = profile?.subscriptions || [];
+        const wishlist = profile?.wishlist || [];
+        const followedMerchants = profile?.followedMerchants || [];
+        
+        const modalHtml = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-2xl font-bold text-gray-900">My Profile</h2>
+                            <button onclick="TLC_UI.closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl text-white">👤</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">${profile?.fullName || 'User'}</h3>
+                            <p class="text-gray-600">${profile?.role || 'Member'}</p>
+                            <p class="text-sm text-gray-500">Member ID: ${profile?.id || 'N/A'}</p>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- Contact Info -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Contact Information</h4>
+                                <div class="space-y-2">
+                                    <div><span class="text-gray-600">Email:</span> <span class="ml-2">${profile?.email || 'N/A'}</span></div>
+                                    <div><span class="text-gray-600">Phone:</span> <span class="ml-2">${profile?.phone || 'N/A'}</span></div>
+                                    <div><span class="text-gray-600">Join Date:</span> <span class="ml-2">${window.TLC_UTILS.format.date(profile?.joinDate) || 'N/A'}</span></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Quick Actions</h4>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <button onclick="TLC_UI.showUserSubscriptions()" class="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50">
+                                        <div class="text-2xl mb-2">📦</div>
+                                        <div class="text-sm font-medium">Subscriptions</div>
+                                        <div class="text-xs text-gray-500">${subscriptions.length} active</div>
+                                    </button>
+                                    <button onclick="TLC_UI.showUserWishlist()" class="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50">
+                                        <div class="text-2xl mb-2">❤️</div>
+                                        <div class="text-sm font-medium">Wishlist</div>
+                                        <div class="text-xs text-gray-500">${wishlist.length} items</div>
+                                    </button>
+                                    <button onclick="TLC_UI.showUserFollows()" class="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50">
+                                        <div class="text-2xl mb-2">👥</div>
+                                        <div class="text-sm font-medium">Following</div>
+                                        <div class="text-xs text-gray-500">${followedMerchants.length} merchants</div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Role-specific Actions -->
+                            ${user.role === 'merchant' ? `
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Merchant Actions</h4>
+                                    <button onclick="TLC_UI.showAddProductModal()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                        ➕ Add New Product
+                                    </button>
+                                </div>
+                            ` : ''}
+                            
+                            ${user.role === 'admin' ? `
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Admin Actions</h4>
+                                    <div class="space-y-2">
+                                        <button onclick="TLC_UI.showAddMerchantModal()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                            🏪 Create New Merchant
+                                        </button>
+                                        <button onclick="TLC_UI.showAdminConfig()" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                            ⚙️ Configuration
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            ` : ''}
                         </div>
-                        ${merchantProducts.length > 4 ? `
-                            <button onclick="window.TLC_UI.showMerchantProducts(${merchant.id})" 
-                                    class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium">
-                                View All ${merchantProducts.length} Products →
-                            </button>
-                        ` : ''}
                     </div>
-                ` : ''}
-                
-                <div class="flex space-x-4">
-                    <button onclick="window.TLC_UI.toggleFollow(${merchant.id})" 
-                            class="flex-1 ${isFollowing ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'} px-6 py-3 rounded-lg font-semibold transition-colors">
-                        ${isFollowing ? '✓ Following' : '+ Follow Merchant'}
-                    </button>
-                    <button onclick="window.TLC_UI.showMerchantProducts(${merchant.id})" 
-                            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                        View Products
-                    </button>
                 </div>
             </div>
         `;
-
-        this.showModal('merchantModal');
+        
+        this.showModal(modalHtml);
     },
-
-    // Profile modal
-    showProfile: function() {
-        if (!window.TLC_CORE.state.isLoggedIn) {
-            this.showNotification({ message: 'Please login to view profile', type: 'warning' });
-            return;
-        }
-
-        const user = window.TLC_CORE.state.currentUser;
-        const content = document.getElementById('profileContent');
-        if (!content) return;
-
-        content.innerHTML = `
-            <div class="space-y-6">
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl">${user.firstName.charAt(0)}${user.lastName.charAt(0)}</span>
-                    </div>
-                    <h2 class="text-xl font-bold text-gray-900">${user.fullName}</h2>
-                    <p class="text-gray-600">${user.email}</p>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mt-2">
-                        ${user.role.charAt(0).toUpperCase() + user.role.slice(1)} Member
-                    </span>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <h4 class="font-semibold text-gray-900">Account Information</h4>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Member ID:</span>
-                                <span class="font-medium">${user.memberId}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Phone:</span>
-                                <span class="font-medium">${user.telephone}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Joined:</span>
-                                <span class="font-medium">${window.TLC_CORE.utils.formatDate(user.joinedAt)}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Last Login:</span>
-                                <span class="font-medium">${window.TLC_CORE.utils.formatDate(user.lastLoginAt)}</span>
-                            </div>
+    
+    // Invite Modal
+    showInviteModal: function(type) {
+        const config = window.TLC_CONFIG?.inviteMessages?.[type];
+        if (!config) return;
+        
+        const modalHtml = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold text-gray-900">Invite ${type === 'members' ? 'Members' : 'Merchants'}</h2>
+                            <button onclick="TLC_UI.closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                         </div>
                     </div>
                     
-                    <div class="space-y-4">
-                        <h4 class="font-semibold text-gray-900">Activity Summary</h4>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Active Subscriptions:</span>
-                                <span class="font-medium">${window.TLC_CORE.subscriptions.getUserSubscriptions().length}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Wishlist Items:</span>
-                                <span class="font-medium">${window.TLC_CORE.state.wishlist.length}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Following:</span>
-                                <span class="font-medium">${window.TLC_CORE.state.following.length} merchants</span>
-                            </div>
+                    <form id="inviteForm" class="p-6">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                            <textarea readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm">${config.message}</textarea>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="border-t pt-6">
-                    <div class="flex space-x-4">
-                        <button onclick="window.TLC_UI.showSection('subscriptions')" 
-                                class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                            Manage Subscriptions
-                        </button>
-                        <button onclick="window.TLC_CORE.auth.logout()" 
-                                class="px-4 py-2 border border-red-300 text-red-700 rounded-lg font-medium hover:bg-red-50 transition-colors">
-                            Sign Out
-                        </button>
-                    </div>
+                        
+                        <div class="space-y-4">
+                            ${config.fields.map(field => `
+                                <div>
+                                    <label for="${field.name}" class="block text-sm font-medium text-gray-700 mb-1">
+                                        ${field.label} ${field.required ? '*' : ''}
+                                    </label>
+                                    <input type="${field.type}" 
+                                           id="${field.name}" 
+                                           name="${field.name}" 
+                                           ${field.required ? 'required' : ''}
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="mt-6 flex space-x-3">
+                            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Send Invitation
+                            </button>
+                            <button type="button" onclick="TLC_UI.closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         `;
-
-        this.showModal('profileModal');
-    },
-
-    // Invite modal
-    showInviteModal: function(type = 'member') {
-        const title = document.getElementById('inviteTitle');
-        if (title) {
-            title.textContent = type === 'merchant' ? '🏪 Invite Merchant' : '👥 Invite Friend';
-        }
         
-        this.showModal('inviteModal');
+        this.showModal(modalHtml);
+        this.setupInviteForm(type);
     },
-
-    // Mobile menu toggle
-    toggleMenu: function() {
-        const mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) {
-            if (this.state.mobileMenuOpen) {
-                this.closeMobileMenu();
-            } else {
-                this.openMobileMenu();
-            }
-        }
-    },
-
-    openMobileMenu: function() {
-        const mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) {
-            mobileMenu.classList.remove('hidden');
-            this.state.mobileMenuOpen = true;
-        }
-    },
-
-    closeMobileMenu: function() {
-        const mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) {
-            mobileMenu.classList.add('hidden');
-            this.state.mobileMenuOpen = false;
-        }
-    },
-
-    // Action handlers
-    toggleWishlist: function(productId) {
-        if (!window.TLC_CORE.state.isLoggedIn) {
-            this.showNotification({ message: 'Please login to manage wishlist', type: 'warning' });
-            return;
-        }
-
-        const isWishlisted = window.TLC_CORE.state.wishlist.includes(productId);
-        
-        if (isWishlisted) {
-            window.TLC_CORE.products.removeFromWishlist(productId);
-        } else {
-            window.TLC_CORE.products.addToWishlist(productId);
-        }
-
-        // Update displays
-        this.updateProductDisplay();
-        this.updateFeaturedProducts();
-    },
-
-    toggleFollow: function(merchantId) {
-        if (!window.TLC_CORE.state.isLoggedIn) {
-            this.showNotification({ message: 'Please login to follow merchants', type: 'warning' });
-            return;
-        }
-
-        const isFollowing = window.TLC_CORE.state.following.includes(merchantId);
-        
-        if (isFollowing) {
-            window.TLC_CORE.merchants.unfollow(merchantId);
-        } else {
-            window.TLC_CORE.merchants.follow(merchantId);
-        }
-
-        // Update displays
-        this.updateMerchantDisplay();
-    },
-
-    handleSubscribe: function(productId) {
-        if (!window.TLC_CORE.state.isLoggedIn) {
-            this.showNotification({ message: 'Please login to subscribe', type: 'warning' });
-            return;
-        }
-
-        const success = window.TLC_CORE.products.subscribe(productId);
-        
-        if (success) {
-            // Update displays
-            this.updateProductDisplay();
-            this.updateFeaturedProducts();
-            this.updateSubscriptionDisplay();
-        }
-    },
-
-    handleCancelSubscription: function(subscriptionId) {
-        if (confirm('Are you sure you want to cancel this subscription?')) {
-            const success = window.TLC_CORE.subscriptions.cancel(subscriptionId);
-            
-            if (success) {
-                this.updateSubscriptionDisplay();
-            }
-        }
-    },
-
-    showMerchantProducts: function(merchantId) {
-        // Filter products by merchant and show products section
-        window.TLC_CORE.filters.update({ merchantId: merchantId });
-        this.showSection('products');
-        this.closeAllModals();
-    },
-
-    toggleFilter: function(filterType) {
-        const filters = window.TLC_CORE.filters.get();
-        
-        if (filterType === 'wishlist') {
-            window.TLC_CORE.filters.update({ wishlistOnly: !filters.wishlistOnly });
-            const btn = document.getElementById('wishlistFilter');
-            if (btn) {
-                btn.classList.toggle('bg-red-100');
-                btn.classList.toggle('text-red-700');
-            }
-        } else if (filterType === 'followed') {
-            window.TLC_CORE.filters.update({ followedOnly: !filters.followedOnly });
-            const btn = document.getElementById('followedFilter');
-            if (btn) {
-                btn.classList.toggle('bg-indigo-100');
-                btn.classList.toggle('text-indigo-700');
-            }
-        }
-        
-        this.updateProductDisplay();
-        this.updateFeaturedProducts();
-    },
-
-    // Notification system
-    showNotification: function(notification) {
-        const container = document.getElementById('notificationContainer');
-        if (!container) return;
-
-        const notificationEl = document.createElement('div');
-        notificationEl.id = notification.id || 'notif_' + Date.now();
-        notificationEl.className = `notification-toast transform transition-all duration-300 translate-x-full`;
-        
-        const bgColor = {
-            success: 'bg-green-500',
-            error: 'bg-red-500',
-            warning: 'bg-yellow-500',
-            info: 'bg-blue-500'
-        }[notification.type] || 'bg-gray-500';
-
-        notificationEl.innerHTML = `
-            <div class="${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-sm">
-                <span class="text-xl">
-                    ${notification.type === 'success' ? '✅' : 
-                      notification.type === 'error' ? '❌' : 
-                      notification.type === 'warning' ? '⚠️' : 'ℹ️'}
-                </span>
-                <span class="flex-1">${notification.message}</span>
-                <button onclick="window.TLC_UI.removeNotification('${notificationEl.id}')" 
-                        class="text-white hover:text-gray-200 text-xl">×</button>
-            </div>
-        `;
-
-        container.appendChild(notificationEl);
-
-        // Animate in
-        setTimeout(() => {
-            notificationEl.classList.remove('translate-x-full');
-        }, 100);
-
-        // Auto remove
-        setTimeout(() => {
-            this.removeNotification(notificationEl.id);
-        }, notification.duration || 3000);
-    },
-
-    removeNotification: function(notificationId) {
-        const notification = document.getElementById(notificationId);
-        if (notification) {
-            notification.classList.add('translate-x-full');
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }
-    },
-
-    clearNotifications: function() {
-        const container = document.getElementById('notificationContainer');
+    
+    // Utility Functions
+    loadFeaturedProducts: function() {
+        const featuredProducts = window.TLC_CORE.products.getFeatured();
+        const container = document.getElementById('featuredProducts');
         if (container) {
-            container.innerHTML = '';
+            container.innerHTML = featuredProducts.map(product => this.createProductTile(product)).join('');
         }
     },
-
-    // Update user interface based on login state
-    updateUserInterface: function() {
-        // This method can be called to refresh UI elements based on current state
-        this.updateProductDisplay();
-        this.updateMerchantDisplay();
-        this.updateSubscriptionDisplay();
-        this.updateStatsDisplay();
-    },
-
-    // Utility functions
-    getCategoryIcon: function(category) {
-        const icons = {
-            streaming: '📺',
-            software: '💻',
-            fitness: '💪',
-            education: '📚',
-            productivity: '⚡',
-            entertainment: '🎬',
-            music: '🎵',
-            design: '🎨'
-        };
-        return icons[category] || '📦';
-    },
-
-    getMerchantIcon: function(merchantName) {
-        const icons = {
-            'Netflix': '🎬',
-            'Spotify': '🎵',
-            'Adobe': '🎨',
-            'Peloton': '💪',
-            'MasterClass': '📚',
-            'Notion': '📝',
-            'Disney': '🏰',
-            'Canva': '🎨'
-        };
+    
+    setupScrollHandler: function() {
+        const heroSection = document.getElementById('heroSection');
+        if (!heroSection) return;
         
-        for (const [name, icon] of Object.entries(icons)) {
-            if (merchantName.includes(name)) return icon;
-        }
-        return '🏪';
-    }
-};
-
-// Global functions for HTML onclick handlers
-window.showSection = function(section) {
-    window.TLC_UI.showSection(section);
-};
-
-window.showProfile = function() {
-    window.TLC_UI.showProfile();
-};
-
-window.toggleMenu = function() {
-    window.TLC_UI.toggleMenu();
-};
-
-window.closeModal = function(modalId) {
-    window.TLC_UI.closeModal(modalId);
-};
-
-window.showInviteModal = function(type) {
-    window.TLC_UI.showInviteModal(type);
-};
-
-window.toggleFilter = function(filterType) {
-    window.TLC_UI.toggleFilter(filterType);
-};
-
-// Auto-initialize when loaded
-if (typeof window !== 'undefined') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            window.TLC_UI.init();
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            
+            if (scrolled > 100) {
+                heroSection.style.transform = `translateY(${rate}px)`;
+                heroSection.style.opacity = Math.max(0, 1 - scrolled / 300);
+            }
         });
-    } else {
-        window.TLC_UI.init();
+    },
+    
+    setupLoginForm: function() {
+        const form = document.getElementById('loginForm');
+        if (!form) return;
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const email = formData.get('email');
+            const password = formData.get('password');
+            
+            const result = window.TLC_UTILS.auth.login(email, password);
+            if (result.success) {
+                window.TLC_CORE.init();
+                this.showMainApp();
+            } else {
+                window.TLC_UTILS.notifications.toast(result.message, 'error');
+            }
+        });
+    },
+    
+    setupInviteForm: function(type) {
+        const form = document.getElementById('inviteForm');
+        if (!form) return;
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const inviteData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                inviteData[key] = value;
+            }
+            
+            const result = type === 'members' 
+                ? window.TLC_CORE.invitations.inviteMembers(inviteData)
+                : window.TLC_CORE.invitations.inviteMerchants(inviteData);
+            
+            if (result.success) {
+                this.closeModal();
+            } else {
+                window.TLC_UTILS.notifications.toast(result.message, 'error');
+            }
+        });
+    },
+    
+    setupEventListeners: function() {
+        // Close modal on escape key
+        window.addEventListener('tlc:closeModal', () => {
+            this.closeModal();
+        });
+        
+        // Handle navigation events
+        window.addEventListener('tlc:navigate', (e) => {
+            const { view, params } = e.detail;
+            // Handle navigation based on view
+        });
+    },
+    
+    // Action Handlers
+    toggleSubscription: function(productId) {
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        if (!user) return;
+        
+        const status = window.TLC_CORE.products.getStatusForUser(productId, user.id);
+        const result = status.subscribed 
+            ? window.TLC_CORE.products.unsubscribe(productId, user.id)
+            : window.TLC_CORE.products.subscribe(productId, user.id);
+        
+        if (result.success) {
+            // Refresh the current view
+            this.refreshCurrentView();
+        }
+    },
+    
+    toggleWishlist: function(productId) {
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        if (!user) return;
+        
+        const status = window.TLC_CORE.products.getStatusForUser(productId, user.id);
+        const result = status.wishlisted 
+            ? window.TLC_CORE.products.removeFromWishlist(productId, user.id)
+            : window.TLC_CORE.products.addToWishlist(productId, user.id);
+        
+        if (result.success) {
+            this.refreshCurrentView();
+        }
+    },
+    
+    toggleMerchantFollow: function(merchantId) {
+        const user = window.TLC_UTILS.auth.getCurrentUser();
+        if (!user) return;
+        
+        const status = window.TLC_CORE.merchants.getStatusForUser(merchantId, user.id);
+        const result = status.followed 
+            ? window.TLC_CORE.merchants.unfollow(merchantId, user.id)
+            : window.TLC_CORE.merchants.follow(merchantId, user.id);
+        
+        if (result.success) {
+            this.refreshCurrentView();
+        }
+    },
+    
+    // Modal Management
+    showModal: function(html) {
+        const existingModal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', html);
+        this.currentModal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50:last-child');
+    },
+    
+    closeModal: function() {
+        if (this.currentModal) {
+            this.currentModal.remove();
+            this.currentModal = null;
+        }
+    },
+    
+    refreshCurrentView: function() {
+        // Refresh featured products
+        this.loadFeaturedProducts();
+        
+        // If modal is open, refresh its content
+        if (this.currentModal) {
+            // This would need specific refresh logic based on modal type
+        }
+    },
+    
+    logout: function() {
+        window.TLC_UTILS.auth.logout();
+        this.showLoginScreen();
+    },
+    
+    // Placeholder functions for additional features
+    showAbout: function() {
+        window.TLC_UTILS.notifications.toast('About page coming soon!', 'info');
+    },
+    
+    showSubscriptions: function() {
+        this.showUserSubscriptions();
+    },
+    
+    showAllMerchants: function() {
+        window.TLC_UTILS.notifications.toast('All merchants view coming soon!', 'info');
+    },
+    
+    showUserSubscriptions: function() {
+        window.TLC_UTILS.notifications.toast('User subscriptions view coming soon!', 'info');
+    },
+    
+    showUserWishlist: function() {
+        window.TLC_UTILS.notifications.toast('User wishlist view coming soon!', 'info');
+    },
+    
+    showUserFollows: function() {
+        window.TLC_UTILS.notifications.toast('User follows view coming soon!', 'info');
+    },
+    
+    showAddProductModal: function() {
+        window.TLC_UTILS.notifications.toast('Add product modal coming soon!', 'info');
+    },
+    
+    showAddMerchantModal: function() {
+        window.TLC_UTILS.notifications.toast('Add merchant modal coming soon!', 'info');
+    },
+    
+    showAdminConfig: function() {
+        window.TLC_UTILS.notifications.toast('Admin configuration coming soon!', 'info');
+    },
+    
+    filterProducts: function() {
+        window.TLC_UTILS.notifications.toast('Product filtering coming soon!', 'info');
+    },
+    
+    sortProducts: function() {
+        window.TLC_UTILS.notifications.toast('Product sorting coming soon!', 'info');
+    },
+    
+    searchProducts: function() {
+        window.TLC_UTILS.notifications.toast('Product search coming soon!', 'info');
     }
-}
+};
+
+// Initialize UI components
+console.log('✅ TLC UI Components Module loaded successfully');
 
 // Export for module system
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = window.TLC_UI;
 }
-
-console.log('✅ TLC UI Components Module v5.0 loaded successfully');
-
-// End of TLC UI Components Module v5.0
