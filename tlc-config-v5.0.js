@@ -128,10 +128,10 @@ window.TLC_CONFIG = {
     // Module URLs (GitHub-hosted)
     modules: {
         manager: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-module-manager-v5.0.js',
-        data: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-sample-data-v5.0.js',
+        data: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-data-v5.0.js',
         utils: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-utils-v5.0.js',
         core: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-core-v5.0.js',
-        ui: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-ui-components-v5.0.js',
+        ui: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-ui-v5.0.js',
         styles: 'https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-styles-v5.0.js'
     },
     
