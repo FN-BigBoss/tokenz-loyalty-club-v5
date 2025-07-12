@@ -197,22 +197,44 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
-                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border">
                                 <div class="py-1">
-                                    <button onclick="exportAllData()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export JSON</button>
-                                    <button onclick="exportToCSV()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export CSV</button>
+                                    <button onclick="exportAllData()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export All Data (JSON)</button>
+                                    <button onclick="exportToCSV()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export All Data (CSV)</button>
+                                    <hr class="my-1">
+                                    <button onclick="exportCategories()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Categories Only</button>
+                                    <button onclick="exportMerchants()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Merchants Only</button>
+                                    <button onclick="exportProducts()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Products Only</button>
+                                    <button onclick="exportUsers()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Users Only</button>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="relative">
                             <input type="file" id="importFileHeader" accept=".json,.csv" class="hidden" onchange="importData(this)">
-                            <button onclick="document.getElementById('importFileHeader').click()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
+                            <input type="file" id="importCategoriesFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'categories')">
+                            <input type="file" id="importMerchantsFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'merchants')">
+                            <input type="file" id="importProductsFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'products')">
+                            <input type="file" id="importUsersFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'users')">
+                            <button onclick="showImportMenu()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                                 </svg>
                                 <span>Import</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
                             </button>
+                            <div id="importMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border">
+                                <div class="py-1">
+                                    <button onclick="document.getElementById('importFileHeader').click()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import All Data</button>
+                                    <hr class="my-1">
+                                    <button onclick="importSpecificData('categories')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Categories Only</button>
+                                    <button onclick="importSpecificData('merchants')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Merchants Only</button>
+                                    <button onclick="importSpecificData('products')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Products Only</button>
+                                    <button onclick="importSpecificData('users')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Users Only</button>
+                                </div>
+                            </div>
                         </div>
                         
                         <button onclick="logoutAdmin()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Logout</button>
@@ -2067,6 +2089,19 @@
             });
         }
 
+        function showImportMenu() {
+            const menu = document.getElementById('importMenu');
+            menu.classList.toggle('hidden');
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest('button[onclick="showImportMenu()"]') && !e.target.closest('#importMenu')) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
         function exportAllData() {
             const dataToExport = {
                 merchants: adminData.merchants,
@@ -2078,16 +2113,68 @@
                 version: '5.1'
             };
             
-            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            downloadJSON(dataToExport, `tokenz-all-data-${new Date().toISOString().split('T')[0]}.json`);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportCategories() {
+            const dataToExport = {
+                categories: adminData.categories,
+                exported: new Date().toISOString(),
+                version: '5.1',
+                type: 'categories'
+            };
+            
+            downloadJSON(dataToExport, `tokenz-categories-${new Date().toISOString().split('T')[0]}.json`);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportMerchants() {
+            const dataToExport = {
+                merchants: adminData.merchants,
+                exported: new Date().toISOString(),
+                version: '5.1',
+                type: 'merchants'
+            };
+            
+            downloadJSON(dataToExport, `tokenz-merchants-${new Date().toISOString().split('T')[0]}.json`);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportProducts() {
+            const dataToExport = {
+                products: adminData.products,
+                exported: new Date().toISOString(),
+                version: '5.1',
+                type: 'products'
+            };
+            
+            downloadJSON(dataToExport, `tokenz-products-${new Date().toISOString().split('T')[0]}.json`);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportUsers() {
+            const dataToExport = {
+                users: adminData.users,
+                exported: new Date().toISOString(),
+                version: '5.1',
+                type: 'users'
+            };
+            
+            downloadJSON(dataToExport, `tokenz-users-${new Date().toISOString().split('T')[0]}.json`);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function downloadJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `tokenz-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            document.getElementById('exportMenu').classList.add('hidden');
         }
 
         function exportToCSV() {
@@ -2209,6 +2296,139 @@
                 };
                 reader.readAsText(file);
             }
+        }
+
+        function importSpecificData(type) {
+            const fileInput = document.getElementById(`import${type.charAt(0).toUpperCase() + type.slice(1)}File`);
+            fileInput.click();
+            document.getElementById('importMenu').classList.add('hidden');
+        }
+
+        function importSpecificFile(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate the import file
+                    if (importedData.type && importedData.type !== type) {
+                        alert(`This file is for ${importedData.type}, but you're trying to import ${type}. Please select the correct file.`);
+                        return;
+                    }
+                    
+                    let importCount = 0;
+                    let confirmMessage = '';
+                    
+                    switch (type) {
+                        case 'categories':
+                            if (importedData.categories) {
+                                confirmMessage = `Import ${Object.keys(importedData.categories).length} category types? This will merge with existing categories.`;
+                                if (confirm(confirmMessage)) {
+                                    // Merge categories
+                                    Object.keys(importedData.categories).forEach(categoryType => {
+                                        if (!adminData.categories[categoryType]) {
+                                            adminData.categories[categoryType] = [];
+                                        }
+                                        
+                                        importedData.categories[categoryType].forEach(category => {
+                                            if (!adminData.categories[categoryType].includes(category)) {
+                                                adminData.categories[categoryType].push(category);
+                                                importCount++;
+                                            }
+                                        });
+                                        
+                                        // Sort categories
+                                        adminData.categories[categoryType].sort();
+                                    });
+                                    
+                                    saveAdminData();
+                                    alert(`Successfully imported ${importCount} new categories!`);
+                                    addActivity('system', `Imported ${importCount} categories`);
+                                }
+                            } else {
+                                alert('No categories found in the selected file.');
+                            }
+                            break;
+                            
+                        case 'merchants':
+                            if (importedData.merchants) {
+                                confirmMessage = `Import ${importedData.merchants.length} merchants? This will add to existing merchants.`;
+                                if (confirm(confirmMessage)) {
+                                    importedData.merchants.forEach(merchant => {
+                                        // Assign new ID to avoid conflicts
+                                        merchant.id = generateId();
+                                        adminData.merchants.push(merchant);
+                                        importCount++;
+                                    });
+                                    
+                                    saveAdminData();
+                                    populateMerchantsTable();
+                                    populateMerchantDropdown();
+                                    updateDashboardStats();
+                                    alert(`Successfully imported ${importCount} merchants!`);
+                                    addActivity('merchant', `Imported ${importCount} merchants`);
+                                }
+                            } else {
+                                alert('No merchants found in the selected file.');
+                            }
+                            break;
+                            
+                        case 'products':
+                            if (importedData.products) {
+                                confirmMessage = `Import ${importedData.products.length} products? This will add to existing products.`;
+                                if (confirm(confirmMessage)) {
+                                    importedData.products.forEach(product => {
+                                        // Assign new ID to avoid conflicts
+                                        product.id = generateId();
+                                        adminData.products.push(product);
+                                        importCount++;
+                                    });
+                                    
+                                    saveAdminData();
+                                    populateProductsTable();
+                                    updateDashboardStats();
+                                    alert(`Successfully imported ${importCount} products!`);
+                                    addActivity('product', `Imported ${importCount} products`);
+                                }
+                            } else {
+                                alert('No products found in the selected file.');
+                            }
+                            break;
+                            
+                        case 'users':
+                            if (importedData.users) {
+                                confirmMessage = `Import ${importedData.users.length} users? This will add to existing users.`;
+                                if (confirm(confirmMessage)) {
+                                    importedData.users.forEach(user => {
+                                        // Assign new ID to avoid conflicts
+                                        user.id = generateId();
+                                        adminData.users.push(user);
+                                        importCount++;
+                                    });
+                                    
+                                    saveAdminData();
+                                    populateUsersTable();
+                                    updateDashboardStats();
+                                    alert(`Successfully imported ${importCount} users!`);
+                                    addActivity('user', `Imported ${importCount} users`);
+                                }
+                            } else {
+                                alert('No users found in the selected file.');
+                            }
+                            break;
+                    }
+                    
+                } catch (error) {
+                    alert(`Error importing ${type}: ${error.message}\n\nPlease ensure the file is a valid JSON export from this system.`);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Clear the input
+            input.value = '';
         }
 
         function clearAllData() {
@@ -2338,7 +2558,7 @@
             console.log('📊 Current URL:', window.location.href);
             
             // Set static release timestamp for GMT+2 timezone
-            document.getElementById('releaseTimestamp').textContent = 'Version 5.1 - Released: 12 July 2024, 22:51 (GMT+2)';
+            document.getElementById('releaseTimestamp').textContent = 'Version 5.1 - Released: 12 July 2024, 23:16 (GMT+2)';
             
             try {
                 // Always show admin auth on direct access
@@ -2375,5 +2595,5 @@
             console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e3726cf59e4ec6',t:'MTc1MjM1Mzc4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e390c81552253d',t:'MTc1MjM1NTAyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
