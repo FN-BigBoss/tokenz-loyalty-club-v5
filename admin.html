@@ -695,17 +695,49 @@
 
         // Initialize admin system
         function initAdmin() {
-            loadStoredData();
-            updateDashboardStats();
-            populateMerchantsTable();
-            populateProductsTable();
-            populateUsersTable();
-            populateMerchantDropdown();
+            console.log('🔧 Starting admin initialization...');
+            
+            try {
+                console.log('📂 Loading stored data...');
+                loadStoredData();
+                
+                console.log('📊 Updating dashboard stats...');
+                updateDashboardStats();
+                
+                console.log('🏪 Populating merchants table...');
+                populateMerchantsTable();
+                
+                console.log('📦 Populating products table...');
+                populateProductsTable();
+                
+                console.log('👥 Populating users table...');
+                populateUsersTable();
+                
+                console.log('🔽 Populating merchant dropdown...');
+                populateMerchantDropdown();
+                
+                console.log('✅ Admin initialization complete!');
+                
+                // Show dashboard by default
+                showAdminSection('dashboard');
+                
+            } catch (error) {
+                console.error('❌ Admin initialization failed:', error);
+                alert('Failed to initialize admin system: ' + error.message);
+            }
         }
 
         // Authentication functions
         function showAdminAuth() {
-            document.getElementById('adminAuthModal').classList.remove('hidden');
+            console.log('🔐 Attempting to show admin auth modal...');
+            const modal = document.getElementById('adminAuthModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                console.log('✅ Admin auth modal shown');
+            } else {
+                console.error('❌ Admin auth modal not found!');
+                alert('Critical error: Admin authentication modal not found. Please refresh the page.');
+            }
         }
 
         function closeAdminAuth() {
@@ -715,14 +747,28 @@
         }
 
         function authenticateAdmin(username, password) {
+            console.log('🔑 Attempting authentication for:', username);
+            
             // Simple authentication - in production, use proper authentication
             if (username === 'admin' && password === 'tokenz2024') {
-                document.getElementById('adminAuthModal').classList.add('hidden');
-                document.getElementById('adminInterface').classList.remove('hidden');
-                initAdmin();
-                return true;
+                console.log('✅ Authentication successful');
+                
+                try {
+                    document.getElementById('adminAuthModal').classList.add('hidden');
+                    document.getElementById('adminInterface').classList.remove('hidden');
+                    console.log('🎯 Initializing admin interface...');
+                    initAdmin();
+                    console.log('🎉 Admin interface ready!');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Error showing admin interface:', error);
+                    alert('Error loading admin interface: ' + error.message);
+                    return false;
+                }
+            } else {
+                console.log('❌ Authentication failed');
+                return false;
             }
-            return false;
         }
 
         function logoutAdmin() {
@@ -761,22 +807,37 @@
 
         // Navigation functions
         function showAdminSection(section) {
-            // Hide all sections
-            document.querySelectorAll('.admin-section').forEach(el => {
-                el.classList.add('hidden');
-            });
+            console.log('🧭 Navigating to section:', section);
             
-            // Show selected section
-            document.getElementById(section + 'Section').classList.remove('hidden');
-            
-            // Update navigation
-            document.querySelectorAll('.admin-nav-item').forEach(el => {
-                el.classList.remove('bg-blue-100', 'text-blue-800');
-                el.classList.add('text-gray-700');
-            });
-            
-            event.target.classList.add('bg-blue-100', 'text-blue-800');
-            event.target.classList.remove('text-gray-700');
+            try {
+                // Hide all sections
+                document.querySelectorAll('.admin-section').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                
+                // Show selected section
+                const targetSection = document.getElementById(section + 'Section');
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                    console.log('✅ Section shown:', section);
+                } else {
+                    console.error('❌ Section not found:', section + 'Section');
+                }
+                
+                // Update navigation (only if event exists)
+                if (typeof event !== 'undefined' && event.target) {
+                    document.querySelectorAll('.admin-nav-item').forEach(el => {
+                        el.classList.remove('bg-blue-100', 'text-blue-800');
+                        el.classList.add('text-gray-700');
+                    });
+                    
+                    event.target.classList.add('bg-blue-100', 'text-blue-800');
+                    event.target.classList.remove('text-gray-700');
+                }
+                
+            } catch (error) {
+                console.error('❌ Navigation error:', error);
+            }
         }
 
         // Dashboard functions
@@ -1186,17 +1247,43 @@
 
         // Initialize admin interface when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if admin mode should be activated
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('admin') === 'true') {
+            console.log('🚀 TokenZ Admin CMS v5.1 Loading...');
+            console.log('📊 Current URL:', window.location.href);
+            
+            try {
+                // Always show admin auth on direct access
+                console.log('🔐 Showing admin authentication...');
                 showAdminAuth();
+                
+                // Test data loading
+                console.log('💾 Testing data storage...');
+                loadStoredData();
+                console.log('📈 Current data:', {
+                    merchants: adminData.merchants.length,
+                    products: adminData.products.length,
+                    users: adminData.users.length
+                });
+                
+            } catch (error) {
+                console.error('❌ Initialization error:', error);
+                alert('Admin system failed to initialize. Check console for details.');
             }
         });
 
         // Add admin access from main site
         window.showAdminInterface = function() {
+            console.log('🔗 Admin interface called from main site');
             showAdminAuth();
         };
+
+        // Debug function to test system
+        window.debugAdmin = function() {
+            console.log('🔍 Admin Debug Info:');
+            console.log('- Data:', adminData);
+            console.log('- Auth modal visible:', !document.getElementById('adminAuthModal').classList.contains('hidden'));
+            console.log('- Interface visible:', !document.getElementById('adminInterface').classList.contains('hidden'));
+            console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
+        };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95def462d2d4c6ca',t:'MTc1MjMwNjY3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95df007266f1aa15',t:'MTc1MjMwNzE3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
