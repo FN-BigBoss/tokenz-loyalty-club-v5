@@ -147,7 +147,7 @@
                 <div class="text-4xl mb-4">🔐</div>
                 <h2 class="text-2xl font-bold text-gray-800">Admin Access</h2>
                 <p class="text-gray-600 mt-2">Enter admin credentials to access management interface</p>
-                <p class="text-xs text-gray-500 mt-2">Version 5.1 - Released: <span id="releaseTime"></span></p>
+                <p class="text-xs text-gray-500 mt-2">Version 5.1 - Released: 22:14 July 12, 2025</p>
             </div>
             
             <form id="adminAuthForm">
@@ -1738,28 +1738,40 @@
 
         function handleCategoryInput(input, type) {
             const value = input.value.trim();
+            if (!value) return;
+            
             const existingCategories = adminData.categories[type] || [];
             
-            // Keep original case for display, use lowercase for comparison
-            const valueForComparison = value.toLowerCase();
-            const existingForComparison = existingCategories.map(cat => cat.toLowerCase());
+            // Check if the exact value exists (case-sensitive)
+            const exactMatch = existingCategories.find(cat => cat === value);
+            if (exactMatch) {
+                // Value exists exactly, no need to do anything
+                return;
+            }
             
-            if (value && !existingForComparison.includes(valueForComparison)) {
-                if (confirm(`Category "${value}" doesn't exist. Would you like to create it?`)) {
-                    if (!adminData.categories[type]) {
-                        adminData.categories[type] = [];
-                    }
-                    adminData.categories[type].push(value); // Keep original case
-                    
-                    // Update the datalist
-                    const datalist = document.getElementById(type + 'CategoryList');
-                    const option = document.createElement('option');
-                    option.value = value; // Keep original case
-                    datalist.appendChild(option);
-                    
-                    saveAdminData();
-                    addActivity('system', `New ${type} category "${value}" created`);
+            // Check for case-insensitive match
+            const caseInsensitiveMatch = existingCategories.find(cat => cat.toLowerCase() === value.toLowerCase());
+            if (caseInsensitiveMatch) {
+                // Update input to match the existing category's case
+                input.value = caseInsensitiveMatch;
+                return;
+            }
+            
+            // No match found, ask to create new category
+            if (confirm(`Category "${value}" doesn't exist. Would you like to create it?`)) {
+                if (!adminData.categories[type]) {
+                    adminData.categories[type] = [];
                 }
+                adminData.categories[type].push(value);
+                
+                // Update the datalist
+                const datalist = document.getElementById(type + 'CategoryList');
+                const option = document.createElement('option');
+                option.value = value;
+                datalist.appendChild(option);
+                
+                saveAdminData();
+                addActivity('system', `New ${type} category "${value}" created`);
             }
         }
 
@@ -1899,22 +1911,38 @@
         function importData(input) {
             const file = input.files[0];
             if (file) {
+                const fileName = file.name.toLowerCase();
                 const reader = new FileReader();
+                
                 reader.onload = function(e) {
                     try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (confirm('This will replace all existing data. Are you sure?')) {
-                            adminData = {
-                                merchants: importedData.merchants || [],
-                                products: importedData.products || [],
-                                users: importedData.users || []
-                            };
-                            saveAdminData();
-                            initAdmin();
-                            alert('Data imported successfully!');
+                        if (fileName.endsWith('.json')) {
+                            // Handle JSON import
+                            const importedData = JSON.parse(e.target.result);
+                            if (confirm('This will replace all existing data. Are you sure?')) {
+                                adminData = {
+                                    merchants: importedData.merchants || [],
+                                    products: importedData.products || [],
+                                    users: importedData.users || [],
+                                    categories: importedData.categories || adminData.categories,
+                                    recentActivity: importedData.recentActivity || []
+                                };
+                                saveAdminData();
+                                initAdmin();
+                                alert('JSON data imported successfully!');
+                            }
+                        } else if (fileName.endsWith('.csv')) {
+                            // Handle CSV import
+                            alert('CSV import is not yet supported. Please use JSON format for importing data. You can export your data as JSON and import it on another system.');
+                        } else {
+                            alert('Unsupported file format. Please use JSON files for importing data.');
                         }
                     } catch (error) {
-                        alert('Error importing data: ' + error.message);
+                        if (fileName.endsWith('.json')) {
+                            alert('Error importing JSON data: ' + error.message + '\n\nPlease ensure the file is a valid JSON export from this system.');
+                        } else {
+                            alert('Error reading file: ' + error.message);
+                        }
                     }
                 };
                 reader.readAsText(file);
@@ -2048,13 +2076,6 @@
             console.log('📊 Current URL:', window.location.href);
             
             try {
-                // Set release timestamp
-                const releaseTime = new Date().toLocaleString();
-                const releaseTimeEl = document.getElementById('releaseTime');
-                if (releaseTimeEl) {
-                    releaseTimeEl.textContent = releaseTime;
-                }
-                
                 // Always show admin auth on direct access
                 console.log('🔐 Showing admin authentication...');
                 showAdminAuth();
@@ -2089,5 +2110,5 @@
             console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e0d72813183575',t:'MTc1MjMyNjQ1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e3359b54368a34',t:'MTc1MjM1MTI5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
