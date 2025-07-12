@@ -1,0 +1,1124 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ Loyalty Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TokenZ">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%233B82F6'/><text x='50' y='60' text-anchor='middle' fill='white' font-size='30' font-weight='bold'>T</text></svg>">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="data:application/json,{
+        'name': 'TokenZ Loyalty Club',
+        'short_name': 'TokenZ',
+        'description': 'Your premium loyalty rewards platform',
+        'start_url': '/',
+        'display': 'standalone',
+        'background_color': '#ffffff',
+        'theme_color': '#3B82F6',
+        'icons': [
+            {
+                'src': 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'><circle cx=\'96\' cy=\'96\' r=\'80\' fill=\'%233B82F6\'/><text x=\'96\' y=\'120\' text-anchor=\'middle\' fill=\'white\' font-size=\'60\' font-weight=\'bold\'>T</text></svg>',
+                'sizes': '192x192',
+                'type': 'image/svg+xml'
+            }
+        ]
+    }">
+    
+    <style>
+        .splash-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .logo-animation {
+            animation: logoFloat 2s ease-in-out infinite;
+        }
+        
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            animation: pulse 2s infinite;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .premium-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .section-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3B82F6;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .member-tier-bronze { border-left: 4px solid #CD7F32; }
+        .member-tier-silver { border-left: 4px solid #C0C0C0; }
+        .member-tier-gold { border-left: 4px solid #FFD700; }
+        .member-tier-platinum { border-left: 4px solid #E5E4E2; }
+        
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #EF4444;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            z-index: 1002;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .offline-indicator.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator">
+        <i class="fas fa-wifi-slash mr-2"></i>
+        You're offline. Some features may be limited.
+    </div>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen fixed inset-0 flex items-center justify-center z-50">
+        <div class="text-center text-white">
+            <div class="logo-animation mb-8">
+                <div class="w-24 h-24 mx-auto bg-white rounded-full flex items-center justify-center shadow-2xl">
+                    <span class="text-4xl font-bold text-blue-600">T</span>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold mb-2">TokenZ</h1>
+            <p class="text-xl opacity-90 mb-8">Loyalty Club</p>
+            <div class="loading-spinner mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="fixed inset-0 bg-gray-50 z-40" style="display: none;">
+        <div class="min-h-screen flex items-center justify-center px-4">
+            <div class="max-w-md w-full space-y-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 mx-auto bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-3xl font-bold text-white">T</span>
+                    </div>
+                    <h2 class="mt-6 text-3xl font-bold text-gray-900">Welcome to TokenZ</h2>
+                    <p class="mt-2 text-gray-600">Your premium loyalty rewards platform</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <div class="space-y-6">
+                        <!-- Login Form -->
+                        <div id="login-form">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email or Phone</label>
+                                    <input type="text" id="login-identifier" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter email or phone number">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                    <div class="relative">
+                                        <input type="password" id="login-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12" placeholder="Enter password">
+                                        <button type="button" onclick="togglePassword('login-password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="remember-me" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                                    </label>
+                                    <button type="button" onclick="showForgotPassword()" class="text-sm text-blue-600 hover:text-blue-800">
+                                        Forgot password?
+                                    </button>
+                                </div>
+                                <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                                    Sign In
+                                </button>
+                            </div>
+                            
+                            <div class="mt-6 text-center">
+                                <p class="text-gray-600">Don't have an account?</p>
+                                <button onclick="showRegisterForm()" class="text-blue-600 hover:text-blue-800 font-semibold">
+                                    Create Account
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Register Form -->
+                        <div id="register-form" style="display: none;">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                        <input type="text" id="register-firstname" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="First name">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                        <input type="text" id="register-lastname" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Last name">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input type="email" id="register-email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter email">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                    <input type="tel" id="register-phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter phone number">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                    <div class="relative">
+                                        <input type="password" id="register-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12" placeholder="Create password">
+                                        <button type="button" onclick="togglePassword('register-password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                                    <div class="relative">
+                                        <input type="password" id="register-confirm-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12" placeholder="Confirm password">
+                                        <button type="button" onclick="togglePassword('register-confirm-password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <input type="checkbox" id="terms-agreement" class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <label class="ml-2 text-sm text-gray-600">
+                                        I agree to the <a href="#" class="text-blue-600 hover:text-blue-800">Terms of Service</a> and <a href="#" class="text-blue-600 hover:text-blue-800">Privacy Policy</a>
+                                    </label>
+                                </div>
+                                <button onclick="handleRegister()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                                    Create Account
+                                </button>
+                            </div>
+                            
+                            <div class="mt-6 text-center">
+                                <p class="text-gray-600">Already have an account?</p>
+                                <button onclick="showLoginForm()" class="text-blue-600 hover:text-blue-800 font-semibold">
+                                    Sign In
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Social Login Options -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="text-center mb-4">
+                        <span class="text-gray-500">Or continue with</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="handleSocialLogin('google')" class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fab fa-google text-red-500 mr-2"></i>
+                            Google
+                        </button>
+                        <button onclick="handleSocialLogin('facebook')" class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                            Facebook
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="min-h-screen" style="display: none;">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span class="text-xl font-bold text-white">T</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <h1 class="text-xl font-semibold text-gray-900">TokenZ</h1>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative hidden md:block">
+                            <input type="text" id="global-search" placeholder="Search products, merchants..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                        </button>
+                        
+                        <!-- User Menu -->
+                        <div class="relative">
+                            <button onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-semibold text-white" id="user-avatar">U</span>
+                                </div>
+                                <span class="hidden md:block text-sm font-medium text-gray-700" id="user-name">User</span>
+                                <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                            </button>
+                            
+                            <!-- User Dropdown -->
+                            <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-40" style="display: none;">
+                                <a href="#" onclick="showSection('profile')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>Profile
+                                </a>
+                                <a href="#" onclick="showSection('subscriptions')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-credit-card mr-2"></i>Subscriptions
+                                </a>
+                                <a href="#" onclick="showSection('settings')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i>Settings
+                                </a>
+                                <hr class="my-2">
+                                <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex space-x-8 overflow-x-auto">
+                    <button onclick="showSection('home')" class="nav-item flex items-center px-4 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 whitespace-nowrap active">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </button>
+                    <button onclick="showSection('products')" class="nav-item flex items-center px-4 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 whitespace-nowrap">
+                        <i class="fas fa-shopping-bag mr-2"></i>Products
+                    </button>
+                    <button onclick="showSection('merchants')" class="nav-item flex items-center px-4 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 whitespace-nowrap">
+                        <i class="fas fa-store mr-2"></i>Merchants
+                    </button>
+                    <button onclick="showSection('rewards')" class="nav-item flex items-center px-4 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 whitespace-nowrap">
+                        <i class="fas fa-gift mr-2"></i>Rewards
+                    </button>
+                    <button onclick="showSection('invite')" class="nav-item flex items-center px-4 py-4 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 whitespace-nowrap">
+                        <i class="fas fa-user-plus mr-2"></i>Invite
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Home Section -->
+            <div id="home-section" class="section-content active">
+                <!-- Welcome Banner -->
+                <div class="premium-gradient rounded-lg p-8 text-white mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-3xl font-bold mb-2">Welcome back, <span id="welcome-user-name">Member</span>!</h2>
+                            <p class="text-lg opacity-90">You're a <span id="user-tier" class="font-semibold">Bronze</span> member</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold" id="user-points">0 Points</div>
+                            <div class="text-sm opacity-90">Available Balance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-coins text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Total Earned</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="total-earned">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-shopping-cart text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Purchases</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="total-purchases">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-heart text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Favorites</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="total-favorites">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-users text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Referrals</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="total-referrals">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Products Preview -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-gray-900">Featured Products</h3>
+                            <button onclick="showSection('products')" class="text-blue-600 hover:text-blue-800 font-medium">
+                                View All <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="featured-products-preview" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="text-center py-8 text-gray-500">
+                                Loading featured products...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-900">Recent Activity</h3>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-activity" class="space-y-4">
+                            <div class="text-center py-8 text-gray-500">
+                                No recent activity
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other sections will be loaded dynamically -->
+            <div id="products-section" class="section-content">
+                <div class="text-center py-16">
+                    <i class="fas fa-shopping-bag text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Products Module</h3>
+                    <p class="text-gray-500">This section will be loaded from the Product Gallery Module</p>
+                </div>
+            </div>
+
+            <div id="merchants-section" class="section-content">
+                <div class="text-center py-16">
+                    <i class="fas fa-store text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Merchants Module</h3>
+                    <p class="text-gray-500">This section will be loaded from the Merchant Module</p>
+                </div>
+            </div>
+
+            <div id="rewards-section" class="section-content">
+                <div class="text-center py-16">
+                    <i class="fas fa-gift text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Rewards Module</h3>
+                    <p class="text-gray-500">This section will be loaded from the User Profile Module</p>
+                </div>
+            </div>
+
+            <div id="invite-section" class="section-content">
+                <div class="text-center py-16">
+                    <i class="fas fa-user-plus text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Invite System</h3>
+                    <p class="text-gray-500">This section will be loaded from the Invite System Module</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button id="floating-action" class="floating-action w-14 h-14 rounded-full text-white shadow-lg hover:shadow-xl transition-all" onclick="showQuickActions()" style="display: none;">
+        <i class="fas fa-plus text-xl"></i>
+    </button>
+
+    <!-- Notifications Panel -->
+    <div id="notifications-panel" class="fixed top-16 right-4 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-40" style="display: none;">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-gray-900">Notifications</h3>
+                <button onclick="markAllNotificationsRead()" class="text-sm text-blue-600 hover:text-blue-800">
+                    Mark all read
+                </button>
+            </div>
+        </div>
+        <div id="notifications-list" class="max-h-96 overflow-y-auto">
+            <div class="p-4 text-center text-gray-500">
+                No new notifications
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State Management
+        let appState = {
+            user: null,
+            isLoggedIn: false,
+            currentSection: 'home',
+            notifications: [],
+            products: [],
+            merchants: [],
+            userStats: {
+                points: 0,
+                totalEarned: 0,
+                totalPurchases: 0,
+                totalFavorites: 0,
+                totalReferrals: 0,
+                tier: 'Bronze'
+            }
+        };
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript,console.log("TokenZ SW registered")')
+                    .then(registration => {
+                        console.log('✅ SW registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('❌ SW registration failed:', error);
+                    });
+            });
+        }
+
+        // App Initialization
+        function initApp() {
+            console.log('🚀 Initializing TokenZ App...');
+            
+            // Show splash screen
+            setTimeout(() => {
+                hideSplashScreen();
+                checkAuthStatus();
+            }, 2000);
+            
+            // Setup offline detection
+            setupOfflineDetection();
+            
+            // Setup PWA install prompt
+            setupPWAInstall();
+            
+            // Load user data if logged in
+            loadUserData();
+        }
+
+        function hideSplashScreen() {
+            document.getElementById('splash-screen').style.display = 'none';
+        }
+
+        function checkAuthStatus() {
+            const savedUser = localStorage.getItem('tokenz_user');
+            if (savedUser) {
+                try {
+                    appState.user = JSON.parse(savedUser);
+                    appState.isLoggedIn = true;
+                    showMainApp();
+                } catch (error) {
+                    console.error('Error parsing saved user:', error);
+                    showLoginScreen();
+                }
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        function showLoginScreen() {
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('main-app').style.display = 'none';
+        }
+
+        function showMainApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('floating-action').style.display = 'block';
+            
+            // Update UI with user data
+            updateUserInterface();
+            
+            // Load initial data
+            loadHomeData();
+        }
+
+        // Authentication Functions
+        function handleLogin() {
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!identifier || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Simulate login process
+            showToast('Signing in...', 'info');
+            
+            setTimeout(() => {
+                // Mock successful login
+                const user = {
+                    id: 'user_' + Date.now(),
+                    name: 'John Doe',
+                    email: identifier.includes('@') ? identifier : 'user@example.com',
+                    phone: identifier.includes('@') ? '+1234567890' : identifier,
+                    tier: 'Bronze',
+                    points: 150,
+                    joinDate: new Date().toISOString(),
+                    avatar: identifier.charAt(0).toUpperCase()
+                };
+                
+                appState.user = user;
+                appState.isLoggedIn = true;
+                
+                // Save to localStorage
+                localStorage.setItem('tokenz_user', JSON.stringify(user));
+                
+                showToast('Welcome back!', 'success');
+                showMainApp();
+            }, 1500);
+        }
+
+        function handleRegister() {
+            const firstName = document.getElementById('register-firstname').value;
+            const lastName = document.getElementById('register-lastname').value;
+            const email = document.getElementById('register-email').value;
+            const phone = document.getElementById('register-phone').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            const termsAgreed = document.getElementById('terms-agreement').checked;
+            
+            // Validation
+            if (!firstName || !lastName || !email || !phone || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (!termsAgreed) {
+                showToast('Please agree to the terms and conditions', 'error');
+                return;
+            }
+            
+            // Simulate registration process
+            showToast('Creating your account...', 'info');
+            
+            setTimeout(() => {
+                // Mock successful registration
+                const user = {
+                    id: 'user_' + Date.now(),
+                    name: `${firstName} ${lastName}`,
+                    email: email,
+                    phone: phone,
+                    tier: 'Bronze',
+                    points: 50, // Welcome bonus
+                    joinDate: new Date().toISOString(),
+                    avatar: firstName.charAt(0).toUpperCase()
+                };
+                
+                appState.user = user;
+                appState.isLoggedIn = true;
+                
+                // Save to localStorage
+                localStorage.setItem('tokenz_user', JSON.stringify(user));
+                
+                showToast('Account created successfully! Welcome bonus: 50 points', 'success');
+                showMainApp();
+            }, 2000);
+        }
+
+        function handleSocialLogin(provider) {
+            showToast(`${provider} login is not available in demo mode`, 'info');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to sign out?')) {
+                appState.user = null;
+                appState.isLoggedIn = false;
+                localStorage.removeItem('tokenz_user');
+                
+                showToast('Signed out successfully', 'success');
+                showLoginScreen();
+            }
+        }
+
+        // UI Helper Functions
+        function showLoginForm() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+
+        function showForgotPassword() {
+            showToast('Password reset functionality coming soon', 'info');
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        function updateUserInterface() {
+            if (appState.user) {
+                document.getElementById('user-name').textContent = appState.user.name;
+                document.getElementById('user-avatar').textContent = appState.user.avatar;
+                document.getElementById('welcome-user-name').textContent = appState.user.name.split(' ')[0];
+                document.getElementById('user-tier').textContent = appState.user.tier;
+                document.getElementById('user-points').textContent = `${appState.user.points} Points`;
+            }
+        }
+
+        // Navigation Functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Add active class to clicked nav item
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Update app state
+            appState.currentSection = sectionName;
+            
+            // Load section-specific data
+            loadSectionData(sectionName);
+        }
+
+        function loadSectionData(sectionName) {
+            switch(sectionName) {
+                case 'home':
+                    loadHomeData();
+                    break;
+                case 'products':
+                    // Will be handled by Product Gallery Module
+                    break;
+                case 'merchants':
+                    // Will be handled by Merchant Module
+                    break;
+                case 'rewards':
+                    // Will be handled by User Profile Module
+                    break;
+                case 'invite':
+                    // Will be handled by Invite System Module
+                    break;
+            }
+        }
+
+        function loadHomeData() {
+            // Update user stats
+            if (appState.user) {
+                document.getElementById('total-earned').textContent = appState.userStats.totalEarned;
+                document.getElementById('total-purchases').textContent = appState.userStats.totalPurchases;
+                document.getElementById('total-favorites').textContent = appState.userStats.totalFavorites;
+                document.getElementById('total-referrals').textContent = appState.userStats.totalReferrals;
+            }
+            
+            // Load featured products preview
+            loadFeaturedProductsPreview();
+            
+            // Load recent activity
+            loadRecentActivity();
+        }
+
+        function loadFeaturedProductsPreview() {
+            // Mock featured products
+            const featuredProducts = [
+                {
+                    id: 1,
+                    name: 'Premium Coffee Subscription',
+                    merchant: 'Bean & Brew',
+                    price: 'R299/month',
+                    image: '☕',
+                    rating: 4.8
+                },
+                {
+                    id: 2,
+                    name: 'Fitness Membership',
+                    merchant: 'FitLife Gym',
+                    price: 'R450/month',
+                    image: '💪',
+                    rating: 4.6
+                },
+                {
+                    id: 3,
+                    name: 'Streaming Bundle',
+                    merchant: 'StreamMax',
+                    price: 'R199/month',
+                    image: '📺',
+                    rating: 4.9
+                }
+            ];
+            
+            const container = document.getElementById('featured-products-preview');
+            container.innerHTML = featuredProducts.map(product => `
+                <div class="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer" onclick="viewProduct(${product.id})">
+                    <div class="text-4xl mb-4 text-center">${product.image}</div>
+                    <h4 class="font-semibold text-gray-900 mb-2">${product.name}</h4>
+                    <p class="text-sm text-gray-600 mb-2">${product.merchant}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold text-blue-600">${product.price}</span>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400">★</span>
+                            <span class="text-sm text-gray-600 ml-1">${product.rating}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadRecentActivity() {
+            // Mock recent activity
+            const activities = [
+                {
+                    type: 'purchase',
+                    description: 'Earned 25 points from Bean & Brew purchase',
+                    time: '2 hours ago',
+                    icon: 'coins',
+                    color: 'green'
+                },
+                {
+                    type: 'referral',
+                    description: 'Friend joined using your referral code',
+                    time: '1 day ago',
+                    icon: 'user-plus',
+                    color: 'blue'
+                },
+                {
+                    type: 'reward',
+                    description: 'Redeemed 100 points for coffee voucher',
+                    time: '3 days ago',
+                    icon: 'gift',
+                    color: 'purple'
+                }
+            ];
+            
+            const container = document.getElementById('recent-activity');
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">No recent activity</div>';
+                return;
+            }
+            
+            container.innerHTML = activities.map(activity => `
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-${activity.color}-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-${activity.icon} text-${activity.color}-600"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">${activity.description}</p>
+                        <p class="text-xs text-gray-500">${activity.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Utility Functions
+        function toggleNotifications() {
+            const panel = document.getElementById('notifications-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('user-menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showQuickActions() {
+            showToast('Quick actions coming soon!', 'info');
+        }
+
+        function viewProduct(productId) {
+            showToast(`Product ${productId} details coming soon!`, 'info');
+        }
+
+        function markAllNotificationsRead() {
+            document.getElementById('notification-badge').style.display = 'none';
+            showToast('All notifications marked as read', 'success');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // PWA Functions
+        function setupPWAInstall() {
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install button
+                const installButton = document.createElement('button');
+                installButton.textContent = 'Install App';
+                installButton.className = 'fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                installButton.onclick = () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        deferredPrompt = null;
+                        installButton.remove();
+                    });
+                };
+                
+                document.body.appendChild(installButton);
+            });
+        }
+
+        function setupOfflineDetection() {
+            const offlineIndicator = document.getElementById('offline-indicator');
+            
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineIndicator.classList.remove('show');
+                } else {
+                    offlineIndicator.classList.add('show');
+                }
+            }
+            
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            
+            // Initial check
+            updateOnlineStatus();
+        }
+
+        function loadUserData() {
+            // Load user-specific data from localStorage or API
+            const savedStats = localStorage.getItem('tokenz_user_stats');
+            if (savedStats) {
+                try {
+                    appState.userStats = { ...appState.userStats, ...JSON.parse(savedStats) };
+                } catch (error) {
+                    console.error('Error loading user stats:', error);
+                }
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#user-menu') && !event.target.closest('button[onclick="toggleUserMenu()"]')) {
+                document.getElementById('user-menu').style.display = 'none';
+            }
+            
+            if (!event.target.closest('#notifications-panel') && !event.target.closest('button[onclick="toggleNotifications()"]')) {
+                document.getElementById('notifications-panel').style.display = 'none';
+            }
+        });
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e422f861ead931',t:'MTc1MjM2MTAxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
