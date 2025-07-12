@@ -147,7 +147,7 @@
                 <div class="text-4xl mb-4">🔐</div>
                 <h2 class="text-2xl font-bold text-gray-800">Admin Access</h2>
                 <p class="text-gray-600 mt-2">Enter admin credentials to access management interface</p>
-                <p class="text-xs text-gray-500 mt-2">Version 5.1 - Released: 22:14 July 12, 2025</p>
+                <p class="text-xs text-gray-500 mt-2" id="releaseTimestamp">Version 5.1 - Released: Loading...</p>
             </div>
             
             <form id="adminAuthForm">
@@ -625,15 +625,16 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                         <div class="relative">
-                            <input type="text" id="merchantCategory" list="merchantCategoryList" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type or select category..." onchange="handleCategoryInput(this, 'merchant')">
-                            <datalist id="merchantCategoryList">
-                                <option value="restaurant">Restaurant</option>
-                                <option value="retail">Retail</option>
-                                <option value="services">Services</option>
-                                <option value="entertainment">Entertainment</option>
-                                <option value="health">Health & Wellness</option>
-                                <option value="other">Other</option>
-                            </datalist>
+                            <select id="merchantCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select or type new category...</option>
+                            </select>
+                            <div class="mt-2">
+                                <input type="text" id="merchantCategoryInput" placeholder="Or type new category name..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="handleCategoryTyping(this, 'merchant')">
+                            </div>
+                            <div class="mt-2 flex justify-between items-center">
+                                <button type="button" onclick="addNewCategory('merchant')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">Add New</button>
+                                <button type="button" onclick="showCategoryManager('merchant')" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">Manage Categories</button>
+                            </div>
                         </div>
                     </div>
                     
@@ -751,14 +752,16 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                         <div class="relative">
-                            <input type="text" id="productCategory" list="productCategoryList" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type or select category..." onchange="handleCategoryInput(this, 'product')">
-                            <datalist id="productCategoryList">
-                                <option value="food">Food & Beverage</option>
-                                <option value="clothing">Clothing</option>
-                                <option value="electronics">Electronics</option>
-                                <option value="services">Services</option>
-                                <option value="other">Other</option>
-                            </datalist>
+                            <select id="productCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select or type new category...</option>
+                            </select>
+                            <div class="mt-2">
+                                <input type="text" id="productCategoryInput" placeholder="Or type new category name..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="handleCategoryTyping(this, 'product')">
+                            </div>
+                            <div class="mt-2 flex justify-between items-center">
+                                <button type="button" onclick="addNewCategory('product')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">Add New</button>
+                                <button type="button" onclick="showCategoryManager('product')" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">Manage Categories</button>
+                            </div>
                         </div>
                     </div>
                     
@@ -883,6 +886,31 @@
         <!-- Notifications will be added here -->
     </div>
 
+    <!-- Category Manager Modal -->
+    <div id="categoryManagerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Manage Categories</h3>
+                <button onclick="closeCategoryManager()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="font-semibold text-gray-700 mb-2" id="categoryManagerTitle">Categories</h4>
+                <div id="categoryList" class="space-y-2 max-h-64 overflow-y-auto">
+                    <!-- Categories will be populated here -->
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button onclick="closeCategoryManager()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Public Site Button -->
     <div class="fixed bottom-6 right-6">
         <button onclick="exitAdminMode()" class="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 flex items-center space-x-2">
@@ -905,7 +933,7 @@
                 {
                     id: 1,
                     name: "Coffee Corner",
-                    category: "restaurant",
+                    category: "Food & Beverage",
                     description: "Premium coffee and pastries",
                     email: "info@coffeecorner.com",
                     phone: "+1-555-0123",
@@ -921,9 +949,11 @@
                     id: 1,
                     name: "Premium Latte",
                     merchantId: 1,
+                    shortDescription: "Rich espresso with steamed milk",
+                    longDescription: "Our signature premium latte made with locally sourced beans and perfectly steamed milk. Available in regular and large sizes.",
                     description: "Rich espresso with steamed milk",
                     price: 4.50,
-                    category: "Food & Beverage",
+                    category: "Coffee & Tea",
                     stock: 100,
                     status: "active",
                     images: [],
@@ -944,8 +974,61 @@
                 }
             ],
             categories: {
-                merchant: ["Restaurant", "Retail", "Services", "Entertainment", "Health & Wellness", "Other"],
-                product: ["Food & Beverage", "Clothing", "Electronics", "Services", "Other"]
+                merchant: [
+                    "Food & Beverage",
+                    "Fitness & Health",
+                    "Home & Utilities",
+                    "Transportation",
+                    "Entertainment & Media",
+                    "Personal Care & Beauty",
+                    "Professional Services",
+                    "Technology & Software",
+                    "Education & Learning",
+                    "Financial Services",
+                    "Retail & Shopping",
+                    "Travel & Hospitality",
+                    "Security & Safety",
+                    "Pet Care",
+                    "Automotive",
+                    "Real Estate",
+                    "Insurance",
+                    "Telecommunications",
+                    "Energy & Environment",
+                    "Other"
+                ],
+                product: [
+                    "Coffee & Tea",
+                    "Food & Meals",
+                    "Beverages",
+                    "Snacks & Treats",
+                    "Gym Memberships",
+                    "Personal Training",
+                    "Wellness Services",
+                    "Beauty Treatments",
+                    "Streaming Services",
+                    "Gaming Subscriptions",
+                    "Music & Audio",
+                    "Books & Magazines",
+                    "Software Subscriptions",
+                    "Cloud Storage",
+                    "VPN Services",
+                    "Productivity Tools",
+                    "Home Security",
+                    "Utilities",
+                    "Internet & Phone",
+                    "Transportation Passes",
+                    "Car Services",
+                    "Insurance Plans",
+                    "Financial Services",
+                    "Educational Courses",
+                    "Professional Development",
+                    "Pet Supplies",
+                    "Pet Services",
+                    "Clothing & Accessories",
+                    "Home Goods",
+                    "Electronics",
+                    "Other"
+                ]
             },
             recentActivity: []
         };
@@ -1221,11 +1304,15 @@
             const modal = document.getElementById('merchantFormModal');
             const form = document.getElementById('merchantForm');
             
+            // Populate category dropdown
+            populateCategoryDropdown('merchant');
+            
             if (merchantId) {
                 const merchant = adminData.merchants.find(m => m.id === merchantId);
                 if (merchant) {
                     document.getElementById('merchantName').value = merchant.name;
                     document.getElementById('merchantCategory').value = merchant.category;
+                    document.getElementById('merchantCategoryInput').value = '';
                     document.getElementById('merchantDescription').value = merchant.description || '';
                     document.getElementById('merchantEmail').value = merchant.email || '';
                     document.getElementById('merchantPhone').value = merchant.phone || '';
@@ -1239,11 +1326,13 @@
                 }
             } else {
                 form.reset();
+                document.getElementById('merchantCategoryInput').value = '';
                 document.getElementById('merchantLogoPreview').innerHTML = `
                     <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
-                    <p class="text-sm text-gray-600">Click to upload logo</p>
+                    <p class="text-sm text-gray-600">Drag & drop files here or click to upload</p>
+                    <p class="text-xs text-gray-500 mt-1">Supports images and videos</p>
                 `;
             }
             
@@ -1359,6 +1448,7 @@
             const form = document.getElementById('productForm');
             
             populateMerchantDropdown();
+            populateCategoryDropdown('product');
             
             if (productId) {
                 const product = adminData.products.find(p => p.id === productId);
@@ -1369,6 +1459,7 @@
                     document.getElementById('productLongDescription').value = product.longDescription || '';
                     document.getElementById('productPrice').value = product.price;
                     document.getElementById('productCategory').value = product.category;
+                    document.getElementById('productCategoryInput').value = '';
                     document.getElementById('productStock').value = product.stock || '';
                     document.getElementById('productStatus').value = product.status;
                     
@@ -1377,6 +1468,7 @@
                 }
             } else {
                 form.reset();
+                document.getElementById('productCategoryInput').value = '';
                 document.getElementById('productImageGallery').innerHTML = '';
             }
             
@@ -1736,43 +1828,213 @@
             }
         }
 
-        function handleCategoryInput(input, type) {
-            const value = input.value.trim();
-            if (!value) return;
+        // Category management functions - Completely rebuilt v5.1
+        let currentCategoryType = null;
+        
+        function populateCategoryDropdown(type) {
+            const select = document.getElementById(type + 'Category');
+            const categories = adminData.categories[type] || [];
             
-            const existingCategories = adminData.categories[type] || [];
+            // Clear and rebuild dropdown
+            select.innerHTML = '<option value="">Select category...</option>';
             
-            // Check if the exact value exists (case-sensitive)
-            const exactMatch = existingCategories.find(cat => cat === value);
-            if (exactMatch) {
-                // Value exists exactly, no need to do anything
-                return;
-            }
-            
-            // Check for case-insensitive match
-            const caseInsensitiveMatch = existingCategories.find(cat => cat.toLowerCase() === value.toLowerCase());
-            if (caseInsensitiveMatch) {
-                // Update input to match the existing category's case
-                input.value = caseInsensitiveMatch;
-                return;
-            }
-            
-            // No match found, ask to create new category
-            if (confirm(`Category "${value}" doesn't exist. Would you like to create it?`)) {
-                if (!adminData.categories[type]) {
-                    adminData.categories[type] = [];
-                }
-                adminData.categories[type].push(value);
-                
-                // Update the datalist
-                const datalist = document.getElementById(type + 'CategoryList');
+            // Add all existing categories
+            categories.forEach(category => {
                 const option = document.createElement('option');
-                option.value = value;
-                datalist.appendChild(option);
-                
-                saveAdminData();
-                addActivity('system', `New ${type} category "${value}" created`);
+                option.value = category;
+                option.textContent = category;
+                select.appendChild(option);
+            });
+        }
+        
+        function handleCategoryTyping(input, type) {
+            const value = input.value.trim();
+            const select = document.getElementById(type + 'Category');
+            const categories = adminData.categories[type] || [];
+            
+            if (!value) {
+                select.value = '';
+                return;
             }
+            
+            // Find exact match first
+            const exactMatch = categories.find(cat => 
+                cat.toLowerCase() === value.toLowerCase()
+            );
+            
+            if (exactMatch) {
+                select.value = exactMatch;
+                return;
+            }
+            
+            // Find partial matches
+            const partialMatches = categories.filter(cat => 
+                cat.toLowerCase().includes(value.toLowerCase())
+            );
+            
+            if (partialMatches.length > 0) {
+                select.value = partialMatches[0];
+            } else {
+                select.value = '';
+            }
+        }
+        
+        function addNewCategory(type) {
+            const input = document.getElementById(type + 'CategoryInput');
+            const categoryName = input.value.trim();
+            
+            if (!categoryName) {
+                alert('Please enter a category name');
+                input.focus();
+                return;
+            }
+            
+            // Initialize categories array if needed
+            if (!adminData.categories[type]) {
+                adminData.categories[type] = [];
+            }
+            
+            const categories = adminData.categories[type];
+            
+            // Check for existing category (case-insensitive)
+            const existingCategory = categories.find(cat => 
+                cat.toLowerCase() === categoryName.toLowerCase()
+            );
+            
+            if (existingCategory) {
+                // Category exists, select it
+                document.getElementById(type + 'Category').value = existingCategory;
+                input.value = '';
+                alert(`Category "${existingCategory}" already exists and has been selected.`);
+                return;
+            }
+            
+            // Add new category
+            categories.push(categoryName);
+            categories.sort();
+            
+            // Update dropdown and select new category
+            populateCategoryDropdown(type);
+            document.getElementById(type + 'Category').value = categoryName;
+            input.value = '';
+            
+            // Save and log
+            saveAdminData();
+            addActivity('system', `New ${type} category "${categoryName}" created`);
+            
+            alert(`Category "${categoryName}" created successfully!`);
+        }
+        
+        function showCategoryManager(type) {
+            currentCategoryType = type;
+            const modal = document.getElementById('categoryManagerModal');
+            const title = document.getElementById('categoryManagerTitle');
+            const list = document.getElementById('categoryList');
+            
+            title.textContent = `Manage ${type.charAt(0).toUpperCase() + type.slice(1)} Categories`;
+            
+            // Clear and populate category list
+            list.innerHTML = '';
+            const categories = adminData.categories[type] || [];
+            
+            if (categories.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-sm">No categories found</p>';
+                modal.classList.remove('hidden');
+                return;
+            }
+            
+            categories.forEach(category => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg border';
+                
+                // Count usage
+                let usageCount = 0;
+                if (type === 'merchant') {
+                    usageCount = adminData.merchants.filter(m => m.category === category).length;
+                } else if (type === 'product') {
+                    usageCount = adminData.products.filter(p => p.category === category).length;
+                }
+                
+                categoryItem.innerHTML = `
+                    <div>
+                        <span class="text-sm font-medium text-gray-800">${category}</span>
+                        <div class="text-xs text-gray-500">${usageCount} item(s) using this category</div>
+                    </div>
+                    <button onclick="deleteCategory('${type}', '${category.replace(/'/g, "\\'")}')" 
+                            class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                        Delete
+                    </button>
+                `;
+                list.appendChild(categoryItem);
+            });
+            
+            modal.classList.remove('hidden');
+        }
+        
+        function closeCategoryManager() {
+            document.getElementById('categoryManagerModal').classList.add('hidden');
+            currentCategoryType = null;
+        }
+        
+        function deleteCategory(type, categoryToDelete) {
+            // Count items using this category
+            let itemsUsingCategory = [];
+            let itemType = '';
+            
+            if (type === 'merchant') {
+                itemsUsingCategory = adminData.merchants.filter(m => m.category === categoryToDelete);
+                itemType = 'merchant';
+            } else if (type === 'product') {
+                itemsUsingCategory = adminData.products.filter(p => p.category === categoryToDelete);
+                itemType = 'product';
+            }
+            
+            // Confirm deletion
+            let confirmMessage = `Delete category "${categoryToDelete}"?`;
+            if (itemsUsingCategory.length > 0) {
+                confirmMessage = `Category "${categoryToDelete}" is used by ${itemsUsingCategory.length} ${itemType}(s). ` +
+                               `Deleting it will change those items to "Other" category. Continue?`;
+            }
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Update items using this category to "Other"
+            if (itemsUsingCategory.length > 0) {
+                // Ensure "Other" category exists
+                if (!adminData.categories[type].includes('Other')) {
+                    adminData.categories[type].push('Other');
+                }
+                
+                // Update all items using the deleted category
+                itemsUsingCategory.forEach(item => {
+                    item.category = 'Other';
+                });
+            }
+            
+            // Remove the category
+            adminData.categories[type] = adminData.categories[type].filter(cat => cat !== categoryToDelete);
+            
+            // Ensure "Other" category always exists
+            if (!adminData.categories[type].includes('Other')) {
+                adminData.categories[type].push('Other');
+                adminData.categories[type].sort();
+            }
+            
+            // Save changes
+            saveAdminData();
+            addActivity('system', `Category "${categoryToDelete}" deleted (${itemsUsingCategory.length} items moved to "Other")`);
+            
+            // Refresh displays
+            showCategoryManager(type);
+            if (type === 'merchant') {
+                populateMerchantsTable();
+            } else if (type === 'product') {
+                populateProductsTable();
+            }
+            
+            alert(`Category "${categoryToDelete}" deleted successfully!`);
         }
 
         // Utility functions
@@ -2075,6 +2337,19 @@
             console.log('🚀 TokenZ Admin CMS v5.1 Loading...');
             console.log('📊 Current URL:', window.location.href);
             
+            // Set current timestamp for GMT+2 timezone
+            const now = new Date();
+            const timeString = now.toLocaleString('en-GB', {
+                timeZone: 'Africa/Johannesburg',
+                hour12: false,
+                day: 'numeric',
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('releaseTimestamp').textContent = `Version 5.1 - Released: ${timeString} (GMT+2)`;
+            
             try {
                 // Always show admin auth on direct access
                 console.log('🔐 Showing admin authentication...');
@@ -2110,5 +2385,5 @@
             console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e3359b54368a34',t:'MTc1MjM1MTI5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e36c3257ed73f6',t:'MTc1MjM1MzUyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
