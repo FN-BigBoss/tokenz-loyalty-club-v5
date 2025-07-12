@@ -1,481 +1,744 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TokenZ Admin Utilities v5.1</title>
+    <style>
+        /* This module contains utility functions for the TokenZ Admin System */
+        .utility-module { display: none; }
+    </style>
 </head>
-<body>
-<script>
-// TokenZ Admin Utilities Module v5.1
-// This module contains utility functions for the admin system
-
-// Enhanced data structure with new features
-const AdminDataStructure = {
-    merchants: [],
-    products: [],
-    users: [],
-    ratings: [], // New: All ratings and reviews
-    featuredProducts: [], // New: Featured product tracking
-    userFollows: [], // New: User-merchant follow relationships
-    categories: {
-        merchant: [],
-        product: []
-    },
-    recentActivity: []
-};
-
-// Rating and Review Management
-const RatingUtils = {
-    // Add a new rating
-    addRating: function(userId, productId, rating, review = '') {
-        const newRating = {
-            id: this.generateRatingId(),
-            userId: userId,
-            productId: productId,
-            merchantId: this.getProductMerchantId(productId),
-            rating: rating,
-            review: review.trim(),
-            date: new Date().toISOString(),
-            status: 'active', // active, hidden, flagged
-            helpful: 0 // helpful votes
-        };
+<body class="utility-module">
+    <script>
+        // TokenZ Admin Utilities Module v5.1
+        // Utility functions separated from main admin interface for maintainability
         
-        if (!window.adminData.ratings) {
-            window.adminData.ratings = [];
-        }
+        console.log('🔧 Loading TokenZ Admin Utilities v5.1...');
         
-        window.adminData.ratings.push(newRating);
-        this.updateProductRating(productId);
-        return newRating;
-    },
-    
-    // Update product average rating
-    updateProductRating: function(productId) {
-        const productRatings = window.adminData.ratings.filter(r => 
-            r.productId === productId && r.status === 'active'
-        );
+        // ==========================================
+        // DATA STRUCTURE DEFINITIONS
+        // ==========================================
         
-        if (productRatings.length === 0) return;
-        
-        const average = productRatings.reduce((sum, r) => sum + r.rating, 0) / productRatings.length;
-        const product = window.adminData.products.find(p => p.id === productId);
-        
-        if (product) {
-            product.averageRating = Math.round(average * 10) / 10;
-            product.ratingCount = productRatings.length;
-        }
-    },
-    
-    // Get product merchant ID
-    getProductMerchantId: function(productId) {
-        const product = window.adminData.products.find(p => p.id === productId);
-        return product ? product.merchantId : null;
-    },
-    
-    // Generate unique rating ID
-    generateRatingId: function() {
-        const existingIds = window.adminData.ratings ? window.adminData.ratings.map(r => r.id) : [];
-        return Math.max(...existingIds, 0) + 1;
-    },
-    
-    // Get ratings for a product
-    getProductRatings: function(productId) {
-        return window.adminData.ratings ? 
-            window.adminData.ratings.filter(r => r.productId === productId) : [];
-    },
-    
-    // Get ratings by a user
-    getUserRatings: function(userId) {
-        return window.adminData.ratings ? 
-            window.adminData.ratings.filter(r => r.userId === userId) : [];
-    },
-    
-    // Moderate rating (hide/show)
-    moderateRating: function(ratingId, status) {
-        const rating = window.adminData.ratings.find(r => r.id === ratingId);
-        if (rating) {
-            rating.status = status;
-            this.updateProductRating(rating.productId);
-        }
-    },
-    
-    // Delete rating
-    deleteRating: function(ratingId) {
-        const ratingIndex = window.adminData.ratings.findIndex(r => r.id === ratingId);
-        if (ratingIndex !== -1) {
-            const rating = window.adminData.ratings[ratingIndex];
-            window.adminData.ratings.splice(ratingIndex, 1);
-            this.updateProductRating(rating.productId);
-        }
-    },
-    
-    // Generate star display HTML
-    generateStarDisplay: function(rating, showNumber = true) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-        
-        let html = '<div class="flex items-center space-x-1">';
-        
-        // Full stars
-        for (let i = 0; i < fullStars; i++) {
-            html += '<svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
-        }
-        
-        // Half star
-        if (hasHalfStar) {
-            html += '<svg class="w-4 h-4 text-yellow-400" viewBox="0 0 20 20"><defs><linearGradient id="half"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs><path fill="url(#half)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
-        }
-        
-        // Empty stars
-        for (let i = 0; i < emptyStars; i++) {
-            html += '<svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
-        }
-        
-        if (showNumber) {
-            html += `<span class="text-sm text-gray-600 ml-1">(${rating.toFixed(1)})</span>`;
-        }
-        
-        html += '</div>';
-        return html;
-    }
-};
-
-// Featured Products Management
-const FeaturedUtils = {
-    // Add product to featured list
-    addFeatured: function(productId, expiryDays = 30) {
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + expiryDays);
-        
-        const featured = {
-            id: this.generateFeaturedId(),
-            productId: productId,
-            startDate: new Date().toISOString(),
-            expiryDate: expiryDate.toISOString(),
-            status: 'active',
-            addedBy: 'admin' // Could be 'admin' or 'merchant'
-        };
-        
-        if (!window.adminData.featuredProducts) {
-            window.adminData.featuredProducts = [];
-        }
-        
-        // Remove existing featured entry for this product
-        window.adminData.featuredProducts = window.adminData.featuredProducts.filter(f => f.productId !== productId);
-        
-        // Add new featured entry
-        window.adminData.featuredProducts.push(featured);
-        
-        // Update product featured status
-        const product = window.adminData.products.find(p => p.id === productId);
-        if (product) {
-            product.featured = true;
-            product.featuredExpiry = expiryDate.toISOString();
-        }
-        
-        return featured;
-    },
-    
-    // Remove product from featured list
-    removeFeatured: function(productId) {
-        window.adminData.featuredProducts = window.adminData.featuredProducts.filter(f => f.productId !== productId);
-        
-        const product = window.adminData.products.find(p => p.id === productId);
-        if (product) {
-            product.featured = false;
-            product.featuredExpiry = null;
-        }
-    },
-    
-    // Check and clean expired featured products
-    cleanExpiredFeatured: function() {
-        const now = new Date();
-        const expired = [];
-        
-        window.adminData.featuredProducts = window.adminData.featuredProducts.filter(featured => {
-            const expiryDate = new Date(featured.expiryDate);
-            if (expiryDate <= now) {
-                expired.push(featured);
+        window.AdminUtilities = {
+            // Default data structure with new v5.1 features
+            getDefaultDataStructure: function() {
+                return {
+                    merchants: [],
+                    products: [],
+                    users: [],
+                    ratings: [], // New: centralized ratings system
+                    categories: {
+                        merchant: [
+                            "Food & Beverage", "Fitness & Health", "Home & Utilities", "Transportation",
+                            "Entertainment & Media", "Personal Care & Beauty", "Professional Services",
+                            "Technology & Software", "Education & Learning", "Financial Services",
+                            "Retail & Shopping", "Travel & Hospitality", "Security & Safety", "Pet Care",
+                            "Automotive", "Real Estate", "Insurance", "Telecommunications",
+                            "Energy & Environment", "Other"
+                        ],
+                        product: [
+                            "Coffee & Tea", "Food & Meals", "Beverages", "Snacks & Treats",
+                            "Gym Memberships", "Personal Training", "Wellness Services", "Beauty Treatments",
+                            "Streaming Services", "Gaming Subscriptions", "Music & Audio", "Books & Magazines",
+                            "Software Subscriptions", "Cloud Storage", "VPN Services", "Productivity Tools",
+                            "Home Security", "Utilities", "Internet & Phone", "Transportation Passes",
+                            "Car Services", "Insurance Plans", "Financial Services", "Educational Courses",
+                            "Professional Development", "Pet Supplies", "Pet Services", "Clothing & Accessories",
+                            "Home Goods", "Electronics", "Other"
+                        ]
+                    },
+                    recentActivity: [],
+                    systemSettings: {
+                        currency: 'ZAR',
+                        systemName: 'TokenZ Loyalty Club',
+                        adminEmail: 'admin@tokenzclub.com',
+                        featuredProductDuration: 30, // days
+                        maxRatingValue: 5,
+                        allowAnonymousRatings: false
+                    }
+                };
+            },
+            
+            // ==========================================
+            // DATA MIGRATION & COMPATIBILITY
+            // ==========================================
+            
+            migrateDataToV51: function(data) {
+                console.log('🔄 Migrating data to v5.1 format...');
                 
-                // Update product status
-                const product = window.adminData.products.find(p => p.id === featured.productId);
-                if (product) {
-                    product.featured = false;
+                // Ensure all required collections exist
+                if (!data.ratings) data.ratings = [];
+                if (!data.systemSettings) data.systemSettings = this.getDefaultDataStructure().systemSettings;
+                
+                // Migrate products to include new rating fields
+                if (data.products) {
+                    data.products.forEach(product => {
+                        if (typeof product.featured === 'undefined') product.featured = false;
+                        if (!product.featuredExpiry) product.featuredExpiry = null;
+                        if (typeof product.averageRating === 'undefined') product.averageRating = 0;
+                        if (!product.totalRatings) product.totalRatings = 0;
+                        if (!product.ratingBreakdown) {
+                            product.ratingBreakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                        }
+                    });
+                }
+                
+                // Migrate users to include follow system
+                if (data.users) {
+                    data.users.forEach(user => {
+                        if (!user.followedMerchants) user.followedMerchants = [];
+                        if (!user.ratingsGiven) user.ratingsGiven = [];
+                    });
+                }
+                
+                // Migrate merchants to include follower tracking
+                if (data.merchants) {
+                    data.merchants.forEach(merchant => {
+                        if (typeof merchant.followerCount === 'undefined') merchant.followerCount = 0;
+                        if (!merchant.followers) merchant.followers = [];
+                    });
+                }
+                
+                console.log('✅ Data migration to v5.1 complete');
+                return data;
+            },
+            
+            // ==========================================
+            // RATING SYSTEM UTILITIES
+            // ==========================================
+            
+            addRating: function(adminData, ratingData) {
+                const rating = {
+                    id: this.generateId(adminData.ratings),
+                    userId: ratingData.userId,
+                    productId: ratingData.productId,
+                    merchantId: ratingData.merchantId,
+                    rating: Math.max(1, Math.min(5, parseInt(ratingData.rating))), // Ensure 1-5 range
+                    review: ratingData.review || '',
+                    date: new Date().toISOString(),
+                    status: 'active', // active, hidden, flagged
+                    helpful: 0, // helpful votes
+                    reported: 0 // report count
+                };
+                
+                // Check if user already rated this product
+                const existingRatingIndex = adminData.ratings.findIndex(r => 
+                    r.userId === rating.userId && r.productId === rating.productId
+                );
+                
+                if (existingRatingIndex >= 0) {
+                    // Update existing rating
+                    const oldRating = adminData.ratings[existingRatingIndex];
+                    adminData.ratings[existingRatingIndex] = { ...oldRating, ...rating, id: oldRating.id };
+                    console.log('📝 Updated existing rating');
+                } else {
+                    // Add new rating
+                    adminData.ratings.push(rating);
+                    console.log('⭐ Added new rating');
+                }
+                
+                // Update product rating statistics
+                this.updateProductRatingStats(adminData, rating.productId);
+                
+                return rating;
+            },
+            
+            updateProductRatingStats: function(adminData, productId) {
+                const product = adminData.products.find(p => p.id === productId);
+                if (!product) return;
+                
+                const productRatings = adminData.ratings.filter(r => 
+                    r.productId === productId && r.status === 'active'
+                );
+                
+                if (productRatings.length === 0) {
+                    product.averageRating = 0;
+                    product.totalRatings = 0;
+                    product.ratingBreakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                    return;
+                }
+                
+                // Calculate average rating
+                const totalScore = productRatings.reduce((sum, r) => sum + r.rating, 0);
+                product.averageRating = Math.round((totalScore / productRatings.length) * 10) / 10;
+                product.totalRatings = productRatings.length;
+                
+                // Calculate rating breakdown
+                product.ratingBreakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                productRatings.forEach(r => {
+                    product.ratingBreakdown[r.rating]++;
+                });
+                
+                console.log(`📊 Updated rating stats for product ${productId}: ${product.averageRating}/5 (${product.totalRatings} ratings)`);
+            },
+            
+            deleteRating: function(adminData, ratingId) {
+                const ratingIndex = adminData.ratings.findIndex(r => r.id === ratingId);
+                if (ratingIndex >= 0) {
+                    const rating = adminData.ratings[ratingIndex];
+                    adminData.ratings.splice(ratingIndex, 1);
+                    this.updateProductRatingStats(adminData, rating.productId);
+                    console.log('🗑️ Rating deleted');
+                    return true;
+                }
+                return false;
+            },
+            
+            moderateRating: function(adminData, ratingId, status) {
+                const rating = adminData.ratings.find(r => r.id === ratingId);
+                if (rating) {
+                    rating.status = status; // active, hidden, flagged
+                    this.updateProductRatingStats(adminData, rating.productId);
+                    console.log(`🛡️ Rating ${ratingId} status changed to ${status}`);
+                    return true;
+                }
+                return false;
+            },
+            
+            // ==========================================
+            // FEATURED PRODUCTS UTILITIES
+            // ==========================================
+            
+            setProductFeatured: function(adminData, productId, featured = true, durationDays = 30) {
+                const product = adminData.products.find(p => p.id === productId);
+                if (!product) return false;
+                
+                product.featured = featured;
+                if (featured) {
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + durationDays);
+                    product.featuredExpiry = expiryDate.toISOString();
+                    console.log(`⭐ Product ${productId} featured until ${expiryDate.toLocaleDateString()}`);
+                } else {
                     product.featuredExpiry = null;
+                    console.log(`📌 Product ${productId} unfeatured`);
+                }
+                
+                return true;
+            },
+            
+            checkExpiredFeaturedProducts: function(adminData) {
+                const now = new Date();
+                let expiredCount = 0;
+                
+                adminData.products.forEach(product => {
+                    if (product.featured && product.featuredExpiry) {
+                        const expiryDate = new Date(product.featuredExpiry);
+                        if (now > expiryDate) {
+                            product.featured = false;
+                            product.featuredExpiry = null;
+                            expiredCount++;
+                        }
+                    }
+                });
+                
+                if (expiredCount > 0) {
+                    console.log(`⏰ ${expiredCount} featured products expired`);
+                }
+                
+                return expiredCount;
+            },
+            
+            getFeaturedProducts: function(adminData, merchantId = null) {
+                this.checkExpiredFeaturedProducts(adminData);
+                
+                return adminData.products.filter(product => {
+                    const isFeatured = product.featured && 
+                                     product.featuredExpiry && 
+                                     new Date(product.featuredExpiry) > new Date();
+                    
+                    if (merchantId) {
+                        return isFeatured && product.merchantId === merchantId;
+                    }
+                    
+                    return isFeatured;
+                });
+            },
+            
+            // ==========================================
+            // FOLLOW SYSTEM UTILITIES
+            // ==========================================
+            
+            followMerchant: function(adminData, userId, merchantId) {
+                const user = adminData.users.find(u => u.id === userId);
+                const merchant = adminData.merchants.find(m => m.id === merchantId);
+                
+                if (!user || !merchant) return false;
+                
+                if (!user.followedMerchants.includes(merchantId)) {
+                    user.followedMerchants.push(merchantId);
+                    merchant.followers.push(userId);
+                    merchant.followerCount = merchant.followers.length;
+                    console.log(`👥 User ${userId} now follows merchant ${merchantId}`);
+                    return true;
+                }
+                
+                return false; // Already following
+            },
+            
+            unfollowMerchant: function(adminData, userId, merchantId) {
+                const user = adminData.users.find(u => u.id === userId);
+                const merchant = adminData.merchants.find(m => m.id === merchantId);
+                
+                if (!user || !merchant) return false;
+                
+                const userIndex = user.followedMerchants.indexOf(merchantId);
+                const merchantIndex = merchant.followers.indexOf(userId);
+                
+                if (userIndex >= 0) {
+                    user.followedMerchants.splice(userIndex, 1);
+                }
+                
+                if (merchantIndex >= 0) {
+                    merchant.followers.splice(merchantIndex, 1);
+                    merchant.followerCount = merchant.followers.length;
+                }
+                
+                console.log(`👋 User ${userId} unfollowed merchant ${merchantId}`);
+                return true;
+            },
+            
+            getMerchantFollowers: function(adminData, merchantId) {
+                const merchant = adminData.merchants.find(m => m.id === merchantId);
+                if (!merchant) return [];
+                
+                return adminData.users.filter(user => 
+                    user.followedMerchants && user.followedMerchants.includes(merchantId)
+                );
+            },
+            
+            getUserFollowedMerchants: function(adminData, userId) {
+                const user = adminData.users.find(u => u.id === userId);
+                if (!user || !user.followedMerchants) return [];
+                
+                return adminData.merchants.filter(merchant => 
+                    user.followedMerchants.includes(merchant.id)
+                );
+            },
+            
+            // ==========================================
+            // PERMISSION & ROLE UTILITIES
+            // ==========================================
+            
+            checkUserPermission: function(user, requiredRole) {
+                if (!user || !user.role) return false;
+                
+                const roleHierarchy = {
+                    'admin': 3,
+                    'merchant': 2,
+                    'member': 1
+                };
+                
+                const userLevel = roleHierarchy[user.role] || 0;
+                const requiredLevel = roleHierarchy[requiredRole] || 0;
+                
+                return userLevel >= requiredLevel;
+            },
+            
+            canUserManageProduct: function(user, product) {
+                if (!user || !product) return false;
+                
+                // Admins can manage all products
+                if (user.role === 'admin') return true;
+                
+                // Merchants can only manage their own products
+                if (user.role === 'merchant') {
+                    const merchant = this.findMerchantByUserId(user.id);
+                    return merchant && product.merchantId === merchant.id;
                 }
                 
                 return false;
-            }
-            return true;
-        });
-        
-        return expired;
-    },
-    
-    // Get active featured products
-    getActiveFeatured: function() {
-        this.cleanExpiredFeatured();
-        return window.adminData.featuredProducts.filter(f => f.status === 'active');
-    },
-    
-    // Generate unique featured ID
-    generateFeaturedId: function() {
-        const existingIds = window.adminData.featuredProducts ? 
-            window.adminData.featuredProducts.map(f => f.id) : [];
-        return Math.max(...existingIds, 0) + 1;
-    },
-    
-    // Get days remaining for featured product
-    getDaysRemaining: function(featuredItem) {
-        const now = new Date();
-        const expiry = new Date(featuredItem.expiryDate);
-        const diffTime = expiry - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return Math.max(0, diffDays);
-    }
-};
-
-// User Follow System
-const FollowUtils = {
-    // Add user follow relationship
-    addFollow: function(userId, merchantId) {
-        if (!window.adminData.userFollows) {
-            window.adminData.userFollows = [];
-        }
-        
-        const existingFollow = window.adminData.userFollows.find(f => 
-            f.userId === userId && f.merchantId === merchantId
-        );
-        
-        if (!existingFollow) {
-            window.adminData.userFollows.push({
-                id: this.generateFollowId(),
-                userId: userId,
-                merchantId: merchantId,
-                followDate: new Date().toISOString(),
-                status: 'active'
-            });
-        }
-    },
-    
-    // Remove user follow relationship
-    removeFollow: function(userId, merchantId) {
-        window.adminData.userFollows = window.adminData.userFollows.filter(f => 
-            !(f.userId === userId && f.merchantId === merchantId)
-        );
-    },
-    
-    // Get followers for a merchant
-    getMerchantFollowers: function(merchantId) {
-        return window.adminData.userFollows ? 
-            window.adminData.userFollows.filter(f => f.merchantId === merchantId && f.status === 'active') : [];
-    },
-    
-    // Get merchants followed by user
-    getUserFollows: function(userId) {
-        return window.adminData.userFollows ? 
-            window.adminData.userFollows.filter(f => f.userId === userId && f.status === 'active') : [];
-    },
-    
-    // Check if user follows merchant
-    isFollowing: function(userId, merchantId) {
-        return window.adminData.userFollows ? 
-            window.adminData.userFollows.some(f => 
-                f.userId === userId && f.merchantId === merchantId && f.status === 'active'
-            ) : false;
-    },
-    
-    // Generate unique follow ID
-    generateFollowId: function() {
-        const existingIds = window.adminData.userFollows ? 
-            window.adminData.userFollows.map(f => f.id) : [];
-        return Math.max(...existingIds, 0) + 1;
-    },
-    
-    // Get follower count for merchant
-    getFollowerCount: function(merchantId) {
-        return this.getMerchantFollowers(merchantId).length;
-    }
-};
-
-// Permission and Role Management
-const PermissionUtils = {
-    // Check if current user has admin permissions
-    isAdmin: function(user) {
-        return user && user.role === 'admin';
-    },
-    
-    // Check if current user has merchant permissions
-    isMerchant: function(user) {
-        return user && user.role === 'merchant';
-    },
-    
-    // Check if current user can edit merchant
-    canEditMerchant: function(user, merchantId) {
-        if (this.isAdmin(user)) return true;
-        if (this.isMerchant(user)) {
-            // Merchants can only edit their own merchant profile
-            return user.merchantId === merchantId;
-        }
-        return false;
-    },
-    
-    // Check if current user can edit product
-    canEditProduct: function(user, product) {
-        if (this.isAdmin(user)) return true;
-        if (this.isMerchant(user)) {
-            // Merchants can only edit products for their merchant
-            return user.merchantId === product.merchantId;
-        }
-        return false;
-    },
-    
-    // Get merchant ID for current user
-    getUserMerchantId: function(user) {
-        if (this.isMerchant(user)) {
-            return user.merchantId;
-        }
-        return null;
-    },
-    
-    // Filter products by user permissions
-    filterProductsByPermission: function(user, products) {
-        if (this.isAdmin(user)) return products;
-        if (this.isMerchant(user)) {
-            return products.filter(p => p.merchantId === user.merchantId);
-        }
-        return [];
-    },
-    
-    // Filter merchants by user permissions
-    filterMerchantsByPermission: function(user, merchants) {
-        if (this.isAdmin(user)) return merchants;
-        if (this.isMerchant(user)) {
-            return merchants.filter(m => m.id === user.merchantId);
-        }
-        return [];
-    }
-};
-
-// Data Migration and Compatibility
-const MigrationUtils = {
-    // Migrate old data structure to new format
-    migrateData: function(data) {
-        console.log('🔄 Migrating data to v5.1 format...');
-        
-        // Initialize new collections if they don't exist
-        if (!data.ratings) data.ratings = [];
-        if (!data.featuredProducts) data.featuredProducts = [];
-        if (!data.userFollows) data.userFollows = [];
-        
-        // Migrate products to include rating fields
-        data.products.forEach(product => {
-            if (typeof product.averageRating === 'undefined') {
-                product.averageRating = 0;
-                product.ratingCount = 0;
-            }
-            if (typeof product.featured === 'undefined') {
-                product.featured = false;
-                product.featuredExpiry = null;
-            }
-        });
-        
-        // Migrate users to include follow relationships
-        data.users.forEach(user => {
-            if (!user.followedMerchants) {
-                user.followedMerchants = [];
-            }
-            if (!user.role) {
-                user.role = 'member';
-            }
-        });
-        
-        // Migrate merchants to include follower tracking
-        data.merchants.forEach(merchant => {
-            if (typeof merchant.followerCount === 'undefined') {
-                merchant.followerCount = 0;
-            }
-        });
-        
-        console.log('✅ Data migration complete');
-        return data;
-    },
-    
-    // Validate data integrity
-    validateData: function(data) {
-        const issues = [];
-        
-        // Check for orphaned ratings
-        data.ratings.forEach(rating => {
-            const product = data.products.find(p => p.id === rating.productId);
-            const user = data.users.find(u => u.id === rating.userId);
+            },
             
-            if (!product) issues.push(`Rating ${rating.id} references non-existent product ${rating.productId}`);
-            if (!user) issues.push(`Rating ${rating.id} references non-existent user ${rating.userId}`);
-        });
-        
-        // Check for orphaned featured products
-        data.featuredProducts.forEach(featured => {
-            const product = data.products.find(p => p.id === featured.productId);
-            if (!product) issues.push(`Featured entry ${featured.id} references non-existent product ${featured.productId}`);
-        });
-        
-        // Check for orphaned follows
-        data.userFollows.forEach(follow => {
-            const user = data.users.find(u => u.id === follow.userId);
-            const merchant = data.merchants.find(m => m.id === follow.merchantId);
+            findMerchantByUserId: function(adminData, userId) {
+                // This assumes merchants have a userId field linking to users table
+                return adminData.merchants.find(m => m.userId === userId);
+            },
             
-            if (!user) issues.push(`Follow ${follow.id} references non-existent user ${follow.userId}`);
-            if (!merchant) issues.push(`Follow ${follow.id} references non-existent merchant ${follow.merchantId}`);
-        });
+            // ==========================================
+            // DATA VALIDATION UTILITIES
+            // ==========================================
+            
+            validateRatingData: function(ratingData) {
+                const errors = [];
+                
+                if (!ratingData.userId) errors.push('User ID is required');
+                if (!ratingData.productId) errors.push('Product ID is required');
+                if (!ratingData.merchantId) errors.push('Merchant ID is required');
+                if (!ratingData.rating || ratingData.rating < 1 || ratingData.rating > 5) {
+                    errors.push('Rating must be between 1 and 5');
+                }
+                if (ratingData.review && ratingData.review.length > 1000) {
+                    errors.push('Review must be less than 1000 characters');
+                }
+                
+                return {
+                    isValid: errors.length === 0,
+                    errors: errors
+                };
+            },
+            
+            validateProductData: function(productData) {
+                const errors = [];
+                
+                if (!productData.name || productData.name.trim().length === 0) {
+                    errors.push('Product name is required');
+                }
+                if (!productData.merchantId) errors.push('Merchant ID is required');
+                if (!productData.shortDescription || productData.shortDescription.trim().length === 0) {
+                    errors.push('Short description is required');
+                }
+                if (productData.shortDescription && productData.shortDescription.length > 100) {
+                    errors.push('Short description must be 100 characters or less');
+                }
+                if (!productData.price || productData.price <= 0) {
+                    errors.push('Price must be greater than 0');
+                }
+                if (!productData.category) errors.push('Category is required');
+                
+                return {
+                    isValid: errors.length === 0,
+                    errors: errors
+                };
+            },
+            
+            // ==========================================
+            // SEARCH & FILTER UTILITIES
+            // ==========================================
+            
+            searchProducts: function(adminData, searchTerm, filters = {}) {
+                let results = adminData.products;
+                
+                // Text search
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    results = results.filter(product => 
+                        product.name.toLowerCase().includes(term) ||
+                        (product.shortDescription && product.shortDescription.toLowerCase().includes(term)) ||
+                        (product.longDescription && product.longDescription.toLowerCase().includes(term))
+                    );
+                }
+                
+                // Apply filters
+                if (filters.merchantId) {
+                    results = results.filter(p => p.merchantId === filters.merchantId);
+                }
+                
+                if (filters.category) {
+                    results = results.filter(p => p.category === filters.category);
+                }
+                
+                if (filters.status) {
+                    results = results.filter(p => p.status === filters.status);
+                }
+                
+                if (filters.featured !== undefined) {
+                    results = results.filter(p => p.featured === filters.featured);
+                }
+                
+                if (filters.minRating) {
+                    results = results.filter(p => p.averageRating >= filters.minRating);
+                }
+                
+                if (filters.priceRange) {
+                    results = results.filter(p => 
+                        p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
+                    );
+                }
+                
+                return results;
+            },
+            
+            searchMerchants: function(adminData, searchTerm, filters = {}) {
+                let results = adminData.merchants;
+                
+                // Text search
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    results = results.filter(merchant => 
+                        merchant.name.toLowerCase().includes(term) ||
+                        (merchant.description && merchant.description.toLowerCase().includes(term)) ||
+                        (merchant.category && merchant.category.toLowerCase().includes(term))
+                    );
+                }
+                
+                // Apply filters
+                if (filters.category) {
+                    results = results.filter(m => m.category === filters.category);
+                }
+                
+                if (filters.status) {
+                    results = results.filter(m => m.status === filters.status);
+                }
+                
+                if (filters.hasFollowers) {
+                    results = results.filter(m => m.followerCount > 0);
+                }
+                
+                return results;
+            },
+            
+            // ==========================================
+            // STATISTICS & ANALYTICS UTILITIES
+            // ==========================================
+            
+            getSystemStats: function(adminData) {
+                this.checkExpiredFeaturedProducts(adminData);
+                
+                const stats = {
+                    merchants: {
+                        total: adminData.merchants.length,
+                        active: adminData.merchants.filter(m => m.status === 'active').length,
+                        withFollowers: adminData.merchants.filter(m => m.followerCount > 0).length
+                    },
+                    products: {
+                        total: adminData.products.length,
+                        active: adminData.products.filter(p => p.status === 'active').length,
+                        featured: adminData.products.filter(p => p.featured).length,
+                        withRatings: adminData.products.filter(p => p.totalRatings > 0).length
+                    },
+                    users: {
+                        total: adminData.users.length,
+                        active: adminData.users.filter(u => u.status === 'active').length,
+                        withFollows: adminData.users.filter(u => u.followedMerchants && u.followedMerchants.length > 0).length
+                    },
+                    ratings: {
+                        total: adminData.ratings.length,
+                        active: adminData.ratings.filter(r => r.status === 'active').length,
+                        flagged: adminData.ratings.filter(r => r.status === 'flagged').length,
+                        averageRating: this.calculateOverallAverageRating(adminData)
+                    }
+                };
+                
+                return stats;
+            },
+            
+            calculateOverallAverageRating: function(adminData) {
+                const activeRatings = adminData.ratings.filter(r => r.status === 'active');
+                if (activeRatings.length === 0) return 0;
+                
+                const totalScore = activeRatings.reduce((sum, r) => sum + r.rating, 0);
+                return Math.round((totalScore / activeRatings.length) * 10) / 10;
+            },
+            
+            getMerchantStats: function(adminData, merchantId) {
+                const merchant = adminData.merchants.find(m => m.id === merchantId);
+                if (!merchant) return null;
+                
+                const merchantProducts = adminData.products.filter(p => p.merchantId === merchantId);
+                const merchantRatings = adminData.ratings.filter(r => r.merchantId === merchantId && r.status === 'active');
+                
+                return {
+                    merchant: merchant,
+                    products: {
+                        total: merchantProducts.length,
+                        active: merchantProducts.filter(p => p.status === 'active').length,
+                        featured: merchantProducts.filter(p => p.featured).length
+                    },
+                    ratings: {
+                        total: merchantRatings.length,
+                        average: merchantRatings.length > 0 ? 
+                                Math.round((merchantRatings.reduce((sum, r) => sum + r.rating, 0) / merchantRatings.length) * 10) / 10 : 0
+                    },
+                    followers: merchant.followerCount || 0
+                };
+            },
+            
+            // ==========================================
+            // UTILITY FUNCTIONS
+            // ==========================================
+            
+            generateId: function(collection = []) {
+                if (collection.length === 0) return 1;
+                return Math.max(...collection.map(item => item.id || 0)) + 1;
+            },
+            
+            formatDate: function(dateString) {
+                if (!dateString) return 'N/A';
+                return new Date(dateString).toLocaleDateString();
+            },
+            
+            formatDateTime: function(dateString) {
+                if (!dateString) return 'N/A';
+                return new Date(dateString).toLocaleString();
+            },
+            
+            formatCurrency: function(amount, currency = 'ZAR') {
+                const symbols = {
+                    'ZAR': 'R',
+                    'USD': '$',
+                    'EUR': '€',
+                    'GBP': '£'
+                };
+                
+                const symbol = symbols[currency] || currency;
+                return `${symbol}${amount.toFixed(2)}`;
+            },
+            
+            generateStarRating: function(rating, maxRating = 5) {
+                const fullStars = Math.floor(rating);
+                const hasHalfStar = rating % 1 >= 0.5;
+                const emptyStars = maxRating - fullStars - (hasHalfStar ? 1 : 0);
+                
+                return '★'.repeat(fullStars) + 
+                       (hasHalfStar ? '☆' : '') + 
+                       '☆'.repeat(emptyStars);
+            },
+            
+            truncateText: function(text, maxLength) {
+                if (!text || text.length <= maxLength) return text;
+                return text.substring(0, maxLength - 3) + '...';
+            },
+            
+            sanitizeHtml: function(html) {
+                const div = document.createElement('div');
+                div.textContent = html;
+                return div.innerHTML;
+            },
+            
+            debounce: function(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+            
+            // ==========================================
+            // EXPORT/IMPORT UTILITIES
+            // ==========================================
+            
+            exportData: function(adminData, type = 'all') {
+                const exportData = {
+                    exported: new Date().toISOString(),
+                    version: '5.1',
+                    type: type
+                };
+                
+                switch (type) {
+                    case 'all':
+                        Object.assign(exportData, adminData);
+                        break;
+                    case 'merchants':
+                        exportData.merchants = adminData.merchants;
+                        break;
+                    case 'products':
+                        exportData.products = adminData.products;
+                        break;
+                    case 'users':
+                        exportData.users = adminData.users;
+                        break;
+                    case 'ratings':
+                        exportData.ratings = adminData.ratings;
+                        break;
+                    case 'categories':
+                        exportData.categories = adminData.categories;
+                        break;
+                }
+                
+                return exportData;
+            },
+            
+            validateImportData: function(importData) {
+                const errors = [];
+                
+                if (!importData.version) {
+                    errors.push('Import file missing version information');
+                }
+                
+                if (importData.merchants && !Array.isArray(importData.merchants)) {
+                    errors.push('Merchants data must be an array');
+                }
+                
+                if (importData.products && !Array.isArray(importData.products)) {
+                    errors.push('Products data must be an array');
+                }
+                
+                if (importData.users && !Array.isArray(importData.users)) {
+                    errors.push('Users data must be an array');
+                }
+                
+                if (importData.ratings && !Array.isArray(importData.ratings)) {
+                    errors.push('Ratings data must be an array');
+                }
+                
+                return {
+                    isValid: errors.length === 0,
+                    errors: errors
+                };
+            },
+            
+            // ==========================================
+            // ACTIVITY LOGGING
+            // ==========================================
+            
+            logActivity: function(adminData, type, description, userId = null) {
+                const activity = {
+                    id: this.generateId(adminData.recentActivity),
+                    type: type, // merchant, product, user, rating, system
+                    description: description,
+                    userId: userId,
+                    timestamp: new Date().toISOString()
+                };
+                
+                adminData.recentActivity.unshift(activity);
+                
+                // Keep only last 50 activities
+                if (adminData.recentActivity.length > 50) {
+                    adminData.recentActivity = adminData.recentActivity.slice(0, 50);
+                }
+                
+                console.log(`📝 Activity logged: ${description}`);
+                return activity;
+            },
+            
+            getRecentActivities: function(adminData, limit = 10, type = null) {
+                let activities = adminData.recentActivity || [];
+                
+                if (type) {
+                    activities = activities.filter(a => a.type === type);
+                }
+                
+                return activities.slice(0, limit);
+            }
+        };
         
-        return issues;
-    },
-    
-    // Clean orphaned data
-    cleanOrphanedData: function(data) {
-        console.log('🧹 Cleaning orphaned data...');
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
         
-        // Remove orphaned ratings
-        data.ratings = data.ratings.filter(rating => {
-            const product = data.products.find(p => p.id === rating.productId);
-            const user = data.users.find(u => u.id === rating.userId);
-            return product && user;
-        });
+        // Auto-migrate data when utilities are loaded
+        window.AdminUtilities.autoMigrateData = function() {
+            try {
+                const stored = localStorage.getItem('tlc_admin_data');
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    const migratedData = this.migrateDataToV51(data);
+                    localStorage.setItem('tlc_admin_data', JSON.stringify(migratedData));
+                    console.log('✅ Auto-migration completed');
+                }
+            } catch (error) {
+                console.warn('⚠️ Auto-migration failed:', error);
+            }
+        };
         
-        // Remove orphaned featured products
-        data.featuredProducts = data.featuredProducts.filter(featured => {
-            const product = data.products.find(p => p.id === featured.productId);
-            return product;
-        });
+        // Run auto-migration when utilities load
+        if (typeof window !== 'undefined') {
+            window.AdminUtilities.autoMigrateData();
+        }
         
-        // Remove orphaned follows
-        data.userFollows = data.userFollows.filter(follow => {
-            const user = data.users.find(u => u.id === follow.userId);
-            const merchant = data.merchants.find(m => m.id === follow.merchantId);
-            return user && merchant;
-        });
+        console.log('✅ TokenZ Admin Utilities v5.1 loaded successfully');
         
-        console.log('✅ Orphaned data cleaned');
-        return data;
-    }
-};
-
-// Export utilities to global scope
-window.AdminUtils = {
-    Rating: RatingUtils,
-    Featured: FeaturedUtils,
-    Follow: FollowUtils,
-    Permission: PermissionUtils,
-    Migration: MigrationUtils
-};
-
-console.log('✅ Admin Utilities v5.1 loaded successfully');
-</script>
-</body>
+        // Export for Node.js environments if needed
+        if (typeof module !== 'undefined' && module.exports) {
+            module.exports = window.AdminUtilities;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e4019dd7d273c4',t:'MTc1MjM1OTY0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
-
