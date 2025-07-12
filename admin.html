@@ -1,0 +1,1202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ Loyalty Club v5.1 - Admin CMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Enhanced styles for admin interface */
+        .admin-sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        .admin-sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .data-table {
+            overflow-x: auto;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .preview-card {
+            border: 2px dashed #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-card:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #fef2f2; color: #991b1b; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        
+        .image-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-upload-area:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Admin Authentication Modal -->
+    <div id="adminAuthModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="text-4xl mb-4">🔐</div>
+                <h2 class="text-2xl font-bold text-gray-800">Admin Access</h2>
+                <p class="text-gray-600 mt-2">Enter admin credentials to access management interface</p>
+            </div>
+            
+            <form id="adminAuthForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" id="adminUsername" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="admin">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="adminPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter password">
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeAdminAuth()" class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Login</button>
+                </div>
+            </form>
+            
+            <div id="authError" class="mt-4 p-3 bg-red-100 text-red-700 rounded-md hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main Admin Interface -->
+    <div id="adminInterface" class="hidden">
+        <!-- Top Navigation -->
+        <nav class="bg-white shadow-sm border-b">
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button id="sidebarToggle" class="p-2 rounded-md hover:bg-gray-100">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-800">TokenZ Admin CMS v5.1</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button id="exportDataBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Export</span>
+                        </button>
+                        
+                        <button id="importDataBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                            <span>Import</span>
+                        </button>
+                        
+                        <button onclick="logoutAdmin()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex">
+            <!-- Sidebar -->
+            <aside id="adminSidebar" class="admin-sidebar w-64 bg-white shadow-sm h-screen sticky top-0">
+                <div class="p-6">
+                    <nav class="space-y-2">
+                        <a href="#" onclick="showAdminSection('dashboard')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                        
+                        <a href="#" onclick="showAdminSection('merchants')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6"></path>
+                            </svg>
+                            <span>Merchants</span>
+                        </a>
+                        
+                        <a href="#" onclick="showAdminSection('products')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            <span>Products</span>
+                        </a>
+                        
+                        <a href="#" onclick="showAdminSection('users')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                            <span>Users</span>
+                        </a>
+                        
+                        <a href="#" onclick="showAdminSection('settings')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-6">
+                <!-- Dashboard Section -->
+                <div id="dashboardSection" class="admin-section">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                        <p class="text-gray-600">Overview of your TokenZ Loyalty Club system</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Merchants</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="totalMerchants">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Products</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="totalProducts">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Users</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="totalUsers">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Active Campaigns</p>
+                                    <p class="text-2xl font-semibold text-gray-900">3</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm text-gray-600">New merchant "Coffee Corner" added</span>
+                                    <span class="text-xs text-gray-400">2 hours ago</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span class="text-sm text-gray-600">Product "Premium Latte" updated</span>
+                                    <span class="text-xs text-gray-400">4 hours ago</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                    <span class="text-sm text-gray-600">New user registration</span>
+                                    <span class="text-xs text-gray-400">6 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button onclick="showAdminSection('merchants'); showMerchantForm()" class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                                    <div class="font-medium text-blue-800">Add New Merchant</div>
+                                    <div class="text-sm text-blue-600">Register a new business partner</div>
+                                </button>
+                                <button onclick="showAdminSection('products'); showProductForm()" class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                                    <div class="font-medium text-green-800">Add New Product</div>
+                                    <div class="text-sm text-green-600">Create a new product listing</div>
+                                </button>
+                                <button onclick="exportAllData()" class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                                    <div class="font-medium text-purple-800">Export Data</div>
+                                    <div class="text-sm text-purple-600">Download system backup</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Merchants Section -->
+                <div id="merchantsSection" class="admin-section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Merchant Management</h2>
+                            <p class="text-gray-600">Manage business partners and their profiles</p>
+                        </div>
+                        <button onclick="showMerchantForm()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            <span>Add Merchant</span>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="data-table">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="merchantsTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Merchants will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div id="productsSection" class="admin-section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Product Management</h2>
+                            <p class="text-gray-600">Manage products and their details</p>
+                        </div>
+                        <button onclick="showProductForm()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            <span>Add Product</span>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="data-table">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Products will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="usersSection" class="admin-section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
+                            <p class="text-gray-600">Manage members and their accounts</p>
+                        </div>
+                        <button onclick="showInviteForm()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            <span>Send Invitation</span>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="data-table">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sponsor</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Users will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settingsSection" class="admin-section hidden">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">System Settings</h2>
+                        <p class="text-gray-600">Configure system-wide settings and preferences</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-section p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">General Settings</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">System Name</label>
+                                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="TokenZ Loyalty Club">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Admin Email</label>
+                                    <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="admin@tokenzclub.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="USD">USD ($)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="GBP">GBP (£)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Management</h3>
+                            <div class="space-y-4">
+                                <button onclick="exportAllData()" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span>Export All Data</span>
+                                </button>
+                                
+                                <div class="relative">
+                                    <input type="file" id="importFile" accept=".json,.csv" class="hidden" onchange="importData(this)">
+                                    <button onclick="document.getElementById('importFile').click()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                        </svg>
+                                        <span>Import Data</span>
+                                    </button>
+                                </div>
+                                
+                                <button onclick="clearAllData()" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span>Clear All Data</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Merchant Form Modal -->
+    <div id="merchantFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Add/Edit Merchant</h3>
+                <button onclick="closeMerchantForm()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="merchantForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                        <input type="text" id="merchantName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                        <select id="merchantCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Category</option>
+                            <option value="restaurant">Restaurant</option>
+                            <option value="retail">Retail</option>
+                            <option value="services">Services</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="health">Health & Wellness</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea id="merchantDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                        <input type="email" id="merchantEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                        <input type="tel" id="merchantPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                        <input type="text" id="merchantAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                        <input type="url" id="merchantWebsite" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="merchantStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                        <div class="image-upload-area" onclick="document.getElementById('merchantLogo').click()">
+                            <input type="file" id="merchantLogo" accept="image/*" class="hidden" onchange="previewImage(this, 'merchantLogoPreview')">
+                            <div id="merchantLogoPreview">
+                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="text-sm text-gray-600">Click to upload logo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeMerchantForm()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Merchant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Form Modal -->
+    <div id="productFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Add/Edit Product</h3>
+                <button onclick="closeProductForm()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="productForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                        <input type="text" id="productName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Merchant *</label>
+                        <select id="productMerchant" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Merchant</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea id="productDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Price *</label>
+                        <input type="number" id="productPrice" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                        <select id="productCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Category</option>
+                            <option value="food">Food & Beverage</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="services">Services</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+                        <input type="number" id="productStock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="productStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+                        <div class="image-upload-area" onclick="document.getElementById('productImage').click()">
+                            <input type="file" id="productImage" accept="image/*" class="hidden" onchange="previewImage(this, 'productImagePreview')">
+                            <div id="productImagePreview">
+                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="text-sm text-gray-600">Click to upload image</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeProductForm()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Public Site Button -->
+    <div class="fixed bottom-6 right-6">
+        <button onclick="exitAdminMode()" class="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span>Back to Site</span>
+        </button>
+    </div>
+
+    <script>
+        // Admin CMS System v5.1
+        let currentEditingMerchant = null;
+        let currentEditingProduct = null;
+        
+        // Sample data structure
+        let adminData = {
+            merchants: [
+                {
+                    id: 1,
+                    name: "Coffee Corner",
+                    category: "restaurant",
+                    description: "Premium coffee and pastries",
+                    email: "info@coffeecorner.com",
+                    phone: "+1-555-0123",
+                    address: "123 Main St, City",
+                    website: "https://coffeecorner.com",
+                    status: "active",
+                    logo: null,
+                    created: new Date().toISOString()
+                }
+            ],
+            products: [
+                {
+                    id: 1,
+                    name: "Premium Latte",
+                    merchantId: 1,
+                    description: "Rich espresso with steamed milk",
+                    price: 4.50,
+                    category: "food",
+                    stock: 100,
+                    status: "active",
+                    image: null,
+                    created: new Date().toISOString()
+                }
+            ],
+            users: [
+                {
+                    id: 1,
+                    name: "John Doe",
+                    email: "john@example.com",
+                    sponsor: null,
+                    joined: new Date().toISOString(),
+                    status: "active"
+                }
+            ]
+        };
+
+        // Initialize admin system
+        function initAdmin() {
+            loadStoredData();
+            updateDashboardStats();
+            populateMerchantsTable();
+            populateProductsTable();
+            populateUsersTable();
+            populateMerchantDropdown();
+        }
+
+        // Authentication functions
+        function showAdminAuth() {
+            document.getElementById('adminAuthModal').classList.remove('hidden');
+        }
+
+        function closeAdminAuth() {
+            document.getElementById('adminAuthModal').classList.add('hidden');
+            document.getElementById('adminAuthForm').reset();
+            document.getElementById('authError').classList.add('hidden');
+        }
+
+        function authenticateAdmin(username, password) {
+            // Simple authentication - in production, use proper authentication
+            if (username === 'admin' && password === 'tokenz2024') {
+                document.getElementById('adminAuthModal').classList.add('hidden');
+                document.getElementById('adminInterface').classList.remove('hidden');
+                initAdmin();
+                return true;
+            }
+            return false;
+        }
+
+        function logoutAdmin() {
+            document.getElementById('adminInterface').classList.add('hidden');
+            document.getElementById('adminAuthModal').classList.add('hidden');
+            // Return to main site
+            location.reload();
+        }
+
+        function exitAdminMode() {
+            if (confirm('Exit admin mode and return to the main site?')) {
+                logoutAdmin();
+            }
+        }
+
+        // Data management functions
+        function loadStoredData() {
+            try {
+                const stored = localStorage.getItem('tlc_admin_data');
+                if (stored) {
+                    adminData = JSON.parse(stored);
+                }
+            } catch (error) {
+                console.warn('Error loading admin data:', error);
+            }
+        }
+
+        function saveAdminData() {
+            try {
+                localStorage.setItem('tlc_admin_data', JSON.stringify(adminData));
+                console.log('Admin data saved');
+            } catch (error) {
+                console.error('Error saving admin data:', error);
+            }
+        }
+
+        // Navigation functions
+        function showAdminSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.admin-nav-item').forEach(el => {
+                el.classList.remove('bg-blue-100', 'text-blue-800');
+                el.classList.add('text-gray-700');
+            });
+            
+            event.target.classList.add('bg-blue-100', 'text-blue-800');
+            event.target.classList.remove('text-gray-700');
+        }
+
+        // Dashboard functions
+        function updateDashboardStats() {
+            document.getElementById('totalMerchants').textContent = adminData.merchants.length;
+            document.getElementById('totalProducts').textContent = adminData.products.length;
+            document.getElementById('totalUsers').textContent = adminData.users.length;
+        }
+
+        // Merchant management functions
+        function populateMerchantsTable() {
+            const tbody = document.getElementById('merchantsTableBody');
+            tbody.innerHTML = '';
+            
+            adminData.merchants.forEach(merchant => {
+                const productCount = adminData.products.filter(p => p.merchantId === merchant.id).length;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    ${merchant.logo ? `<img class="h-10 w-10 rounded-full object-cover" src="${merchant.logo}" alt="${merchant.name}">` : `<span class="text-sm font-medium text-gray-600">${merchant.name.charAt(0)}</span>`}
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${merchant.name}</div>
+                                <div class="text-sm text-gray-500">${merchant.email || 'No email'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="capitalize text-sm text-gray-900">${merchant.category}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${productCount} products
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge status-${merchant.status}">${merchant.status}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editMerchant(${merchant.id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                        <button onclick="deleteMerchant(${merchant.id})" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function showMerchantForm(merchantId = null) {
+            currentEditingMerchant = merchantId;
+            const modal = document.getElementById('merchantFormModal');
+            const form = document.getElementById('merchantForm');
+            
+            if (merchantId) {
+                const merchant = adminData.merchants.find(m => m.id === merchantId);
+                if (merchant) {
+                    document.getElementById('merchantName').value = merchant.name;
+                    document.getElementById('merchantCategory').value = merchant.category;
+                    document.getElementById('merchantDescription').value = merchant.description || '';
+                    document.getElementById('merchantEmail').value = merchant.email || '';
+                    document.getElementById('merchantPhone').value = merchant.phone || '';
+                    document.getElementById('merchantAddress').value = merchant.address || '';
+                    document.getElementById('merchantWebsite').value = merchant.website || '';
+                    document.getElementById('merchantStatus').value = merchant.status;
+                    
+                    if (merchant.logo) {
+                        document.getElementById('merchantLogoPreview').innerHTML = `<img src="${merchant.logo}" class="image-preview mx-auto">`;
+                    }
+                }
+            } else {
+                form.reset();
+                document.getElementById('merchantLogoPreview').innerHTML = `
+                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-sm text-gray-600">Click to upload logo</p>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeMerchantForm() {
+            document.getElementById('merchantFormModal').classList.add('hidden');
+            currentEditingMerchant = null;
+        }
+
+        function editMerchant(id) {
+            showMerchantForm(id);
+        }
+
+        function deleteMerchant(id) {
+            if (confirm('Are you sure you want to delete this merchant? This will also delete all associated products.')) {
+                adminData.merchants = adminData.merchants.filter(m => m.id !== id);
+                adminData.products = adminData.products.filter(p => p.merchantId !== id);
+                saveAdminData();
+                populateMerchantsTable();
+                populateProductsTable();
+                populateMerchantDropdown();
+                updateDashboardStats();
+            }
+        }
+
+        // Product management functions
+        function populateProductsTable() {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+            
+            adminData.products.forEach(product => {
+                const merchant = adminData.merchants.find(m => m.id === product.merchantId);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
+                                    ${product.image ? `<img class="h-10 w-10 rounded object-cover" src="${product.image}" alt="${product.name}">` : `<span class="text-xs font-medium text-gray-600">📦</span>`}
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${product.name}</div>
+                                <div class="text-sm text-gray-500">${product.description || 'No description'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${merchant ? merchant.name : 'Unknown'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        $${product.price.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="capitalize text-sm text-gray-900">${product.category}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge status-${product.status}">${product.status}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editProduct(${product.id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                        <button onclick="deleteProduct(${product.id})" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function populateMerchantDropdown() {
+            const select = document.getElementById('productMerchant');
+            select.innerHTML = '<option value="">Select Merchant</option>';
+            
+            adminData.merchants.forEach(merchant => {
+                const option = document.createElement('option');
+                option.value = merchant.id;
+                option.textContent = merchant.name;
+                select.appendChild(option);
+            });
+        }
+
+        function showProductForm(productId = null) {
+            currentEditingProduct = productId;
+            const modal = document.getElementById('productFormModal');
+            const form = document.getElementById('productForm');
+            
+            populateMerchantDropdown();
+            
+            if (productId) {
+                const product = adminData.products.find(p => p.id === productId);
+                if (product) {
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productMerchant').value = product.merchantId;
+                    document.getElementById('productDescription').value = product.description || '';
+                    document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productCategory').value = product.category;
+                    document.getElementById('productStock').value = product.stock || '';
+                    document.getElementById('productStatus').value = product.status;
+                    
+                    if (product.image) {
+                        document.getElementById('productImagePreview').innerHTML = `<img src="${product.image}" class="image-preview mx-auto">`;
+                    }
+                }
+            } else {
+                form.reset();
+                document.getElementById('productImagePreview').innerHTML = `
+                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-sm text-gray-600">Click to upload image</p>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeProductForm() {
+            document.getElementById('productFormModal').classList.add('hidden');
+            currentEditingProduct = null;
+        }
+
+        function editProduct(id) {
+            showProductForm(id);
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                adminData.products = adminData.products.filter(p => p.id !== id);
+                saveAdminData();
+                populateProductsTable();
+                updateDashboardStats();
+            }
+        }
+
+        // User management functions
+        function populateUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            adminData.users.forEach(user => {
+                const sponsor = user.sponsor ? adminData.users.find(u => u.id === user.sponsor) : null;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span class="text-sm font-medium text-gray-600">${user.name.charAt(0)}</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${user.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${user.email}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${sponsor ? sponsor.name : 'Direct signup'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(user.joined).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge status-${user.status}">${user.status}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editUser(${user.id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                        <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Utility functions
+        function previewImage(input, previewId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(previewId).innerHTML = `<img src="${e.target.result}" class="image-preview mx-auto">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function generateId() {
+            return Math.max(...adminData.merchants.map(m => m.id), ...adminData.products.map(p => p.id), ...adminData.users.map(u => u.id), 0) + 1;
+        }
+
+        // Export/Import functions
+        function exportAllData() {
+            const dataToExport = {
+                merchants: adminData.merchants,
+                products: adminData.products,
+                users: adminData.users,
+                exported: new Date().toISOString(),
+                version: '5.1'
+            };
+            
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tokenz-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (confirm('This will replace all existing data. Are you sure?')) {
+                            adminData = {
+                                merchants: importedData.merchants || [],
+                                products: importedData.products || [],
+                                users: importedData.users || []
+                            };
+                            saveAdminData();
+                            initAdmin();
+                            alert('Data imported successfully!');
+                        }
+                    } catch (error) {
+                        alert('Error importing data: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('This will delete ALL data permanently. Are you absolutely sure?')) {
+                if (confirm('Last chance! This cannot be undone. Delete everything?')) {
+                    adminData = { merchants: [], products: [], users: [] };
+                    saveAdminData();
+                    initAdmin();
+                    alert('All data has been cleared.');
+                }
+            }
+        }
+
+        // Form submission handlers
+        document.getElementById('adminAuthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (authenticateAdmin(username, password)) {
+                closeAdminAuth();
+            } else {
+                const errorEl = document.getElementById('authError');
+                errorEl.textContent = 'Invalid credentials. Try admin/tokenz2024';
+                errorEl.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('merchantForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const merchantData = {
+                name: document.getElementById('merchantName').value,
+                category: document.getElementById('merchantCategory').value,
+                description: document.getElementById('merchantDescription').value,
+                email: document.getElementById('merchantEmail').value,
+                phone: document.getElementById('merchantPhone').value,
+                address: document.getElementById('merchantAddress').value,
+                website: document.getElementById('merchantWebsite').value,
+                status: document.getElementById('merchantStatus').value,
+                logo: document.getElementById('merchantLogoPreview').querySelector('img')?.src || null
+            };
+            
+            if (currentEditingMerchant) {
+                const index = adminData.merchants.findIndex(m => m.id === currentEditingMerchant);
+                adminData.merchants[index] = { ...adminData.merchants[index], ...merchantData };
+            } else {
+                merchantData.id = generateId();
+                merchantData.created = new Date().toISOString();
+                adminData.merchants.push(merchantData);
+            }
+            
+            saveAdminData();
+            populateMerchantsTable();
+            populateMerchantDropdown();
+            updateDashboardStats();
+            closeMerchantForm();
+        });
+
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const productData = {
+                name: document.getElementById('productName').value,
+                merchantId: parseInt(document.getElementById('productMerchant').value),
+                description: document.getElementById('productDescription').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                category: document.getElementById('productCategory').value,
+                stock: parseInt(document.getElementById('productStock').value) || 0,
+                status: document.getElementById('productStatus').value,
+                image: document.getElementById('productImagePreview').querySelector('img')?.src || null
+            };
+            
+            if (currentEditingProduct) {
+                const index = adminData.products.findIndex(p => p.id === currentEditingProduct);
+                adminData.products[index] = { ...adminData.products[index], ...productData };
+            } else {
+                productData.id = generateId();
+                productData.created = new Date().toISOString();
+                adminData.products.push(productData);
+            }
+            
+            saveAdminData();
+            populateProductsTable();
+            updateDashboardStats();
+            closeProductForm();
+        });
+
+        // Sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('collapsed');
+        });
+
+        // Initialize admin interface when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if admin mode should be activated
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === 'true') {
+                showAdminAuth();
+            }
+        });
+
+        // Add admin access from main site
+        window.showAdminInterface = function() {
+            showAdminAuth();
+        };
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95def462d2d4c6ca',t:'MTc1MjMwNjY3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
