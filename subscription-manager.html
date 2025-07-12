@@ -1,0 +1,1589 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Subscription Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- July 13, 01:25 - Subscription Management Module -->
+    <style>
+        .subscription-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .subscription-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .subscription-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .plan-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .plan-card.popular {
+            border: 2px solid #3B82F6;
+            transform: scale(1.05);
+        }
+        
+        .plan-card.popular::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        
+        .plan-card.popular .plan-content {
+            padding-top: 3rem;
+        }
+        
+        .billing-card {
+            transition: all 0.2s ease;
+        }
+        
+        .billing-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .usage-meter {
+            background: #E5E7EB;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .usage-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .usage-fill.low {
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+        
+        .usage-fill.medium {
+            background: linear-gradient(90deg, #F59E0B, #D97706);
+        }
+        
+        .usage-fill.high {
+            background: linear-gradient(90deg, #EF4444, #DC2626);
+        }
+        
+        .subscription-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-active {
+            background: #DCFCE7;
+            color: #166534;
+        }
+        
+        .status-expired {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .status-trial {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .status-cancelled {
+            background: #F3F4F6;
+            color: #374151;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #F3F4F6;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list .check {
+            color: #10B981;
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .feature-list .cross {
+            color: #EF4444;
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .analytics-chart {
+            height: 200px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-bars {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            padding: 1rem;
+        }
+        
+        .chart-bar {
+            background: rgba(255, 255, 255, 0.8);
+            width: 20px;
+            border-radius: 2px 2px 0 0;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-bar:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+        
+        .payment-method {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .payment-method:hover {
+            background: #F9FAFB;
+        }
+        
+        .payment-method.selected {
+            background: #EBF8FF;
+            border-color: #3B82F6;
+        }
+        
+        .invoice-row {
+            transition: all 0.2s ease;
+        }
+        
+        .invoice-row:hover {
+            background: #F9FAFB;
+        }
+        
+        .upgrade-banner {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upgrade-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .upgrade-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .notification-item {
+            transition: all 0.2s ease;
+        }
+        
+        .notification-item:hover {
+            background: #F9FAFB;
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .tab-button:hover {
+            color: #3B82F6;
+        }
+        
+        .tab-button.active {
+            color: #3B82F6;
+            border-bottom: 2px solid #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .subscription-timeline {
+            position: relative;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #E5E7EB;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 0.75rem;
+            top: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #3B82F6;
+        }
+        
+        .renewal-reminder {
+            background: linear-gradient(135deg, #FEF3C7, #FCD34D);
+            border-left: 4px solid #F59E0B;
+        }
+        
+        .cancellation-warning {
+            background: linear-gradient(135deg, #FEE2E2, #FECACA);
+            border-left: 4px solid #EF4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Subscription Manager</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <button onclick="showNotifications()" class="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                    
+                    <!-- Quick Actions -->
+                    <div class="relative">
+                        <button onclick="toggleQuickActions()" class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div id="quick-actions" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-40">
+                            <button onclick="upgradeSubscription()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-arrow-up mr-2"></i>Upgrade Plan
+                            </button>
+                            <button onclick="managePayment()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-credit-card mr-2"></i>Payment Methods
+                            </button>
+                            <button onclick="downloadInvoices()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-download mr-2"></i>Download Invoices
+                            </button>
+                            <hr class="my-2">
+                            <button onclick="cancelSubscription()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                <i class="fas fa-times mr-2"></i>Cancel Subscription
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Current Subscription Overview -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
+            <div class="subscription-hero h-32 flex items-center justify-center">
+                <div class="subscription-hero-content text-center text-white">
+                    <h2 class="text-2xl font-bold mb-2">Premium Plan</h2>
+                    <p class="text-lg opacity-90">Your subscription is active and running smoothly</p>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900 mb-1">R299</div>
+                        <div class="text-sm text-gray-600">Monthly Cost</div>
+                        <div class="subscription-status status-active mt-2">
+                            <i class="fas fa-check-circle mr-1"></i>Active
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900 mb-1">23</div>
+                        <div class="text-sm text-gray-600">Days Remaining</div>
+                        <div class="text-xs text-gray-500 mt-1">Renews on Aug 15, 2024</div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900 mb-1">1,247</div>
+                        <div class="text-sm text-gray-600">Tokens Used</div>
+                        <div class="text-xs text-gray-500 mt-1">of 5,000 limit</div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900 mb-1">R3,588</div>
+                        <div class="text-sm text-gray-600">Total Spent</div>
+                        <div class="text-xs text-gray-500 mt-1">Since Jan 2024</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-button active py-4 px-2 text-sm font-medium" onclick="showTab('overview')">
+                        Overview
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('plans')">
+                        Plans & Pricing
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('usage')">
+                        Usage Analytics
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('billing')">
+                        Billing & Invoices
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('settings')">
+                        Settings
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div id="overview-tab" class="tab-content p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Usage Summary -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Token Usage -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Token Usage This Month</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-medium text-gray-700">Tokens Used</span>
+                                        <span class="text-sm text-gray-600">1,247 / 5,000</span>
+                                    </div>
+                                    <div class="usage-meter">
+                                        <div class="usage-fill low" style="width: 25%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-medium text-gray-700">API Calls</span>
+                                        <span class="text-sm text-gray-600">8,432 / 50,000</span>
+                                    </div>
+                                    <div class="usage-meter">
+                                        <div class="usage-fill low" style="width: 17%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-medium text-gray-700">Storage Used</span>
+                                        <span class="text-sm text-gray-600">2.3 GB / 10 GB</span>
+                                    </div>
+                                    <div class="usage-meter">
+                                        <div class="usage-fill low" style="width: 23%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Activity -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                            <div class="subscription-timeline">
+                                <div class="timeline-line"></div>
+                                
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900">Payment Processed</h4>
+                                                <p class="text-sm text-gray-600">Monthly subscription renewed successfully</p>
+                                            </div>
+                                            <span class="text-xs text-gray-500">2 hours ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900">Usage Alert</h4>
+                                                <p class="text-sm text-gray-600">You've used 25% of your monthly tokens</p>
+                                            </div>
+                                            <span class="text-xs text-gray-500">1 day ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900">Plan Upgraded</h4>
+                                                <p class="text-sm text-gray-600">Upgraded from Basic to Premium plan</p>
+                                            </div>
+                                            <span class="text-xs text-gray-500">3 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Renewal Reminder -->
+                        <div class="renewal-reminder rounded-lg p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-clock text-yellow-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-semibold text-yellow-800 mb-1">Renewal Reminder</h4>
+                                    <p class="text-sm text-yellow-700 mb-3">Your subscription renews in 23 days</p>
+                                    <button onclick="manageRenewal()" class="text-sm bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded font-medium transition-colors">
+                                        Manage Renewal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Stats -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-900 mb-3">Quick Stats</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Member Since</span>
+                                    <span class="text-sm font-medium text-gray-900">Jan 2024</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Payments</span>
+                                    <span class="text-sm font-medium text-gray-900">12</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Avg Monthly Usage</span>
+                                    <span class="text-sm font-medium text-gray-900">1,156 tokens</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Support Tickets</span>
+                                    <span class="text-sm font-medium text-gray-900">2</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Upgrade Suggestion -->
+                        <div class="upgrade-banner rounded-lg p-4 text-white">
+                            <div class="upgrade-content">
+                                <h4 class="font-semibold mb-2">Need More Tokens?</h4>
+                                <p class="text-sm opacity-90 mb-3">Upgrade to Enterprise for unlimited tokens and priority support</p>
+                                <button onclick="viewUpgradeOptions()" class="bg-white text-blue-600 hover:bg-gray-100 px-4 py-2 rounded font-medium text-sm transition-colors">
+                                    View Options
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Plans Tab -->
+            <div id="plans-tab" class="tab-content hidden p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Choose Your Plan</h2>
+                    <p class="text-gray-600">Select the perfect plan for your needs</p>
+                    
+                    <!-- Billing Toggle -->
+                    <div class="flex items-center justify-center mt-6">
+                        <span class="text-sm text-gray-600 mr-3">Monthly</span>
+                        <button onclick="toggleBilling()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <span id="billing-toggle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+                        </button>
+                        <span class="text-sm text-gray-600 ml-3">Yearly</span>
+                        <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Save 20%</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Basic Plan -->
+                    <div class="plan-card bg-white border border-gray-200 rounded-lg">
+                        <div class="plan-content p-6">
+                            <div class="text-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Basic</h3>
+                                <div class="text-3xl font-bold text-gray-900 mb-1">
+                                    <span id="basic-price">R99</span>
+                                    <span class="text-lg text-gray-600">/month</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Perfect for individuals</p>
+                            </div>
+                            
+                            <ul class="feature-list mb-6">
+                                <li><span class="check">✓</span> 1,000 tokens/month</li>
+                                <li><span class="check">✓</span> 10,000 API calls</li>
+                                <li><span class="check">✓</span> 2GB storage</li>
+                                <li><span class="check">✓</span> Email support</li>
+                                <li><span class="cross">✗</span> Priority support</li>
+                                <li><span class="cross">✗</span> Advanced analytics</li>
+                            </ul>
+                            
+                            <button onclick="selectPlan('basic')" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                                Choose Basic
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Premium Plan (Current) -->
+                    <div class="plan-card popular bg-white border border-gray-200 rounded-lg">
+                        <div class="plan-content p-6">
+                            <div class="text-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Premium</h3>
+                                <div class="text-3xl font-bold text-gray-900 mb-1">
+                                    <span id="premium-price">R299</span>
+                                    <span class="text-lg text-gray-600">/month</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Most popular choice</p>
+                            </div>
+                            
+                            <ul class="feature-list mb-6">
+                                <li><span class="check">✓</span> 5,000 tokens/month</li>
+                                <li><span class="check">✓</span> 50,000 API calls</li>
+                                <li><span class="check">✓</span> 10GB storage</li>
+                                <li><span class="check">✓</span> Priority email support</li>
+                                <li><span class="check">✓</span> Advanced analytics</li>
+                                <li><span class="cross">✗</span> Phone support</li>
+                            </ul>
+                            
+                            <button class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed opacity-75">
+                                Current Plan
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Enterprise Plan -->
+                    <div class="plan-card bg-white border border-gray-200 rounded-lg">
+                        <div class="plan-content p-6">
+                            <div class="text-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Enterprise</h3>
+                                <div class="text-3xl font-bold text-gray-900 mb-1">
+                                    <span id="enterprise-price">R799</span>
+                                    <span class="text-lg text-gray-600">/month</span>
+                                </div>
+                                <p class="text-sm text-gray-600">For growing businesses</p>
+                            </div>
+                            
+                            <ul class="feature-list mb-6">
+                                <li><span class="check">✓</span> Unlimited tokens</li>
+                                <li><span class="check">✓</span> Unlimited API calls</li>
+                                <li><span class="check">✓</span> 100GB storage</li>
+                                <li><span class="check">✓</span> 24/7 phone support</li>
+                                <li><span class="check">✓</span> Advanced analytics</li>
+                                <li><span class="check">✓</span> Custom integrations</li>
+                            </ul>
+                            
+                            <button onclick="selectPlan('enterprise')" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                                Upgrade to Enterprise
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Plan Comparison -->
+                <div class="mt-12">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6 text-center">Detailed Comparison</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full bg-white border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feature</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Basic</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Premium</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Enterprise</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Monthly Tokens</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">1,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">5,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">API Calls</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">10,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">50,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Storage</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">2GB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">10GB</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">100GB</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Support</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">Email</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">Priority Email</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">24/7 Phone</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Usage Analytics Tab -->
+            <div id="usage-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Usage Chart -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Monthly Usage Trend</h3>
+                        <div class="analytics-chart">
+                            <div class="chart-bars">
+                                <div class="chart-bar" style="height: 60%"></div>
+                                <div class="chart-bar" style="height: 80%"></div>
+                                <div class="chart-bar" style="height: 45%"></div>
+                                <div class="chart-bar" style="height: 90%"></div>
+                                <div class="chart-bar" style="height: 70%"></div>
+                                <div class="chart-bar" style="height: 85%"></div>
+                                <div class="chart-bar" style="height: 25%"></div>
+                            </div>
+                            <div class="absolute top-4 left-4 text-white">
+                                <div class="text-2xl font-bold">1,247</div>
+                                <div class="text-sm opacity-90">Tokens This Month</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Usage Breakdown -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Usage Breakdown</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <span class="text-sm font-medium text-gray-700">API Requests</span>
+                                </div>
+                                <span class="text-sm text-gray-600">45%</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                    <span class="text-sm font-medium text-gray-700">Data Processing</span>
+                                </div>
+                                <span class="text-sm text-gray-600">30%</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                                    <span class="text-sm font-medium text-gray-700">Storage</span>
+                                </div>
+                                <span class="text-sm text-gray-600">15%</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                    <span class="text-sm font-medium text-gray-700">Other</span>
+                                </div>
+                                <span class="text-sm text-gray-600">10%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Usage Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-gray-900">Daily Average</h4>
+                            <i class="fas fa-chart-line text-blue-500"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 mb-1">42</div>
+                        <div class="text-sm text-gray-600">tokens per day</div>
+                        <div class="text-xs text-green-600 mt-2">↑ 12% from last month</div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-gray-900">Peak Usage</h4>
+                            <i class="fas fa-chart-bar text-green-500"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 mb-1">156</div>
+                        <div class="text-sm text-gray-600">tokens in one day</div>
+                        <div class="text-xs text-gray-500 mt-2">July 8, 2024</div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-gray-900">Efficiency</h4>
+                            <i class="fas fa-tachometer-alt text-purple-500"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900 mb-1">87%</div>
+                        <div class="text-sm text-gray-600">usage efficiency</div>
+                        <div class="text-xs text-green-600 mt-2">↑ 5% improvement</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Billing Tab -->
+            <div id="billing-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Payment Methods -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Current Payment Method -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
+                            
+                            <div class="space-y-3">
+                                <div class="payment-method selected border-2 border-blue-200 bg-white rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <i class="fab fa-cc-visa text-2xl text-blue-600 mr-3"></i>
+                                            <div>
+                                                <div class="font-medium text-gray-900">•••• •••• •••• 4242</div>
+                                                <div class="text-sm text-gray-600">Expires 12/26</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">PRIMARY</span>
+                                            <button onclick="editPaymentMethod()" class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="payment-method border border-gray-200 bg-white rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <i class="fab fa-cc-mastercard text-2xl text-red-600 mr-3"></i>
+                                            <div>
+                                                <div class="font-medium text-gray-900">•••• •••• •••• 8888</div>
+                                                <div class="text-sm text-gray-600">Expires 08/25</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <button onclick="setAsPrimary()" class="text-sm text-blue-600 hover:text-blue-700 mr-3">Set as Primary</button>
+                                            <button onclick="removePaymentMethod()" class="text-gray-400 hover:text-red-600">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="addPaymentMethod()" class="mt-4 w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Add New Payment Method
+                            </button>
+                        </div>
+                        
+                        <!-- Invoice History -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Invoice History</h3>
+                                <button onclick="downloadAllInvoices()" class="text-sm text-blue-600 hover:text-blue-700">
+                                    <i class="fas fa-download mr-1"></i>Download All
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg overflow-hidden">
+                                <div class="invoice-row flex items-center justify-between p-4 border-b border-gray-200">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-file-invoice text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900">Invoice #INV-2024-007</div>
+                                            <div class="text-sm text-gray-600">July 15, 2024</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-medium text-gray-900 mr-4">R299.00</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full mr-3">PAID</span>
+                                        <button onclick="downloadInvoice('INV-2024-007')" class="text-gray-400 hover:text-blue-600">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="invoice-row flex items-center justify-between p-4 border-b border-gray-200">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-file-invoice text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900">Invoice #INV-2024-006</div>
+                                            <div class="text-sm text-gray-600">June 15, 2024</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-medium text-gray-900 mr-4">R299.00</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full mr-3">PAID</span>
+                                        <button onclick="downloadInvoice('INV-2024-006')" class="text-gray-400 hover:text-blue-600">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="invoice-row flex items-center justify-between p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-file-invoice text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900">Invoice #INV-2024-005</div>
+                                            <div class="text-sm text-gray-600">May 15, 2024</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-medium text-gray-900 mr-4">R299.00</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full mr-3">PAID</span>
+                                        <button onclick="downloadInvoice('INV-2024-005')" class="text-gray-400 hover:text-blue-600">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Billing Summary -->
+                    <div class="space-y-6">
+                        <!-- Next Payment -->
+                        <div class="billing-card bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="font-semibold text-gray-900 mb-4">Next Payment</h4>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-gray-900 mb-1">R299</div>
+                                <div class="text-sm text-gray-600 mb-3">Due August 15, 2024</div>
+                                <div class="text-xs text-gray-500 mb-4">Auto-renewal enabled</div>
+                                <button onclick="manageAutoRenewal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    Manage Auto-Renewal
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Billing Summary -->
+                        <div class="billing-card bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="font-semibold text-gray-900 mb-4">Billing Summary</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">This Month</span>
+                                    <span class="text-sm font-medium text-gray-900">R299</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Year to Date</span>
+                                    <span class="text-sm font-medium text-gray-900">R2,093</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Lifetime</span>
+                                    <span class="text-sm font-medium text-gray-900">R3,588</span>
+                                </div>
+                                <hr class="my-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-900">Next Charge</span>
+                                    <span class="text-sm font-bold text-gray-900">R299</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tax Information -->
+                        <div class="billing-card bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="font-semibold text-gray-900 mb-4">Tax Information</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">VAT Number</span>
+                                    <span class="text-sm font-medium text-gray-900">4123456789</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Tax Rate</span>
+                                    <span class="text-sm font-medium text-gray-900">15%</span>
+                                </div>
+                                <button onclick="updateTaxInfo()" class="w-full mt-3 border border-gray-300 text-gray-700 hover:bg-gray-50 py-2 px-4 rounded-lg font-medium transition-colors">
+                                    Update Tax Info
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Subscription Settings -->
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Subscription Settings</h3>
+                            
+                            <div class="space-y-4">
+                                <!-- Auto-Renewal -->
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900">Auto-Renewal</div>
+                                        <div class="text-sm text-gray-600">Automatically renew your subscription</div>
+                                    </div>
+                                    <button onclick="toggleAutoRenewal()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Usage Alerts -->
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900">Usage Alerts</div>
+                                        <div class="text-sm text-gray-600">Get notified when reaching limits</div>
+                                    </div>
+                                    <button onclick="toggleUsageAlerts()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Email Notifications -->
+                                <div class="flex items-center justify-between p-4 bg-white rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900">Email Notifications</div>
+                                        <div class="text-sm text-gray-600">Receive billing and usage emails</div>
+                                    </div>
+                                    <button onclick="toggleEmailNotifications()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Billing Preferences -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Billing Preferences</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Billing Cycle</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Monthly</option>
+                                        <option>Yearly (20% discount)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Invoice Email</label>
+                                    <input type="email" value="user@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>ZAR (South African Rand)</option>
+                                        <option>USD (US Dollar)</option>
+                                        <option>EUR (Euro)</option>
+                                        <option>GBP (British Pound)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Actions -->
+                    <div class="space-y-6">
+                        <!-- Danger Zone -->
+                        <div class="cancellation-warning rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-red-800 mb-4">Danger Zone</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-white bg-opacity-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-red-800 mb-2">Pause Subscription</h4>
+                                    <p class="text-sm text-red-700 mb-3">Temporarily pause your subscription for up to 3 months</p>
+                                    <button onclick="pauseSubscription()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                        Pause Subscription
+                                    </button>
+                                </div>
+                                
+                                <div class="bg-white bg-opacity-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-red-800 mb-2">Cancel Subscription</h4>
+                                    <p class="text-sm text-red-700 mb-3">Cancel your subscription. You'll retain access until the end of your billing period</p>
+                                    <button onclick="cancelSubscription()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                        Cancel Subscription
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Support -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Need Help?</h3>
+                            
+                            <div class="space-y-3">
+                                <button onclick="contactSupport()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-headset mr-2"></i>Contact Support
+                                </button>
+                                
+                                <button onclick="viewFAQ()" class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-question-circle mr-2"></i>View FAQ
+                                </button>
+                                
+                                <button onclick="scheduleMeeting()" class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-calendar mr-2"></i>Schedule Meeting
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Info -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+                            
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Account ID</span>
+                                    <span class="text-sm font-medium text-gray-900">ACC-2024-001234</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Member Since</span>
+                                    <span class="text-sm font-medium text-gray-900">January 15, 2024</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Last Login</span>
+                                    <span class="text-sm font-medium text-gray-900">2 hours ago</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Data Region</span>
+                                    <span class="text-sm font-medium text-gray-900">South Africa</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notifications-panel" class="hidden fixed inset-y-0 right-0 w-96 bg-white shadow-xl border-l border-gray-200 z-40">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+            <button onclick="hideNotifications()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-4 space-y-4">
+            <div class="notification-item p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="font-medium text-yellow-800">Usage Alert</h4>
+                        <p class="text-sm text-yellow-700 mt-1">You've used 25% of your monthly token limit</p>
+                        <span class="text-xs text-yellow-600">2 hours ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="notification-item p-3 border border-blue-200 bg-blue-50 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="font-medium text-blue-800">Payment Processed</h4>
+                        <p class="text-sm text-blue-700 mt-1">Your monthly subscription has been renewed</p>
+                        <span class="text-xs text-blue-600">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="notification-item p-3 border border-green-200 bg-green-50 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-600 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="font-medium text-green-800">Plan Upgraded</h4>
+                        <p class="text-sm text-green-700 mt-1">Successfully upgraded to Premium plan</p>
+                        <span class="text-xs text-green-600">3 days ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Subscription Manager State
+        let subscriptionState = {
+            currentTab: 'overview',
+            billingCycle: 'monthly',
+            autoRenewal: true,
+            usageAlerts: true,
+            emailNotifications: true,
+            currentPlan: 'premium',
+            quickActionsOpen: false
+        };
+
+        // Initialize Subscription Manager
+        function initSubscriptionManager() {
+            console.log('💳 July 13, 01:25 - Initializing Subscription Manager Module...');
+            
+            // Load subscription data
+            loadSubscriptionData();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Show default tab
+            showTab('overview');
+            
+            console.log('✅ Subscription Manager Module initialized');
+        }
+
+        function loadSubscriptionData() {
+            // Simulate loading subscription data
+            updateUsageMeters();
+            updateBillingInfo();
+        }
+
+        function setupEventListeners() {
+            // Close quick actions when clicking outside
+            document.addEventListener('click', function(event) {
+                const quickActions = document.getElementById('quick-actions');
+                const button = event.target.closest('button');
+                
+                if (!button || !button.onclick || button.onclick.toString().indexOf('toggleQuickActions') === -1) {
+                    if (subscriptionState.quickActionsOpen) {
+                        quickActions.classList.add('hidden');
+                        subscriptionState.quickActionsOpen = false;
+                    }
+                }
+            });
+        }
+
+        // Tab Management
+        function showTab(tabName) {
+            subscriptionState.currentTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'usage':
+                    loadUsageAnalytics();
+                    break;
+                case 'billing':
+                    loadBillingHistory();
+                    break;
+            }
+        }
+
+        // Plan Management
+        function selectPlan(planType) {
+            if (planType === subscriptionState.currentPlan) {
+                showToast('This is your current plan', 'info');
+                return;
+            }
+            
+            showConfirmDialog(
+                'Confirm Plan Change',
+                `Are you sure you want to ${planType === 'basic' ? 'downgrade' : 'upgrade'} to the ${planType.charAt(0).toUpperCase() + planType.slice(1)} plan?`,
+                () => {
+                    processPlanChange(planType);
+                }
+            );
+        }
+
+        function processPlanChange(planType) {
+            showToast('Processing plan change...', 'info');
+            
+            // Simulate API call
+            setTimeout(() => {
+                subscriptionState.currentPlan = planType;
+                showToast(`Successfully ${planType === 'basic' ? 'downgraded' : 'upgraded'} to ${planType.charAt(0).toUpperCase() + planType.slice(1)} plan!`, 'success');
+                
+                // Refresh the page data
+                loadSubscriptionData();
+            }, 2000);
+        }
+
+        function toggleBilling() {
+            const toggle = document.getElementById('billing-toggle');
+            const basicPrice = document.getElementById('basic-price');
+            const premiumPrice = document.getElementById('premium-price');
+            const enterprisePrice = document.getElementById('enterprise-price');
+            
+            if (subscriptionState.billingCycle === 'monthly') {
+                // Switch to yearly
+                subscriptionState.billingCycle = 'yearly';
+                toggle.classList.remove('translate-x-1');
+                toggle.classList.add('translate-x-6');
+                
+                // Update prices (20% discount)
+                basicPrice.textContent = 'R950';
+                premiumPrice.textContent = 'R2,870';
+                enterprisePrice.textContent = 'R7,670';
+            } else {
+                // Switch to monthly
+                subscriptionState.billingCycle = 'monthly';
+                toggle.classList.remove('translate-x-6');
+                toggle.classList.add('translate-x-1');
+                
+                // Update prices
+                basicPrice.textContent = 'R99';
+                premiumPrice.textContent = 'R299';
+                enterprisePrice.textContent = 'R799';
+            }
+        }
+
+        // Usage Analytics
+        function loadUsageAnalytics() {
+            // Simulate loading analytics data
+            updateUsageMeters();
+        }
+
+        function updateUsageMeters() {
+            // Update usage meters with current data
+            const meters = document.querySelectorAll('.usage-fill');
+            meters.forEach(meter => {
+                const width = meter.style.width;
+                const percentage = parseInt(width);
+                
+                if (percentage < 50) {
+                    meter.className = 'usage-fill low';
+                } else if (percentage < 80) {
+                    meter.className = 'usage-fill medium';
+                } else {
+                    meter.className = 'usage-fill high';
+                }
+            });
+        }
+
+        // Billing Management
+        function loadBillingHistory() {
+            // Simulate loading billing history
+            updateBillingInfo();
+        }
+
+        function updateBillingInfo() {
+            // Update billing information display
+            console.log('Billing info updated');
+        }
+
+        function addPaymentMethod() {
+            showToast('Opening payment method form...', 'info');
+        }
+
+        function editPaymentMethod() {
+            showToast('Opening payment method editor...', 'info');
+        }
+
+        function removePaymentMethod() {
+            showConfirmDialog(
+                'Remove Payment Method',
+                'Are you sure you want to remove this payment method?',
+                () => {
+                    showToast('Payment method removed successfully', 'success');
+                }
+            );
+        }
+
+        function setAsPrimary() {
+            showToast('Payment method set as primary', 'success');
+        }
+
+        function downloadInvoice(invoiceId) {
+            showToast(`Downloading invoice ${invoiceId}...`, 'info');
+        }
+
+        function downloadAllInvoices() {
+            showToast('Preparing invoice archive...', 'info');
+        }
+
+        // Settings Management
+        function toggleAutoRenewal() {
+            subscriptionState.autoRenewal = !subscriptionState.autoRenewal;
+            showToast(`Auto-renewal ${subscriptionState.autoRenewal ? 'enabled' : 'disabled'}`, 'success');
+        }
+
+        function toggleUsageAlerts() {
+            subscriptionState.usageAlerts = !subscriptionState.usageAlerts;
+            showToast(`Usage alerts ${subscriptionState.usageAlerts ? 'enabled' : 'disabled'}`, 'success');
+        }
+
+        function toggleEmailNotifications() {
+            subscriptionState.emailNotifications = !subscriptionState.emailNotifications;
+            showToast(`Email notifications ${subscriptionState.emailNotifications ? 'enabled' : 'disabled'}`, 'success');
+        }
+
+        function manageAutoRenewal() {
+            showToast('Opening auto-renewal settings...', 'info');
+        }
+
+        function updateTaxInfo() {
+            showToast('Opening tax information form...', 'info');
+        }
+
+        // Subscription Actions
+        function upgradeSubscription() {
+            showTab('plans');
+            hideQuickActions();
+        }
+
+        function managePayment() {
+            showTab('billing');
+            hideQuickActions();
+        }
+
+        function downloadInvoices() {
+            downloadAllInvoices();
+            hideQuickActions();
+        }
+
+        function pauseSubscription() {
+            showConfirmDialog(
+                'Pause Subscription',
+                'Are you sure you want to pause your subscription? You can resume it anytime within 3 months.',
+                () => {
+                    showToast('Subscription paused successfully', 'success');
+                }
+            );
+        }
+
+        function cancelSubscription() {
+            showConfirmDialog(
+                'Cancel Subscription',
+                'Are you sure you want to cancel your subscription? You\'ll retain access until the end of your current billing period.',
+                () => {
+                    showToast('Subscription cancelled successfully', 'success');
+                }
+            );
+        }
+
+        // Support Functions
+        function contactSupport() {
+            showToast('Opening support chat...', 'info');
+        }
+
+        function viewFAQ() {
+            showToast('Opening FAQ page...', 'info');
+        }
+
+        function scheduleMeeting() {
+            showToast('Opening meeting scheduler...', 'info');
+        }
+
+        // Notification Management
+        function showNotifications() {
+            document.getElementById('notifications-panel').classList.remove('hidden');
+        }
+
+        function hideNotifications() {
+            document.getElementById('notifications-panel').classList.add('hidden');
+        }
+
+        function toggleQuickActions() {
+            const quickActions = document.getElementById('quick-actions');
+            
+            if (subscriptionState.quickActionsOpen) {
+                quickActions.classList.add('hidden');
+                subscriptionState.quickActionsOpen = false;
+            } else {
+                quickActions.classList.remove('hidden');
+                subscriptionState.quickActionsOpen = true;
+            }
+        }
+
+        function hideQuickActions() {
+            document.getElementById('quick-actions').classList.add('hidden');
+            subscriptionState.quickActionsOpen = false;
+        }
+
+        // Utility Functions
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm fade-in`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function showConfirmDialog(title, message, onConfirm) {
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            
+            dialog.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4 fade-in">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">${title}</h3>
+                    <p class="text-gray-600 mb-6">${message}</p>
+                    <div class="flex space-x-3">
+                        <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="confirmAction()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add confirm action
+            dialog.querySelector('button[onclick="confirmAction()"]').onclick = function() {
+                onConfirm();
+                dialog.remove();
+            };
+            
+            document.body.appendChild(dialog);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initSubscriptionManager);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e4586e04277408',t:'MTc1MjM2MzIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
