@@ -4,2596 +4,1138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TokenZ Loyalty Club v5.1 - Admin CMS</title>
+    <title>TokenZ Loyalty Club - Admin Dashboard v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Enhanced styles for admin interface */
-        .admin-sidebar {
-            transition: transform 0.3s ease;
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        .nav-item.active { background-color: #3B82F6; color: white; }
+        .rating-stars { color: #FCD34D; }
+        .featured-badge { 
+            background: linear-gradient(45deg, #8B5CF6, #EC4899);
+            animation: pulse 2s infinite;
         }
-        
-        .admin-sidebar.collapsed {
-            transform: translateX(-100%);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
-        
-        .data-table {
-            overflow-x: auto;
-        }
-        
-        .form-section {
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 1rem;
-        }
-        
-        .preview-card {
-            border: 2px dashed #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        .preview-card:hover {
-            border-color: #3b82f6;
-            background-color: #f8fafc;
-        }
-        
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .status-active { background: #dcfce7; color: #166534; }
-        .status-inactive { background: #fef2f2; color: #991b1b; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        
-        .image-upload-area {
-            border: 2px dashed #d1d5db;
-            border-radius: 0.5rem;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .image-upload-area:hover {
-            border-color: #3b82f6;
-            background-color: #f8fafc;
-        }
-        
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-        }
-        
-        .media-gallery-item {
-            position: relative;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 2px solid #e5e7eb;
-        }
-        
-        .media-gallery-item img,
-        .media-gallery-item video {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-        }
-        
-        .media-gallery-item .remove-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-        
-        .drag-over {
-            border-color: #3b82f6 !important;
-            background-color: #eff6ff !important;
-        }
-        
-        .notification {
-            background: white;
-            border-left: 4px solid;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            max-width: 300px;
+        .follow-button:hover { transform: translateY(-1px); }
+        .notification-toast {
             animation: slideIn 0.3s ease-out;
         }
-        
-        .notification.warning {
-            border-color: #f59e0b;
-            background-color: #fffbeb;
-        }
-        
-        .notification.error {
-            border-color: #ef4444;
-            background-color: #fef2f2;
-        }
-        
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Admin Authentication Modal -->
-    <div id="adminAuthModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div class="text-center mb-6">
-                <div class="text-4xl mb-4">🔐</div>
-                <h2 class="text-2xl font-bold text-gray-800">Admin Access</h2>
-                <p class="text-gray-600 mt-2">Enter admin credentials to access management interface</p>
-                <p class="text-xs text-gray-500 mt-2" id="releaseTimestamp">Version 5.1 - Released: Loading...</p>
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">TokenZ Admin v5.1</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        <span id="current-time"></span>
+                    </div>
+                    <button onclick="exportData()" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="showImportModal()" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                </div>
             </div>
-            
-            <form id="adminAuthForm">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                    <input type="text" id="adminUsername" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="admin">
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                    <input type="password" id="adminPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter password">
-                </div>
-                
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeAdminAuth()" class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Login</button>
-                </div>
-            </form>
-            
-            <div id="authError" class="mt-4 p-3 bg-red-100 text-red-700 rounded-md hidden"></div>
         </div>
-    </div>
+    </header>
 
-    <!-- Main Admin Interface -->
-    <div id="adminInterface" class="hidden">
-        <!-- Top Navigation -->
-        <nav class="bg-white shadow-sm border-b">
-            <div class="px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button id="sidebarToggle" class="p-2 rounded-md hover:bg-gray-100">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                            </svg>
-                        </button>
-                        <h1 class="text-xl font-semibold text-gray-800">TokenZ Admin CMS v5.1</h1>
-                    </div>
-                    
-                    <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <button id="exportDataBtn" onclick="showExportMenu()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                <span>Export</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex gap-8">
+            <!-- Sidebar Navigation -->
+            <div class="w-64 flex-shrink-0">
+                <nav class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <ul class="space-y-2">
+                        <li>
+                            <button onclick="showSection('dashboard')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors active">
+                                <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
                             </button>
-                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border">
-                                <div class="py-1">
-                                    <button onclick="exportAllData()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export All Data (JSON)</button>
-                                    <button onclick="exportToCSV()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export All Data (CSV)</button>
-                                    <hr class="my-1">
-                                    <button onclick="exportCategories()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Categories Only</button>
-                                    <button onclick="exportMerchants()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Merchants Only</button>
-                                    <button onclick="exportProducts()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Products Only</button>
-                                    <button onclick="exportUsers()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export Users Only</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="relative">
-                            <input type="file" id="importFileHeader" accept=".json,.csv" class="hidden" onchange="importData(this)">
-                            <input type="file" id="importCategoriesFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'categories')">
-                            <input type="file" id="importMerchantsFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'merchants')">
-                            <input type="file" id="importProductsFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'products')">
-                            <input type="file" id="importUsersFile" accept=".json" class="hidden" onchange="importSpecificFile(this, 'users')">
-                            <button onclick="showImportMenu()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                                </svg>
-                                <span>Import</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
+                        </li>
+                        <li>
+                            <button onclick="showSection('merchants')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-store mr-3"></i>Merchants
                             </button>
-                            <div id="importMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border">
-                                <div class="py-1">
-                                    <button onclick="document.getElementById('importFileHeader').click()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import All Data</button>
-                                    <hr class="my-1">
-                                    <button onclick="importSpecificData('categories')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Categories Only</button>
-                                    <button onclick="importSpecificData('merchants')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Merchants Only</button>
-                                    <button onclick="importSpecificData('products')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Products Only</button>
-                                    <button onclick="importSpecificData('users')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import Users Only</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button onclick="logoutAdmin()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Logout</button>
-                    </div>
-                </div>
+                        </li>
+                        <li>
+                            <button onclick="showSection('products')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-box mr-3"></i>Products
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick="showSection('users')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-users mr-3"></i>Users
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick="showSection('ratings')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-star mr-3"></i>Ratings & Reviews
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick="showSection('featured')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-crown mr-3"></i>Featured Products
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick="showSection('analytics')" class="nav-item w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-chart-bar mr-3"></i>Analytics
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
-        </nav>
-
-        <div class="flex">
-            <!-- Sidebar -->
-            <aside id="adminSidebar" class="admin-sidebar w-64 bg-white shadow-sm h-screen sticky top-0">
-                <div class="p-6">
-                    <nav class="space-y-2">
-                        <a href="#" onclick="showAdminSection('dashboard')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            </svg>
-                            <span>Dashboard</span>
-                        </a>
-                        
-                        <a href="#" onclick="showAdminSection('merchants')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6"></path>
-                            </svg>
-                            <span>Merchants</span>
-                        </a>
-                        
-                        <a href="#" onclick="showAdminSection('products')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                            </svg>
-                            <span>Products</span>
-                        </a>
-                        
-                        <a href="#" onclick="showAdminSection('users')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                            </svg>
-                            <span>Users</span>
-                        </a>
-                        
-                        <a href="#" onclick="showAdminSection('settings')" class="admin-nav-item flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            <span>Settings</span>
-                        </a>
-                    </nav>
-                </div>
-            </aside>
 
             <!-- Main Content -->
-            <main class="flex-1 p-6">
+            <div class="flex-1">
                 <!-- Dashboard Section -->
-                <div id="dashboardSection" class="admin-section">
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
-                        <p class="text-gray-600">Overview of your TokenZ Loyalty Club system</p>
-                    </div>
-                    
+                <div id="dashboard-section" class="section-content active">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <!-- Stats Cards -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6"></path>
-                                    </svg>
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="fas fa-store text-blue-600"></i>
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-600">Total Merchants</p>
-                                    <p class="text-2xl font-semibold text-gray-900" id="totalMerchants">0</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="total-merchants">0</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                    </svg>
+                                <div class="p-2 bg-green-100 rounded-lg">
+                                    <i class="fas fa-box text-green-600"></i>
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-600">Total Products</p>
-                                    <p class="text-2xl font-semibold text-gray-900" id="totalProducts">0</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="total-products">0</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                                    </svg>
+                                <div class="p-2 bg-purple-100 rounded-lg">
+                                    <i class="fas fa-users text-purple-600"></i>
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-600">Total Users</p>
-                                    <p class="text-2xl font-semibold text-gray-900" id="totalUsers">0</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="total-users">0</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                    </svg>
+                                <div class="p-2 bg-yellow-100 rounded-lg">
+                                    <i class="fas fa-star text-yellow-600"></i>
                                 </div>
                                 <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-600">Active Campaigns</p>
-                                    <p class="text-2xl font-semibold text-gray-900">3</p>
+                                    <p class="text-sm font-medium text-gray-600">Total Ratings</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="total-ratings">0</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-lg p-6 shadow-sm">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">New merchant "Coffee Corner" added</span>
-                                    <span class="text-xs text-gray-400">2 hours ago</span>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">Product "Premium Latte" updated</span>
-                                    <span class="text-xs text-gray-400">4 hours ago</span>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                    <span class="text-sm text-gray-600">New user registration</span>
-                                    <span class="text-xs text-gray-400">6 hours ago</span>
-                                </div>
-                            </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">Recent Activity</h2>
                         </div>
-                        
-                        <div class="bg-white rounded-lg p-6 shadow-sm">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-                            <div class="space-y-3">
-                                <button onclick="showAdminSection('merchants'); showMerchantForm()" class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-                                    <div class="font-medium text-blue-800">Add New Merchant</div>
-                                    <div class="text-sm text-blue-600">Register a new business partner</div>
-                                </button>
-                                <button onclick="showAdminSection('products'); showProductForm()" class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-                                    <div class="font-medium text-green-800">Add New Product</div>
-                                    <div class="text-sm text-green-600">Create a new product listing</div>
-                                </button>
-                                <button onclick="exportAllData()" class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
-                                    <div class="font-medium text-purple-800">Export Data</div>
-                                    <div class="text-sm text-purple-600">Download system backup</div>
-                                </button>
+                        <div class="p-6">
+                            <div id="recent-activity" class="space-y-4">
+                                <p class="text-gray-500 text-center py-8">No recent activity</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Merchants Section -->
-                <div id="merchantsSection" class="admin-section hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Merchant Management</h2>
-                            <p class="text-gray-600">Manage business partners and their profiles</p>
-                        </div>
-                        <button onclick="showMerchantForm()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            <span>Add Merchant</span>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow-sm">
-                        <div class="p-4 border-b">
-                            <div class="flex flex-wrap gap-4">
-                                <div class="flex-1 min-w-64">
-                                    <input type="text" id="merchantSearch" placeholder="Search merchants..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="filterMerchants()">
-                                </div>
-                                <div>
-                                    <select id="merchantCategoryFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterMerchants()">
-                                        <option value="">All Categories</option>
-                                        <option value="restaurant">Restaurant</option>
-                                        <option value="retail">Retail</option>
-                                        <option value="services">Services</option>
-                                        <option value="entertainment">Entertainment</option>
-                                        <option value="health">Health & Wellness</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <select id="merchantStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterMerchants()">
-                                        <option value="">All Status</option>
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                        <option value="pending">Pending</option>
-                                    </select>
-                                </div>
+                <div id="merchants-section" class="section-content">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-900">Merchants Management</h2>
+                                <button onclick="showAddMerchantModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add Merchant
+                                </button>
                             </div>
                         </div>
-                        <div class="data-table">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="merchantsTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Merchants will be populated here -->
-                                </tbody>
-                            </table>
+                        <div class="p-6">
+                            <div class="mb-4">
+                                <input type="text" id="merchant-search" placeholder="Search merchants..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div id="merchants-list" class="space-y-4">
+                                <p class="text-gray-500 text-center py-8">No merchants found</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Products Section -->
-                <div id="productsSection" class="admin-section hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Product Management</h2>
-                            <p class="text-gray-600">Manage products and their details</p>
-                        </div>
-                        <button onclick="showProductForm()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            <span>Add Product</span>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow-sm">
-                        <div class="p-4 border-b">
-                            <div class="flex flex-wrap gap-4">
-                                <div class="flex-1 min-w-64">
-                                    <input type="text" id="productSearch" placeholder="Search products..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="filterProducts()">
-                                </div>
-                                <div>
-                                    <select id="productMerchantFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterProducts()">
-                                        <option value="">All Merchants</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <select id="productCategoryFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterProducts()">
-                                        <option value="">All Categories</option>
-                                        <option value="food">Food & Beverage</option>
-                                        <option value="clothing">Clothing</option>
-                                        <option value="electronics">Electronics</option>
-                                        <option value="services">Services</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <select id="productStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterProducts()">
-                                        <option value="">All Status</option>
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                        <option value="out_of_stock">Out of Stock</option>
-                                    </select>
+                <div id="products-section" class="section-content">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-900">Products Management</h2>
+                                <div class="flex space-x-3">
+                                    <button onclick="showFeaturedProductsModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                        <i class="fas fa-star mr-2"></i>Manage Featured
+                                    </button>
+                                    <button onclick="showAddProductModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>Add Product
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="data-table">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Products will be populated here -->
-                                </tbody>
-                            </table>
+                        <div class="p-6">
+                            <div class="mb-4 flex space-x-4">
+                                <input type="text" id="product-search" placeholder="Search products..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <select id="product-filter-merchant" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">All Merchants</option>
+                                </select>
+                                <select id="product-filter-status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div id="products-list" class="space-y-4">
+                                <p class="text-gray-500 text-center py-8">No products found</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Users Section -->
-                <div id="usersSection" class="admin-section hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
-                            <p class="text-gray-600">Manage members and their accounts</p>
+                <div id="users-section" class="section-content">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-900">Users Management</h2>
+                                <button onclick="showAddUserModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Add User
+                                </button>
+                            </div>
                         </div>
-                        <button onclick="showInviteForm()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            <span>Send Invitation</span>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow-sm">
-                        <div class="data-table">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membership</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Users will be populated here -->
-                                </tbody>
-                            </table>
+                        <div class="p-6">
+                            <div class="mb-4">
+                                <input type="text" id="user-search" placeholder="Search users..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div id="users-list" class="space-y-4">
+                                <p class="text-gray-500 text-center py-8">No users found</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Settings Section -->
-                <div id="settingsSection" class="admin-section hidden">
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">System Settings</h2>
-                        <p class="text-gray-600">Configure system-wide settings and preferences</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="form-section p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">General Settings</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">System Name</label>
-                                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="TokenZ Loyalty Club">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Admin Email</label>
-                                    <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="admin@tokenzclub.com">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
-                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <option value="ZAR" selected>ZAR (R)</option>
-                                        <option value="USD">USD ($)</option>
-                                        <option value="EUR">EUR (€)</option>
-                                        <option value="GBP">GBP (£)</option>
+                <!-- NEW: Ratings & Reviews Section -->
+                <div id="ratings-section" class="section-content">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-900">Ratings & Reviews Management</h2>
+                                <div class="flex space-x-3">
+                                    <select id="rating-filter-status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="hidden">Hidden</option>
+                                        <option value="flagged">Flagged</option>
+                                    </select>
+                                    <select id="rating-filter-rating" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="">All Ratings</option>
+                                        <option value="5">5 Stars</option>
+                                        <option value="4">4 Stars</option>
+                                        <option value="3">3 Stars</option>
+                                        <option value="2">2 Stars</option>
+                                        <option value="1">1 Star</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="form-section p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Management</h3>
-                            <div class="space-y-4">
-                                <button onclick="exportAllData()" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <span>Export All Data</span>
-                                </button>
-                                
-                                <div class="relative">
-                                    <input type="file" id="importFile" accept=".json,.csv" class="hidden" onchange="importData(this)">
-                                    <button onclick="document.getElementById('importFile').click()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                                        </svg>
-                                        <span>Import Data</span>
-                                    </button>
+                        <div class="p-6">
+                            <div class="mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-green-600" id="ratings-total">0</div>
+                                        <div class="text-sm text-green-600">Total Reviews</div>
+                                    </div>
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-yellow-600" id="ratings-average">0.0</div>
+                                        <div class="text-sm text-yellow-600">Average Rating</div>
+                                    </div>
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-blue-600" id="ratings-this-month">0</div>
+                                        <div class="text-sm text-blue-600">This Month</div>
+                                    </div>
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-red-600" id="ratings-flagged">0</div>
+                                        <div class="text-sm text-red-600">Flagged</div>
+                                    </div>
                                 </div>
-                                
-                                <button onclick="clearAllData()" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                    <span>Clear All Data</span>
+                            </div>
+                            <div id="ratings-list" class="space-y-4">
+                                <p class="text-gray-500 text-center py-8">No ratings found</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW: Featured Products Section -->
+                <div id="featured-section" class="section-content">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-xl font-semibold text-gray-900">Featured Products Management</h2>
+                                <button onclick="showAddFeaturedModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fas fa-star mr-2"></i>Add Featured Product
                                 </button>
                             </div>
                         </div>
+                        <div class="p-6">
+                            <div class="mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-purple-600" id="featured-active">0</div>
+                                        <div class="text-sm text-purple-600">Active Featured</div>
+                                    </div>
+                                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-orange-600" id="featured-expiring">0</div>
+                                        <div class="text-sm text-orange-600">Expiring Soon</div>
+                                    </div>
+                                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-gray-600" id="featured-expired">0</div>
+                                        <div class="text-sm text-gray-600">Expired</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="featured-list" class="space-y-4">
+                                <p class="text-gray-500 text-center py-8">No featured products</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
 
-    <!-- Merchant Form Modal -->
-    <div id="merchantFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800">Add/Edit Merchant</h3>
-                <button onclick="closeMerchantForm()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="merchantForm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
-                        <input type="text" id="merchantName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <div class="relative">
-                            <select id="merchantCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select or type new category...</option>
-                            </select>
-                            <div class="mt-2">
-                                <input type="text" id="merchantCategoryInput" placeholder="Or type new category name..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="handleCategoryTyping(this, 'merchant')">
+                <!-- NEW: Analytics Section -->
+                <div id="analytics-section" class="section-content">
+                    <div class="space-y-6">
+                        <!-- Overview Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                                        <p class="text-2xl font-semibold text-gray-900" id="analytics-revenue">R0.00</p>
+                                    </div>
+                                    <div class="p-2 bg-green-100 rounded-lg">
+                                        <i class="fas fa-dollar-sign text-green-600"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-sm text-green-600" id="revenue-growth">+0%</span>
+                                    <span class="text-sm text-gray-500">vs last month</span>
+                                </div>
                             </div>
-                            <div class="mt-2 flex justify-between items-center">
-                                <button type="button" onclick="addNewCategory('merchant')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">Add New</button>
-                                <button type="button" onclick="showCategoryManager('merchant')" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">Manage Categories</button>
+                            
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-600">Active Users</p>
+                                        <p class="text-2xl font-semibold text-gray-900" id="analytics-active-users">0</p>
+                                    </div>
+                                    <div class="p-2 bg-blue-100 rounded-lg">
+                                        <i class="fas fa-users text-blue-600"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-sm text-blue-600" id="users-growth">+0%</span>
+                                    <span class="text-sm text-gray-500">vs last month</span>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                        <textarea id="merchantDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
-                        <input type="email" id="merchantEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                        <input type="tel" id="merchantPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                        <input type="text" id="merchantAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                        <input type="url" id="merchantWebsite" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select id="merchantStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="pending">Pending</option>
-                        </select>
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
-                        
-                        <!-- URL Input -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-600 mb-2">Image URL</label>
-                            <div class="flex space-x-2">
-                                <input type="url" id="merchantLogoUrl" placeholder="https://example.com/logo.jpg" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="validateImageUrl(this, 'merchantLogoPreview')">
-                                <button type="button" onclick="validateImageUrl(document.getElementById('merchantLogoUrl'), 'merchantLogoPreview')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Preview</button>
+                            
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-600">Avg Rating</p>
+                                        <p class="text-2xl font-semibold text-gray-900" id="analytics-avg-rating">0.0</p>
+                                    </div>
+                                    <div class="p-2 bg-yellow-100 rounded-lg">
+                                        <i class="fas fa-star text-yellow-600"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-sm text-yellow-600" id="rating-trend">+0.0</span>
+                                    <span class="text-sm text-gray-500">vs last month</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-600">Total Follows</p>
+                                        <p class="text-2xl font-semibold text-gray-900" id="analytics-follows">0</p>
+                                    </div>
+                                    <div class="p-2 bg-purple-100 rounded-lg">
+                                        <i class="fas fa-heart text-purple-600"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-sm text-purple-600" id="follows-growth">+0%</span>
+                                    <span class="text-sm text-gray-500">vs last month</span>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Drag & Drop Upload -->
-                        <div class="image-upload-area" id="merchantLogoDropArea" ondrop="handleDrop(event, 'merchantLogoPreview')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('merchantLogo').click()">
-                            <input type="file" id="merchantLogo" accept="image/*,video/*" multiple class="hidden" onchange="handleFileSelect(this, 'merchantLogoPreview')">
-                            <div id="merchantLogoPreview">
-                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <p class="text-sm text-gray-600">Drag & drop files here or click to upload</p>
-                                <p class="text-xs text-gray-500 mt-1">Supports images and videos</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeMerchantForm()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Merchant</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Product Form Modal -->
-    <div id="productFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800">Add/Edit Product</h3>
-                <button onclick="closeProductForm()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="productForm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
-                        <input type="text" id="productName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Merchant *</label>
-                        <select id="productMerchant" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Select Merchant</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Short Description *</label>
-                        <input type="text" id="productShortDescription" required maxlength="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief description for product tiles">
-                        <p class="text-xs text-gray-500 mt-1">Used in product listings and tiles (max 100 characters)</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Long Description</label>
-                        <textarea id="productLongDescription" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Detailed description for product page"></textarea>
-                        <p class="text-xs text-gray-500 mt-1">Detailed description shown on product detail page</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Price *</label>
-                        <input type="number" id="productPrice" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <div class="relative">
-                            <select id="productCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select or type new category...</option>
-                            </select>
-                            <div class="mt-2">
-                                <input type="text" id="productCategoryInput" placeholder="Or type new category name..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="handleCategoryTyping(this, 'product')">
+                        <!-- Top Performers -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h3 class="text-lg font-semibold text-gray-900">Top Rated Products</h3>
+                                </div>
+                                <div class="p-6">
+                                    <div id="top-products" class="space-y-4">
+                                        <p class="text-gray-500 text-center py-4">No data available</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-2 flex justify-between items-center">
-                                <button type="button" onclick="addNewCategory('product')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">Add New</button>
-                                <button type="button" onclick="showCategoryManager('product')" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">Manage Categories</button>
+                            
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h3 class="text-lg font-semibold text-gray-900">Most Followed Merchants</h3>
+                                </div>
+                                <div class="p-6">
+                                    <div id="top-merchants" class="space-y-4">
+                                        <p class="text-gray-500 text-center py-4">No data available</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
-                        <input type="number" id="productStock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select id="productStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="out_of_stock">Out of Stock</option>
-                        </select>
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Images/Videos</label>
-                        
-                        <!-- URL Input -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-600 mb-2">Media URL</label>
-                            <div class="flex space-x-2">
-                                <input type="url" id="productImageUrl" placeholder="https://example.com/product.jpg" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button type="button" onclick="addMediaUrl('productImageUrl', 'productImageGallery')" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Add</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Drag & Drop Upload -->
-                        <div class="image-upload-area mb-4" id="productImageDropArea" ondrop="handleDrop(event, 'productImageGallery')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('productImage').click()">
-                            <input type="file" id="productImage" accept="image/*,video/*" multiple class="hidden" onchange="handleFileSelect(this, 'productImageGallery')">
-                            <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                            </svg>
-                            <p class="text-sm text-gray-600">Drag & drop multiple files here or click to upload</p>
-                            <p class="text-xs text-gray-500 mt-1">Supports images and videos</p>
-                        </div>
-                        
-                        <!-- Media Gallery -->
-                        <div id="productImageGallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <!-- Media items will be added here -->
-                        </div>
-                    </div>
                 </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeProductForm()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Save Product</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- User Edit Modal -->
-    <div id="userEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800">Edit User</h3>
-                <button onclick="closeUserEdit()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="userEditForm">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                        <input type="text" id="editUserName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" id="editUserEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                        <select id="editUserRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="member">Member</option>
-                            <option value="merchant">Merchant</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Membership Type</label>
-                        <select id="editUserMembershipType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="standard">Standard</option>
-                            <option value="perpetual">Perpetual</option>
-                            <option value="passive">Passive</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                        <input type="date" id="editUserExpiry" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select id="editUserStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="expired">Expired</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeUserEdit()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Membership Expiry Notifications -->
-    <div id="expiryNotifications" class="fixed top-20 right-6 space-y-2 z-40">
-        <!-- Notifications will be added here -->
-    </div>
-
-    <!-- Category Manager Modal -->
-    <div id="categoryManagerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800">Manage Categories</h3>
-                <button onclick="closeCategoryManager()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="mb-4">
-                <h4 class="font-semibold text-gray-700 mb-2" id="categoryManagerTitle">Categories</h4>
-                <div id="categoryList" class="space-y-2 max-h-64 overflow-y-auto">
-                    <!-- Categories will be populated here -->
-                </div>
-            </div>
-            
-            <div class="flex justify-end">
-                <button onclick="closeCategoryManager()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- Public Site Button -->
-    <div class="fixed bottom-6 right-6">
-        <button onclick="exitAdminMode()" class="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 flex items-center space-x-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            <span>Back to Site</span>
-        </button>
-    </div>
+    <!-- Modals will be added here -->
+    <div id="modal-container"></div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
     <script>
-        // Admin CMS System v5.1
-        let currentEditingMerchant = null;
-        let currentEditingProduct = null;
-        let currentEditingUser = null;
-        
-        // Sample data structure
+        // Initialize admin data with v5.1 structure
         let adminData = {
-            merchants: [
-                {
-                    id: 1,
-                    name: "Coffee Corner",
-                    category: "Food & Beverage",
-                    description: "Premium coffee and pastries",
-                    email: "info@coffeecorner.com",
-                    phone: "+1-555-0123",
-                    address: "123 Main St, City",
-                    website: "https://coffeecorner.com",
-                    status: "active",
-                    logo: null,
-                    created: new Date().toISOString()
-                }
-            ],
-            products: [
-                {
-                    id: 1,
-                    name: "Premium Latte",
-                    merchantId: 1,
-                    shortDescription: "Rich espresso with steamed milk",
-                    longDescription: "Our signature premium latte made with locally sourced beans and perfectly steamed milk. Available in regular and large sizes.",
-                    description: "Rich espresso with steamed milk",
-                    price: 4.50,
-                    category: "Coffee & Tea",
-                    stock: 100,
-                    status: "active",
-                    images: [],
-                    created: new Date().toISOString()
-                }
-            ],
-            users: [
-                {
-                    id: 1,
-                    name: "John Doe",
-                    email: "john@example.com",
-                    sponsor: null,
-                    joined: new Date().toISOString(),
-                    expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: "active",
-                    role: "member",
-                    membershipType: "standard"
-                }
-            ],
+            merchants: [],
+            products: [],
+            users: [],
+            ratings: [], // New in v5.1
             categories: {
                 merchant: [
-                    "Food & Beverage",
-                    "Fitness & Health",
-                    "Home & Utilities",
-                    "Transportation",
-                    "Entertainment & Media",
-                    "Personal Care & Beauty",
-                    "Professional Services",
-                    "Technology & Software",
-                    "Education & Learning",
-                    "Financial Services",
-                    "Retail & Shopping",
-                    "Travel & Hospitality",
-                    "Security & Safety",
-                    "Pet Care",
-                    "Automotive",
-                    "Real Estate",
-                    "Insurance",
-                    "Telecommunications",
-                    "Energy & Environment",
-                    "Other"
+                    "Food & Beverage", "Fitness & Health", "Home & Utilities", "Transportation",
+                    "Entertainment & Media", "Personal Care & Beauty", "Professional Services",
+                    "Technology & Software", "Education & Learning", "Financial Services",
+                    "Retail & Shopping", "Travel & Hospitality", "Security & Safety", "Pet Care",
+                    "Automotive", "Real Estate", "Insurance", "Telecommunications",
+                    "Energy & Environment", "Other"
                 ],
                 product: [
-                    "Coffee & Tea",
-                    "Food & Meals",
-                    "Beverages",
-                    "Snacks & Treats",
-                    "Gym Memberships",
-                    "Personal Training",
-                    "Wellness Services",
-                    "Beauty Treatments",
-                    "Streaming Services",
-                    "Gaming Subscriptions",
-                    "Music & Audio",
-                    "Books & Magazines",
-                    "Software Subscriptions",
-                    "Cloud Storage",
-                    "VPN Services",
-                    "Productivity Tools",
-                    "Home Security",
-                    "Utilities",
-                    "Internet & Phone",
-                    "Transportation Passes",
-                    "Car Services",
-                    "Insurance Plans",
-                    "Financial Services",
-                    "Educational Courses",
-                    "Professional Development",
-                    "Pet Supplies",
-                    "Pet Services",
-                    "Clothing & Accessories",
-                    "Home Goods",
-                    "Electronics",
-                    "Other"
+                    "Coffee & Tea", "Food & Meals", "Beverages", "Snacks & Treats",
+                    "Gym Memberships", "Personal Training", "Wellness Services", "Beauty Treatments",
+                    "Streaming Services", "Gaming Subscriptions", "Music & Audio", "Books & Magazines",
+                    "Software Subscriptions", "Cloud Storage", "VPN Services", "Productivity Tools",
+                    "Home Security", "Utilities", "Internet & Phone", "Transportation Passes",
+                    "Car Services", "Insurance Plans", "Financial Services", "Educational Courses",
+                    "Professional Development", "Pet Supplies", "Pet Services", "Clothing & Accessories",
+                    "Home Goods", "Electronics", "Other"
                 ]
             },
-            recentActivity: []
+            recentActivity: [],
+            systemSettings: {
+                currency: 'ZAR',
+                systemName: 'TokenZ Loyalty Club',
+                adminEmail: 'admin@tokenzclub.com',
+                featuredProductDuration: 30, // days
+                maxRatingValue: 5,
+                allowAnonymousRatings: false
+            }
         };
 
-        // Activity tracking
-        function addActivity(type, description) {
-            adminData.recentActivity.unshift({
-                id: Date.now(),
-                type: type,
-                description: description,
-                timestamp: new Date().toISOString()
-            });
-            
-            // Keep only last 10 activities
-            if (adminData.recentActivity.length > 10) {
-                adminData.recentActivity = adminData.recentActivity.slice(0, 10);
-            }
-            
-            updateRecentActivity();
-            saveAdminData();
-        }
-
-        function updateRecentActivity() {
-            const container = document.querySelector('.space-y-3');
-            if (container && adminData.recentActivity.length > 0) {
-                container.innerHTML = '';
-                adminData.recentActivity.slice(0, 3).forEach(activity => {
-                    const timeAgo = getTimeAgo(new Date(activity.timestamp));
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center space-x-3';
-                    div.innerHTML = `
-                        <div class="w-2 h-2 bg-${getActivityColor(activity.type)}-500 rounded-full"></div>
-                        <span class="text-sm text-gray-600">${activity.description}</span>
-                        <span class="text-xs text-gray-400">${timeAgo}</span>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-        }
-
-        function getActivityColor(type) {
-            const colors = {
-                'merchant': 'green',
-                'product': 'blue',
-                'user': 'purple',
-                'system': 'gray'
-            };
-            return colors[type] || 'gray';
-        }
-
-        function getTimeAgo(date) {
-            const now = new Date();
-            const diff = now - date;
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            if (hours < 1) return 'Just now';
-            if (hours === 1) return '1 hour ago';
-            return `${hours} hours ago`;
-        }
-
-        // Initialize admin system
-        function initAdmin() {
-            console.log('🔧 Starting admin initialization...');
-            
-            try {
-                console.log('📂 Loading stored data...');
-                loadStoredData();
-                
-                console.log('📊 Updating dashboard stats...');
-                updateDashboardStats();
-                
-                console.log('🏪 Populating merchants table...');
-                populateMerchantsTable();
-                
-                console.log('📦 Populating products table...');
-                populateProductsTable();
-                
-                console.log('👥 Populating users table...');
-                populateUsersTable();
-                
-                console.log('🔽 Populating merchant dropdown...');
-                populateMerchantDropdown();
-                
-                console.log('✅ Admin initialization complete!');
-                
-                // Show dashboard by default
-                showAdminSection('dashboard');
-                
-            } catch (error) {
-                console.error('❌ Admin initialization failed:', error);
-                alert('Failed to initialize admin system: ' + error.message);
-            }
-        }
-
-        // Authentication functions
-        function showAdminAuth() {
-            console.log('🔐 Attempting to show admin auth modal...');
-            const modal = document.getElementById('adminAuthModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                console.log('✅ Admin auth modal shown');
-            } else {
-                console.error('❌ Admin auth modal not found!');
-                alert('Critical error: Admin authentication modal not found. Please refresh the page.');
-            }
-        }
-
-        function closeAdminAuth() {
-            document.getElementById('adminAuthModal').classList.add('hidden');
-            document.getElementById('adminAuthForm').reset();
-            document.getElementById('authError').classList.add('hidden');
-        }
-
-        function authenticateAdmin(username, password) {
-            console.log('🔑 Attempting authentication for:', username);
-            
-            // Simple authentication - in production, use proper authentication
-            if (username === 'admin' && password === 'tokenz2024') {
-                console.log('✅ Authentication successful');
-                
-                try {
-                    document.getElementById('adminAuthModal').classList.add('hidden');
-                    document.getElementById('adminInterface').classList.remove('hidden');
-                    console.log('🎯 Initializing admin interface...');
-                    initAdmin();
-                    console.log('🎉 Admin interface ready!');
-                    return true;
-                } catch (error) {
-                    console.error('❌ Error showing admin interface:', error);
-                    alert('Error loading admin interface: ' + error.message);
-                    return false;
-                }
-            } else {
-                console.log('❌ Authentication failed');
-                return false;
-            }
-        }
-
-        function logoutAdmin() {
-            document.getElementById('adminInterface').classList.add('hidden');
-            document.getElementById('adminAuthModal').classList.add('hidden');
-            // Return to main site
-            location.reload();
-        }
-
-        function exitAdminMode() {
-            if (confirm('Exit admin mode and return to the main site?')) {
-                logoutAdmin();
-            }
-        }
-
-        // Data management functions
-        function loadStoredData() {
+        // Load data from localStorage
+        function loadData() {
             try {
                 const stored = localStorage.getItem('tlc_admin_data');
                 if (stored) {
-                    const loadedData = JSON.parse(stored);
-                    adminData = {
-                        merchants: loadedData.merchants || [],
-                        products: loadedData.products || [],
-                        users: loadedData.users || [],
-                        categories: loadedData.categories || {
-                            merchant: ["Restaurant", "Retail", "Services", "Entertainment", "Health & Wellness", "Other"],
-                            product: ["Food & Beverage", "Clothing", "Electronics", "Services", "Other"]
-                        },
-                        recentActivity: loadedData.recentActivity || []
-                    };
+                    const parsedData = JSON.parse(stored);
+                    
+                    // Migrate data to v5.1 if needed using AdminUtilities
+                    if (typeof AdminUtilities !== 'undefined') {
+                        adminData = AdminUtilities.migrateDataToV51(parsedData);
+                    } else {
+                        // Basic migration if utilities not loaded
+                        adminData = { ...adminData, ...parsedData };
+                        if (!adminData.ratings) adminData.ratings = [];
+                    }
+                    
+                    console.log('✅ Data loaded and migrated to v5.1');
+                } else {
+                    console.log('📝 Using default data structure');
                 }
             } catch (error) {
-                console.warn('Error loading admin data:', error);
+                console.error('❌ Error loading data:', error);
+                showNotification('Error loading data. Using defaults.', 'error');
             }
         }
 
-        function saveAdminData() {
+        // Save data to localStorage
+        function saveData() {
             try {
                 localStorage.setItem('tlc_admin_data', JSON.stringify(adminData));
-                console.log('Admin data saved');
+                console.log('💾 Data saved successfully');
             } catch (error) {
-                console.error('Error saving admin data:', error);
+                console.error('❌ Error saving data:', error);
+                showNotification('Error saving data!', 'error');
             }
         }
 
         // Navigation functions
-        function showAdminSection(section) {
-            console.log('🧭 Navigating to section:', section);
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
             
-            try {
-                // Hide all sections
-                document.querySelectorAll('.admin-section').forEach(el => {
-                    el.classList.add('hidden');
-                });
-                
-                // Show selected section
-                const targetSection = document.getElementById(section + 'Section');
-                if (targetSection) {
-                    targetSection.classList.remove('hidden');
-                    console.log('✅ Section shown:', section);
-                } else {
-                    console.error('❌ Section not found:', section + 'Section');
-                }
-                
-                // Update navigation highlighting
-                document.querySelectorAll('.admin-nav-item').forEach(el => {
-                    el.classList.remove('bg-blue-100', 'text-blue-800');
-                    el.classList.add('text-gray-700');
-                });
-                
-                // Find and highlight the correct nav item
-                const navItems = document.querySelectorAll('.admin-nav-item');
-                navItems.forEach(item => {
-                    const onclick = item.getAttribute('onclick');
-                    if (onclick && onclick.includes(`'${section}'`)) {
-                        item.classList.add('bg-blue-100', 'text-blue-800');
-                        item.classList.remove('text-gray-700');
-                    }
-                });
-                
-            } catch (error) {
-                console.error('❌ Navigation error:', error);
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+            
+            // Load section-specific data
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'merchants':
+                    loadMerchants();
+                    break;
+                case 'products':
+                    loadProducts();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'ratings':
+                    loadRatings();
+                    break;
+                case 'featured':
+                    loadFeaturedProducts();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
             }
         }
 
         // Dashboard functions
-        function updateDashboardStats() {
-            document.getElementById('totalMerchants').textContent = adminData.merchants.length;
-            document.getElementById('totalProducts').textContent = adminData.products.length;
-            document.getElementById('totalUsers').textContent = adminData.users.length;
+        function loadDashboard() {
+            // Update stats
+            document.getElementById('total-merchants').textContent = adminData.merchants.length;
+            document.getElementById('total-products').textContent = adminData.products.length;
+            document.getElementById('total-users').textContent = adminData.users.length;
+            document.getElementById('total-ratings').textContent = adminData.ratings ? adminData.ratings.length : 0;
+            
+            // Load recent activity
+            loadRecentActivity();
         }
 
-        // Merchant management functions
-        function populateMerchantsTable(merchants = null) {
-            const tbody = document.getElementById('merchantsTableBody');
-            tbody.innerHTML = '';
+        function loadRecentActivity() {
+            const container = document.getElementById('recent-activity');
+            const activities = adminData.recentActivity || [];
             
-            const merchantsToShow = merchants || adminData.merchants;
+            if (activities.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No recent activity</p>';
+                return;
+            }
             
-            merchantsToShow.forEach(merchant => {
-                const productCount = adminData.products.filter(p => p.merchantId === merchant.id).length;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                    ${merchant.logo ? `<img class="h-10 w-10 rounded-full object-cover" src="${merchant.logo}" alt="${merchant.name}">` : `<span class="text-sm font-medium text-gray-600">${merchant.name.charAt(0)}</span>`}
+            container.innerHTML = activities.slice(0, 10).map(activity => `
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getActivityIcon(activity.type)} text-gray-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">${activity.description}</p>
+                        <p class="text-xs text-gray-500">${formatDateTime(activity.timestamp)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getActivityIcon(type) {
+            const icons = {
+                merchant: 'store',
+                product: 'box',
+                user: 'user',
+                rating: 'star',
+                system: 'cog'
+            };
+            return icons[type] || 'info-circle';
+        }
+
+        // NEW: Ratings Management Functions
+        function loadRatings() {
+            const ratings = adminData.ratings || [];
+            
+            // Update stats
+            document.getElementById('ratings-total').textContent = ratings.length;
+            
+            const activeRatings = ratings.filter(r => r.status === 'active');
+            const averageRating = activeRatings.length > 0 ? 
+                (activeRatings.reduce((sum, r) => sum + r.rating, 0) / activeRatings.length).toFixed(1) : '0.0';
+            document.getElementById('ratings-average').textContent = averageRating;
+            
+            const thisMonth = new Date();
+            thisMonth.setDate(1);
+            const thisMonthRatings = ratings.filter(r => new Date(r.date) >= thisMonth);
+            document.getElementById('ratings-this-month').textContent = thisMonthRatings.length;
+            
+            const flaggedRatings = ratings.filter(r => r.status === 'flagged');
+            document.getElementById('ratings-flagged').textContent = flaggedRatings.length;
+            
+            // Load ratings list
+            displayRatings(ratings);
+        }
+
+        function displayRatings(ratings) {
+            const container = document.getElementById('ratings-list');
+            
+            if (ratings.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No ratings found</p>';
+                return;
+            }
+            
+            container.innerHTML = ratings.map(rating => {
+                const user = adminData.users.find(u => u.id === rating.userId);
+                const product = adminData.products.find(p => p.id === rating.productId);
+                const merchant = adminData.merchants.find(m => m.id === rating.merchantId);
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <div class="rating-stars text-yellow-400">
+                                        ${'★'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}
+                                    </div>
+                                    <span class="text-sm text-gray-600">${rating.rating}/5</span>
+                                    <span class="px-2 py-1 text-xs rounded-full ${getRatingStatusColor(rating.status)}">
+                                        ${rating.status}
+                                    </span>
                                 </div>
+                                <p class="text-sm text-gray-900 mb-2">
+                                    <strong>${user ? user.name : 'Unknown User'}</strong> rated 
+                                    <strong>${product ? product.name : 'Unknown Product'}</strong>
+                                    ${merchant ? `at ${merchant.name}` : ''}
+                                </p>
+                                ${rating.review ? `<p class="text-sm text-gray-700 mb-2">"${rating.review}"</p>` : ''}
+                                <p class="text-xs text-gray-500">${formatDateTime(rating.date)}</p>
                             </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${merchant.name}</div>
-                                <div class="text-sm text-gray-500">${merchant.email || 'No email'}</div>
+                            <div class="flex space-x-2 ml-4">
+                                ${rating.status === 'active' ? `
+                                    <button onclick="moderateRating('${rating.id}', 'hidden')" class="text-yellow-600 hover:text-yellow-800">
+                                        <i class="fas fa-eye-slash"></i>
+                                    </button>
+                                    <button onclick="moderateRating('${rating.id}', 'flagged')" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-flag"></i>
+                                    </button>
+                                ` : ''}
+                                ${rating.status === 'hidden' || rating.status === 'flagged' ? `
+                                    <button onclick="moderateRating('${rating.id}', 'active')" class="text-green-600 hover:text-green-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                ` : ''}
+                                <button onclick="deleteRating('${rating.id}')" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-sm text-gray-900">${merchant.category}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${productCount} products
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge status-${merchant.status}">${merchant.status}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="editMerchant(${merchant.id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                        <button onclick="deleteMerchant(${merchant.id})" class="text-red-600 hover:text-red-900">Delete</button>
-                    </td>
+                    </div>
                 `;
-                tbody.appendChild(row);
-            });
+            }).join('');
         }
 
-        function showMerchantForm(merchantId = null) {
-            currentEditingMerchant = merchantId;
-            const modal = document.getElementById('merchantFormModal');
-            const form = document.getElementById('merchantForm');
+        function getRatingStatusColor(status) {
+            const colors = {
+                active: 'bg-green-100 text-green-800',
+                hidden: 'bg-yellow-100 text-yellow-800',
+                flagged: 'bg-red-100 text-red-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function moderateRating(ratingId, newStatus) {
+            if (typeof AdminUtilities !== 'undefined') {
+                AdminUtilities.moderateRating(adminData, ratingId, newStatus);
+            } else {
+                // Fallback moderation
+                const rating = adminData.ratings.find(r => r.id === ratingId);
+                if (rating) {
+                    rating.status = newStatus;
+                }
+            }
             
-            // Populate category dropdown
-            populateCategoryDropdown('merchant');
-            
-            if (merchantId) {
-                const merchant = adminData.merchants.find(m => m.id === merchantId);
-                if (merchant) {
-                    document.getElementById('merchantName').value = merchant.name;
-                    document.getElementById('merchantCategory').value = merchant.category;
-                    document.getElementById('merchantCategoryInput').value = '';
-                    document.getElementById('merchantDescription').value = merchant.description || '';
-                    document.getElementById('merchantEmail').value = merchant.email || '';
-                    document.getElementById('merchantPhone').value = merchant.phone || '';
-                    document.getElementById('merchantAddress').value = merchant.address || '';
-                    document.getElementById('merchantWebsite').value = merchant.website || '';
-                    document.getElementById('merchantStatus').value = merchant.status;
-                    
-                    if (merchant.logo) {
-                        document.getElementById('merchantLogoPreview').innerHTML = `<img src="${merchant.logo}" class="image-preview mx-auto">`;
+            saveData();
+            loadRatings();
+            showNotification(`Rating ${newStatus}`, 'success');
+        }
+
+        function deleteRating(ratingId) {
+            if (confirm('Are you sure you want to delete this rating?')) {
+                if (typeof AdminUtilities !== 'undefined') {
+                    AdminUtilities.deleteRating(adminData, ratingId);
+                } else {
+                    // Fallback deletion
+                    const index = adminData.ratings.findIndex(r => r.id === ratingId);
+                    if (index >= 0) {
+                        adminData.ratings.splice(index, 1);
                     }
                 }
-            } else {
-                form.reset();
-                document.getElementById('merchantCategoryInput').value = '';
-                document.getElementById('merchantLogoPreview').innerHTML = `
-                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
-                    <p class="text-sm text-gray-600">Drag & drop files here or click to upload</p>
-                    <p class="text-xs text-gray-500 mt-1">Supports images and videos</p>
-                `;
-            }
-            
-            modal.classList.remove('hidden');
-        }
-
-        function closeMerchantForm() {
-            document.getElementById('merchantFormModal').classList.add('hidden');
-            currentEditingMerchant = null;
-        }
-
-        function editMerchant(id) {
-            showMerchantForm(id);
-        }
-
-        function deleteMerchant(id) {
-            if (confirm('Are you sure you want to delete this merchant? This will also delete all associated products.')) {
-                adminData.merchants = adminData.merchants.filter(m => m.id !== id);
-                adminData.products = adminData.products.filter(p => p.merchantId !== id);
-                saveAdminData();
-                populateMerchantsTable();
-                populateProductsTable();
-                populateMerchantDropdown();
-                updateDashboardStats();
+                
+                saveData();
+                loadRatings();
+                showNotification('Rating deleted', 'success');
             }
         }
 
-        // Product management functions
-        function populateProductsTable(products = null) {
-            const tbody = document.getElementById('productsTableBody');
-            tbody.innerHTML = '';
+        // NEW: Featured Products Management Functions
+        function loadFeaturedProducts() {
+            // Clean up expired featured products first
+            if (typeof AdminUtilities !== 'undefined') {
+                AdminUtilities.checkExpiredFeaturedProducts(adminData);
+            }
             
-            const productsToShow = products || adminData.products;
+            const featuredProducts = adminData.products.filter(p => p.featured);
+            const activeFeatured = featuredProducts.filter(p => !isFeaturedExpired(p));
+            const expiringSoon = activeFeatured.filter(p => getDaysUntilExpiry(p.featuredExpiry) <= 7);
+            const expired = featuredProducts.filter(p => isFeaturedExpired(p));
             
-            productsToShow.forEach(product => {
+            // Update stats
+            document.getElementById('featured-active').textContent = activeFeatured.length;
+            document.getElementById('featured-expiring').textContent = expiringSoon.length;
+            document.getElementById('featured-expired').textContent = expired.length;
+            
+            // Display featured products
+            displayFeaturedProducts(featuredProducts);
+        }
+
+        function displayFeaturedProducts(products) {
+            const container = document.getElementById('featured-list');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No featured products</p>';
+                return;
+            }
+            
+            container.innerHTML = products.map(product => {
                 const merchant = adminData.merchants.find(m => m.id === product.merchantId);
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <div class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
-                                    ${product.images && product.images.length > 0 ? 
-                                        (product.images[0].match(/\.(mp4|webm|ogg|mov|avi)$/i) ? 
-                                            `<video class="h-10 w-10 rounded object-cover" src="${product.images[0]}" muted></video>` : 
-                                            `<img class="h-10 w-10 rounded object-cover" src="${product.images[0]}" alt="${product.name}">`) : 
-                                        `<span class="text-xs font-medium text-gray-600">📦</span>`}
+                const isExpired = isFeaturedExpired(product);
+                const daysLeft = getDaysUntilExpiry(product.featuredExpiry);
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 ${isExpired ? 'bg-red-50' : ''}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h3 class="font-semibold text-gray-900">${product.name}</h3>
+                                    ${product.featured && !isExpired ? '<span class="featured-badge text-white text-xs px-2 py-1 rounded-full">FEATURED</span>' : ''}
+                                    ${isExpired ? '<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">EXPIRED</span>' : ''}
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2">${merchant ? merchant.name : 'Unknown Merchant'}</p>
+                                <p class="text-sm text-gray-700 mb-2">${product.shortDescription}</p>
+                                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span>Price: R${product.price}</span>
+                                    ${product.featuredExpiry ? `
+                                        <span class="${isExpired ? 'text-red-600' : daysLeft <= 7 ? 'text-orange-600' : 'text-green-600'}">
+                                            ${isExpired ? 'Expired' : `${daysLeft} days left`}
+                                        </span>
+                                    ` : ''}
                                 </div>
                             </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${product.name}</div>
-                                <div class="text-sm text-gray-500">${product.shortDescription || product.description || 'No description'}</div>
+                            <div class="flex space-x-2 ml-4">
+                                ${product.featured ? `
+                                    <button onclick="removeFeatured('${product.id}')" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </button>
+                                ` : `
+                                    <button onclick="makeFeatured('${product.id}')" class="text-purple-600 hover:text-purple-800">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                `}
+                                ${product.featured && !isExpired ? `
+                                    <button onclick="extendFeatured('${product.id}')" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-clock"></i>
+                                    </button>
+                                ` : ''}
                             </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${merchant ? merchant.name : 'Unknown'}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R${product.price.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-sm text-gray-900">${product.category}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge status-${product.status}">${product.status}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="editProduct(${product.id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                        <button onclick="deleteProduct(${product.id})" class="text-red-600 hover:text-red-900">Delete</button>
-                    </td>
+                    </div>
                 `;
-                tbody.appendChild(row);
-            });
-            
-            // Update product merchant filter
-            updateProductMerchantFilter();
+            }).join('');
         }
 
-        function updateProductMerchantFilter() {
-            const select = document.getElementById('productMerchantFilter');
-            if (select) {
-                const currentValue = select.value;
-                select.innerHTML = '<option value="">All Merchants</option>';
-                
-                adminData.merchants.forEach(merchant => {
-                    const option = document.createElement('option');
-                    option.value = merchant.id;
-                    option.textContent = merchant.name;
-                    if (merchant.id.toString() === currentValue) {
-                        option.selected = true;
+        function makeFeatured(productId) {
+            const days = prompt('How many days should this product be featured?', '30');
+            if (days && !isNaN(days) && parseInt(days) > 0) {
+                if (typeof AdminUtilities !== 'undefined') {
+                    AdminUtilities.setProductFeatured(adminData, productId, true, parseInt(days));
+                } else {
+                    // Fallback
+                    const product = adminData.products.find(p => p.id === productId);
+                    if (product) {
+                        product.featured = true;
+                        const expiry = new Date();
+                        expiry.setDate(expiry.getDate() + parseInt(days));
+                        product.featuredExpiry = expiry.toISOString();
                     }
-                    select.appendChild(option);
-                });
+                }
+                
+                saveData();
+                loadFeaturedProducts();
+                showNotification('Product featured successfully', 'success');
             }
         }
 
-        function populateMerchantDropdown() {
-            const select = document.getElementById('productMerchant');
-            select.innerHTML = '<option value="">Select Merchant</option>';
-            
-            adminData.merchants.forEach(merchant => {
-                const option = document.createElement('option');
-                option.value = merchant.id;
-                option.textContent = merchant.name;
-                select.appendChild(option);
-            });
+        function removeFeatured(productId) {
+            if (confirm('Remove this product from featured list?')) {
+                if (typeof AdminUtilities !== 'undefined') {
+                    AdminUtilities.setProductFeatured(adminData, productId, false);
+                } else {
+                    // Fallback
+                    const product = adminData.products.find(p => p.id === productId);
+                    if (product) {
+                        product.featured = false;
+                        product.featuredExpiry = null;
+                    }
+                }
+                
+                saveData();
+                loadFeaturedProducts();
+                showNotification('Product removed from featured', 'success');
+            }
         }
 
-        function showProductForm(productId = null) {
-            currentEditingProduct = productId;
-            const modal = document.getElementById('productFormModal');
-            const form = document.getElementById('productForm');
-            
-            populateMerchantDropdown();
-            populateCategoryDropdown('product');
-            
-            if (productId) {
+        function extendFeatured(productId) {
+            const days = prompt('Extend featured period by how many days?', '30');
+            if (days && !isNaN(days) && parseInt(days) > 0) {
                 const product = adminData.products.find(p => p.id === productId);
-                if (product) {
-                    document.getElementById('productName').value = product.name;
-                    document.getElementById('productMerchant').value = product.merchantId;
-                    document.getElementById('productShortDescription').value = product.shortDescription || product.description || '';
-                    document.getElementById('productLongDescription').value = product.longDescription || '';
-                    document.getElementById('productPrice').value = product.price;
-                    document.getElementById('productCategory').value = product.category;
-                    document.getElementById('productCategoryInput').value = '';
-                    document.getElementById('productStock').value = product.stock || '';
-                    document.getElementById('productStatus').value = product.status;
+                if (product && product.featuredExpiry) {
+                    const currentExpiry = new Date(product.featuredExpiry);
+                    currentExpiry.setDate(currentExpiry.getDate() + parseInt(days));
+                    product.featuredExpiry = currentExpiry.toISOString();
                     
-                    // Populate gallery with existing images
-                    populateGallery('productImageGallery', product.images || []);
+                    saveData();
+                    loadFeaturedProducts();
+                    showNotification('Featured period extended', 'success');
                 }
-            } else {
-                form.reset();
-                document.getElementById('productCategoryInput').value = '';
-                document.getElementById('productImageGallery').innerHTML = '';
-            }
-            
-            modal.classList.remove('hidden');
-        }
-
-        function closeProductForm() {
-            document.getElementById('productFormModal').classList.add('hidden');
-            currentEditingProduct = null;
-        }
-
-        function editProduct(id) {
-            showProductForm(id);
-        }
-
-        function deleteProduct(id) {
-            if (confirm('Are you sure you want to delete this product?')) {
-                adminData.products = adminData.products.filter(p => p.id !== id);
-                saveAdminData();
-                populateProductsTable();
-                updateDashboardStats();
             }
         }
 
-        // User management functions
-        function populateUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
+        // NEW: Analytics Functions
+        function loadAnalytics() {
+            calculateAnalytics();
+        }
+
+        function calculateAnalytics() {
+            const products = adminData.products || [];
+            const users = adminData.users || [];
+            const ratings = adminData.ratings || [];
+            const merchants = adminData.merchants || [];
             
-            adminData.users.forEach(user => {
-                const sponsor = user.sponsor ? adminData.users.find(u => u.id === user.sponsor) : null;
-                const expiryDate = user.expiry ? new Date(user.expiry) : null;
-                const expiryStatus = getExpiryStatus(expiryDate);
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <span class="text-sm font-medium text-gray-600">${user.name.charAt(0)}</span>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${user.name}</div>
-                            </div>
+            // Calculate total revenue (mock calculation)
+            const totalRevenue = products.reduce((sum, product) => sum + (product.price * (product.salesCount || 0)), 0);
+            document.getElementById('analytics-revenue').textContent = `R${totalRevenue.toFixed(2)}`;
+            
+            // Active users
+            const activeUsers = users.filter(u => u.status === 'active').length;
+            document.getElementById('analytics-active-users').textContent = activeUsers;
+            
+            // Average rating
+            const activeRatings = ratings.filter(r => r.status === 'active');
+            const avgRating = activeRatings.length > 0 ? 
+                (activeRatings.reduce((sum, r) => sum + r.rating, 0) / activeRatings.length).toFixed(1) : '0.0';
+            document.getElementById('analytics-avg-rating').textContent = avgRating;
+            
+            // Total follows (mock calculation)
+            const totalFollows = merchants.reduce((sum, merchant) => sum + (merchant.followerCount || 0), 0);
+            document.getElementById('analytics-follows').textContent = totalFollows;
+            
+            // Load top performers
+            loadTopProducts();
+            loadTopMerchants();
+        }
+
+        function loadTopProducts() {
+            const products = adminData.products || [];
+            const topProducts = products
+                .filter(p => p.averageRating > 0)
+                .sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
+                .slice(0, 5);
+            
+            const container = document.getElementById('top-products');
+            
+            if (topProducts.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No rated products yet</p>';
+                return;
+            }
+            
+            container.innerHTML = topProducts.map((product, index) => {
+                const merchant = adminData.merchants.find(m => m.id === product.merchantId);
+                return `
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-semibold text-blue-600">${index + 1}</span>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${user.email}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="capitalize text-sm text-gray-900">${user.role || 'member'}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="capitalize text-sm text-gray-900">${user.membershipType || 'standard'}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${expiryDate ? expiryDate.toLocaleDateString() : 'No expiry'}
-                        ${expiryStatus ? `<div class="text-xs text-${expiryStatus.color}-600">${expiryStatus.text}</div>` : ''}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge status-${user.status}">${user.status}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="editUser(${user.id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                        <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-900">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-            
-            // Check for expiry notifications
-            checkExpiryNotifications();
-        }
-
-        function getExpiryStatus(expiryDate) {
-            if (!expiryDate) return null;
-            
-            const now = new Date();
-            const diffTime = expiryDate - now;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 0) {
-                return { text: 'Expired', color: 'red' };
-            } else if (diffDays <= 30) {
-                return { text: `${diffDays} days left`, color: 'red' };
-            } else if (diffDays <= 60) {
-                return { text: `${diffDays} days left`, color: 'yellow' };
-            }
-            return null;
-        }
-
-        function checkExpiryNotifications() {
-            const notifications = [];
-            const now = new Date();
-            
-            adminData.users.forEach(user => {
-                if (user.expiry && user.status === 'active') {
-                    const expiryDate = new Date(user.expiry);
-                    const diffTime = expiryDate - now;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays <= 30 && diffDays > 0) {
-                        notifications.push({
-                            type: 'warning',
-                            message: `${user.name}'s membership expires in ${diffDays} days`,
-                            user: user
-                        });
-                    } else if (diffDays <= 60 && diffDays > 30) {
-                        notifications.push({
-                            type: 'info',
-                            message: `${user.name}'s membership expires in ${diffDays} days`,
-                            user: user
-                        });
-                    }
-                }
-            });
-            
-            displayNotifications(notifications);
-        }
-
-        function displayNotifications(notifications) {
-            const container = document.getElementById('expiryNotifications');
-            container.innerHTML = '';
-            
-            notifications.forEach((notification, index) => {
-                const div = document.createElement('div');
-                div.className = `notification ${notification.type}`;
-                div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">${notification.message}</p>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">${product.name}</p>
+                            <p class="text-xs text-gray-500">${merchant ? merchant.name : 'Unknown'}</p>
                         </div>
-                        <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                        <div class="text-right">
+                            <div class="rating-stars text-yellow-400 text-sm">
+                                ${'★'.repeat(Math.floor(product.averageRating || 0))}
+                            </div>
+                            <p class="text-xs text-gray-500">${(product.averageRating || 0).toFixed(1)}/5</p>
+                        </div>
                     </div>
                 `;
-                container.appendChild(div);
-                
-                // Auto-remove after 10 seconds
-                setTimeout(() => {
-                    if (div.parentElement) {
-                        div.remove();
-                    }
-                }, 10000);
-            });
+            }).join('');
         }
 
-        function editUser(id) {
-            const user = adminData.users.find(u => u.id === id);
-            if (user) {
-                document.getElementById('editUserName').value = user.name;
-                document.getElementById('editUserEmail').value = user.email;
-                document.getElementById('editUserRole').value = user.role || 'member';
-                document.getElementById('editUserMembershipType').value = user.membershipType || 'standard';
-                document.getElementById('editUserExpiry').value = user.expiry ? user.expiry.split('T')[0] : '';
-                document.getElementById('editUserStatus').value = user.status;
-                
-                document.getElementById('userEditModal').classList.remove('hidden');
-                currentEditingUser = id;
-            }
-        }
-
-        function closeUserEdit() {
-            document.getElementById('userEditModal').classList.add('hidden');
-            currentEditingUser = null;
-        }
-
-        function deleteUser(id) {
-            if (confirm('Are you sure you want to delete this user?')) {
-                adminData.users = adminData.users.filter(u => u.id !== id);
-                saveAdminData();
-                populateUsersTable();
-                updateDashboardStats();
-                addActivity('user', `User deleted`);
-            }
-        }
-
-        // Media handling functions
-        function validateImageUrl(input, previewId) {
-            const url = input.value.trim();
-            if (!url) return;
+        function loadTopMerchants() {
+            const merchants = adminData.merchants || [];
+            const topMerchants = merchants
+                .sort((a, b) => (b.followerCount || 0) - (a.followerCount || 0))
+                .slice(0, 5);
             
-            const img = new Image();
-            img.onload = function() {
-                if (previewId === 'merchantLogoPreview') {
-                    document.getElementById(previewId).innerHTML = `<img src="${url}" class="image-preview mx-auto">`;
-                } else {
-                    addMediaToGallery(url, previewId);
-                }
-            };
-            img.onerror = function() {
-                alert('Invalid image URL or image could not be loaded');
-            };
-            img.src = url;
-        }
-
-        function addMediaUrl(inputId, galleryId) {
-            const input = document.getElementById(inputId);
-            const url = input.value.trim();
-            if (!url) return;
+            const container = document.getElementById('top-merchants');
             
-            // Check if it's an image or video
-            const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
-            const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
-            
-            if (isImage) {
-                const img = new Image();
-                img.onload = function() {
-                    addMediaToGallery(url, galleryId, 'image');
-                    input.value = '';
-                };
-                img.onerror = function() {
-                    alert('Invalid image URL or image could not be loaded');
-                };
-                img.src = url;
-            } else if (isVideo) {
-                addMediaToGallery(url, galleryId, 'video');
-                input.value = '';
-            } else {
-                alert('Please enter a valid image or video URL');
-            }
-        }
-
-        function addMediaToGallery(src, galleryId, type = 'image') {
-            const gallery = document.getElementById(galleryId);
-            const mediaItem = document.createElement('div');
-            mediaItem.className = 'media-gallery-item';
-            mediaItem.draggable = true;
-            
-            const mediaElement = type === 'video' ? 
-                `<video src="${src}" controls></video>` : 
-                `<img src="${src}" alt="Media">`;
-            
-            mediaItem.innerHTML = `
-                ${mediaElement}
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
-                <div class="drag-handle" style="position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.7); color: white; padding: 2px 4px; border-radius: 2px; font-size: 10px; cursor: move;">⋮⋮</div>
-            `;
-            
-            // Add drag event listeners
-            mediaItem.addEventListener('dragstart', handleDragStart);
-            mediaItem.addEventListener('dragover', handleDragOverItem);
-            mediaItem.addEventListener('drop', handleDropItem);
-            mediaItem.addEventListener('dragend', handleDragEnd);
-            
-            gallery.appendChild(mediaItem);
-        }
-
-        let draggedItem = null;
-
-        function handleDragStart(e) {
-            draggedItem = this;
-            this.style.opacity = '0.5';
-        }
-
-        function handleDragOverItem(e) {
-            e.preventDefault();
-            if (this !== draggedItem) {
-                this.style.borderLeft = '3px solid #3b82f6';
-            }
-        }
-
-        function handleDropItem(e) {
-            e.preventDefault();
-            if (this !== draggedItem) {
-                const gallery = this.parentElement;
-                const allItems = Array.from(gallery.children);
-                const draggedIndex = allItems.indexOf(draggedItem);
-                const targetIndex = allItems.indexOf(this);
-                
-                if (draggedIndex < targetIndex) {
-                    gallery.insertBefore(draggedItem, this.nextSibling);
-                } else {
-                    gallery.insertBefore(draggedItem, this);
-                }
-            }
-            this.style.borderLeft = '';
-        }
-
-        function handleDragEnd(e) {
-            this.style.opacity = '';
-            // Clear all border styles
-            const gallery = this.parentElement;
-            Array.from(gallery.children).forEach(item => {
-                item.style.borderLeft = '';
-            });
-            draggedItem = null;
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleDrop(e, galleryId) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            
-            const files = Array.from(e.dataTransfer.files);
-            handleFiles(files, galleryId);
-        }
-
-        function handleFileSelect(input, galleryId) {
-            const files = Array.from(input.files);
-            handleFiles(files, galleryId);
-        }
-
-        function handleFiles(files, galleryId) {
-            files.forEach(file => {
-                if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const type = file.type.startsWith('video/') ? 'video' : 'image';
-                        addMediaToGallery(e.target.result, galleryId, type);
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    alert(`File ${file.name} is not a supported image or video format`);
-                }
-            });
-        }
-
-        function getGalleryMedia(galleryId) {
-            const gallery = document.getElementById(galleryId);
-            const mediaItems = gallery.querySelectorAll('.media-gallery-item');
-            const mediaUrls = [];
-            
-            mediaItems.forEach(item => {
-                const img = item.querySelector('img');
-                const video = item.querySelector('video');
-                if (img) mediaUrls.push(img.src);
-                if (video) mediaUrls.push(video.src);
-            });
-            
-            return mediaUrls;
-        }
-
-        function populateGallery(galleryId, mediaUrls) {
-            const gallery = document.getElementById(galleryId);
-            gallery.innerHTML = '';
-            
-            if (mediaUrls && mediaUrls.length > 0) {
-                mediaUrls.forEach(url => {
-                    const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
-                    addMediaToGallery(url, galleryId, isVideo ? 'video' : 'image');
-                });
-            }
-        }
-
-        // Category management functions - Completely rebuilt v5.1
-        let currentCategoryType = null;
-        
-        function populateCategoryDropdown(type) {
-            const select = document.getElementById(type + 'Category');
-            const categories = adminData.categories[type] || [];
-            
-            // Clear and rebuild dropdown
-            select.innerHTML = '<option value="">Select category...</option>';
-            
-            // Add all existing categories
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                select.appendChild(option);
-            });
-        }
-        
-        function handleCategoryTyping(input, type) {
-            const value = input.value.trim();
-            const select = document.getElementById(type + 'Category');
-            const categories = adminData.categories[type] || [];
-            
-            if (!value) {
-                select.value = '';
+            if (topMerchants.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No merchants with followers yet</p>';
                 return;
             }
             
-            // Find exact match first
-            const exactMatch = categories.find(cat => 
-                cat.toLowerCase() === value.toLowerCase()
-            );
-            
-            if (exactMatch) {
-                select.value = exactMatch;
-                return;
-            }
-            
-            // Find partial matches
-            const partialMatches = categories.filter(cat => 
-                cat.toLowerCase().includes(value.toLowerCase())
-            );
-            
-            if (partialMatches.length > 0) {
-                select.value = partialMatches[0];
-            } else {
-                select.value = '';
-            }
-        }
-        
-        function addNewCategory(type) {
-            const input = document.getElementById(type + 'CategoryInput');
-            const categoryName = input.value.trim();
-            
-            if (!categoryName) {
-                alert('Please enter a category name');
-                input.focus();
-                return;
-            }
-            
-            // Initialize categories array if needed
-            if (!adminData.categories[type]) {
-                adminData.categories[type] = [];
-            }
-            
-            const categories = adminData.categories[type];
-            
-            // Check for existing category (case-insensitive)
-            const existingCategory = categories.find(cat => 
-                cat.toLowerCase() === categoryName.toLowerCase()
-            );
-            
-            if (existingCategory) {
-                // Category exists, select it
-                document.getElementById(type + 'Category').value = existingCategory;
-                input.value = '';
-                alert(`Category "${existingCategory}" already exists and has been selected.`);
-                return;
-            }
-            
-            // Add new category
-            categories.push(categoryName);
-            categories.sort();
-            
-            // Update dropdown and select new category
-            populateCategoryDropdown(type);
-            document.getElementById(type + 'Category').value = categoryName;
-            input.value = '';
-            
-            // Save and log
-            saveAdminData();
-            addActivity('system', `New ${type} category "${categoryName}" created`);
-            
-            alert(`Category "${categoryName}" created successfully!`);
-        }
-        
-        function showCategoryManager(type) {
-            currentCategoryType = type;
-            const modal = document.getElementById('categoryManagerModal');
-            const title = document.getElementById('categoryManagerTitle');
-            const list = document.getElementById('categoryList');
-            
-            title.textContent = `Manage ${type.charAt(0).toUpperCase() + type.slice(1)} Categories`;
-            
-            // Clear and populate category list
-            list.innerHTML = '';
-            const categories = adminData.categories[type] || [];
-            
-            if (categories.length === 0) {
-                list.innerHTML = '<p class="text-gray-500 text-sm">No categories found</p>';
-                modal.classList.remove('hidden');
-                return;
-            }
-            
-            categories.forEach(category => {
-                const categoryItem = document.createElement('div');
-                categoryItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg border';
-                
-                // Count usage
-                let usageCount = 0;
-                if (type === 'merchant') {
-                    usageCount = adminData.merchants.filter(m => m.category === category).length;
-                } else if (type === 'product') {
-                    usageCount = adminData.products.filter(p => p.category === category).length;
-                }
-                
-                categoryItem.innerHTML = `
-                    <div>
-                        <span class="text-sm font-medium text-gray-800">${category}</span>
-                        <div class="text-xs text-gray-500">${usageCount} item(s) using this category</div>
+            container.innerHTML = topMerchants.map((merchant, index) => `
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold text-purple-600">${index + 1}</span>
                     </div>
-                    <button onclick="deleteCategory('${type}', '${category.replace(/'/g, "\\'")}')" 
-                            class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
-                        Delete
-                    </button>
-                `;
-                list.appendChild(categoryItem);
-            });
-            
-            modal.classList.remove('hidden');
-        }
-        
-        function closeCategoryManager() {
-            document.getElementById('categoryManagerModal').classList.add('hidden');
-            currentCategoryType = null;
-        }
-        
-        function deleteCategory(type, categoryToDelete) {
-            // Count items using this category
-            let itemsUsingCategory = [];
-            let itemType = '';
-            
-            if (type === 'merchant') {
-                itemsUsingCategory = adminData.merchants.filter(m => m.category === categoryToDelete);
-                itemType = 'merchant';
-            } else if (type === 'product') {
-                itemsUsingCategory = adminData.products.filter(p => p.category === categoryToDelete);
-                itemType = 'product';
-            }
-            
-            // Confirm deletion
-            let confirmMessage = `Delete category "${categoryToDelete}"?`;
-            if (itemsUsingCategory.length > 0) {
-                confirmMessage = `Category "${categoryToDelete}" is used by ${itemsUsingCategory.length} ${itemType}(s). ` +
-                               `Deleting it will change those items to "Other" category. Continue?`;
-            }
-            
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-            
-            // Update items using this category to "Other"
-            if (itemsUsingCategory.length > 0) {
-                // Ensure "Other" category exists
-                if (!adminData.categories[type].includes('Other')) {
-                    adminData.categories[type].push('Other');
-                }
-                
-                // Update all items using the deleted category
-                itemsUsingCategory.forEach(item => {
-                    item.category = 'Other';
-                });
-            }
-            
-            // Remove the category
-            adminData.categories[type] = adminData.categories[type].filter(cat => cat !== categoryToDelete);
-            
-            // Ensure "Other" category always exists
-            if (!adminData.categories[type].includes('Other')) {
-                adminData.categories[type].push('Other');
-                adminData.categories[type].sort();
-            }
-            
-            // Save changes
-            saveAdminData();
-            addActivity('system', `Category "${categoryToDelete}" deleted (${itemsUsingCategory.length} items moved to "Other")`);
-            
-            // Refresh displays
-            showCategoryManager(type);
-            if (type === 'merchant') {
-                populateMerchantsTable();
-            } else if (type === 'product') {
-                populateProductsTable();
-            }
-            
-            alert(`Category "${categoryToDelete}" deleted successfully!`);
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">${merchant.name}</p>
+                        <p class="text-xs text-gray-500">${merchant.category || 'Uncategorized'}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-gray-900">${merchant.followerCount || 0}</p>
+                        <p class="text-xs text-gray-500">followers</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
         // Utility functions
-        function previewImage(input, previewId) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById(previewId).innerHTML = `<img src="${e.target.result}" class="image-preview mx-auto">`;
-                };
-                reader.readAsDataURL(file);
-            }
+        function isFeaturedExpired(product) {
+            if (!product.featured || !product.featuredExpiry) return true;
+            return new Date(product.featuredExpiry) < new Date();
         }
 
-        function generateId() {
-            return Math.max(...adminData.merchants.map(m => m.id), ...adminData.products.map(p => p.id), ...adminData.users.map(u => u.id), 0) + 1;
+        function getDaysUntilExpiry(dateString) {
+            if (!dateString) return 0;
+            const expiry = new Date(dateString);
+            const now = new Date();
+            const diffTime = expiry - now;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
-        // Export/Import functions
-        function showExportMenu() {
-            const menu = document.getElementById('exportMenu');
-            menu.classList.toggle('hidden');
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString();
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification-toast bg-white border-l-4 ${getNotificationColor(type)} rounded-lg shadow-lg p-4 max-w-sm`;
             
-            // Close menu when clicking outside
-            document.addEventListener('click', function closeMenu(e) {
-                if (!e.target.closest('#exportDataBtn') && !e.target.closest('#exportMenu')) {
-                    menu.classList.add('hidden');
-                    document.removeEventListener('click', closeMenu);
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getNotificationIcon(type)} ${getNotificationTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
                 }
+            }, 5000);
+        }
+
+        function getNotificationColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getNotificationTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Placeholder functions for existing functionality
+        function loadMerchants() {
+            // Existing merchant loading logic
+            console.log('Loading merchants...');
+        }
+
+        function loadProducts() {
+            // Existing product loading logic
+            console.log('Loading products...');
+        }
+
+        function loadUsers() {
+            // Existing user loading logic
+            console.log('Loading users...');
+        }
+
+        function showAddMerchantModal() {
+            console.log('Show add merchant modal');
+        }
+
+        function showAddProductModal() {
+            console.log('Show add product modal');
+        }
+
+        function showAddUserModal() {
+            console.log('Show add user modal');
+        }
+
+        function showAddFeaturedModal() {
+            console.log('Show add featured modal');
+        }
+
+        function exportData() {
+            console.log('Export data');
+        }
+
+        function showImportModal() {
+            console.log('Show import modal');
+        }
+
+        // Update current time
+        function updateCurrentTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString();
+        }
+
+        // Initialize the application
+        function init() {
+            console.log('🚀 Initializing TokenZ Admin v5.1...');
+            
+            // Load data
+            loadData();
+            
+            // Load dashboard by default
+            loadDashboard();
+            
+            // Update time every minute
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000);
+            
+            // Set up search filters
+            setupSearchFilters();
+            
+            console.log('✅ TokenZ Admin v5.1 initialized successfully');
+        }
+
+        function setupSearchFilters() {
+            // Rating filters
+            document.getElementById('rating-filter-status')?.addEventListener('change', function() {
+                filterRatings();
+            });
+            
+            document.getElementById('rating-filter-rating')?.addEventListener('change', function() {
+                filterRatings();
             });
         }
 
-        function showImportMenu() {
-            const menu = document.getElementById('importMenu');
-            menu.classList.toggle('hidden');
+        function filterRatings() {
+            const statusFilter = document.getElementById('rating-filter-status').value;
+            const ratingFilter = document.getElementById('rating-filter-rating').value;
             
-            // Close menu when clicking outside
-            document.addEventListener('click', function closeMenu(e) {
-                if (!e.target.closest('button[onclick="showImportMenu()"]') && !e.target.closest('#importMenu')) {
-                    menu.classList.add('hidden');
-                    document.removeEventListener('click', closeMenu);
-                }
-            });
-        }
-
-        function exportAllData() {
-            const dataToExport = {
-                merchants: adminData.merchants,
-                products: adminData.products,
-                users: adminData.users,
-                categories: adminData.categories,
-                recentActivity: adminData.recentActivity,
-                exported: new Date().toISOString(),
-                version: '5.1'
-            };
+            let filteredRatings = adminData.ratings || [];
             
-            downloadJSON(dataToExport, `tokenz-all-data-${new Date().toISOString().split('T')[0]}.json`);
-            document.getElementById('exportMenu').classList.add('hidden');
-        }
-
-        function exportCategories() {
-            const dataToExport = {
-                categories: adminData.categories,
-                exported: new Date().toISOString(),
-                version: '5.1',
-                type: 'categories'
-            };
-            
-            downloadJSON(dataToExport, `tokenz-categories-${new Date().toISOString().split('T')[0]}.json`);
-            document.getElementById('exportMenu').classList.add('hidden');
-        }
-
-        function exportMerchants() {
-            const dataToExport = {
-                merchants: adminData.merchants,
-                exported: new Date().toISOString(),
-                version: '5.1',
-                type: 'merchants'
-            };
-            
-            downloadJSON(dataToExport, `tokenz-merchants-${new Date().toISOString().split('T')[0]}.json`);
-            document.getElementById('exportMenu').classList.add('hidden');
-        }
-
-        function exportProducts() {
-            const dataToExport = {
-                products: adminData.products,
-                exported: new Date().toISOString(),
-                version: '5.1',
-                type: 'products'
-            };
-            
-            downloadJSON(dataToExport, `tokenz-products-${new Date().toISOString().split('T')[0]}.json`);
-            document.getElementById('exportMenu').classList.add('hidden');
-        }
-
-        function exportUsers() {
-            const dataToExport = {
-                users: adminData.users,
-                exported: new Date().toISOString(),
-                version: '5.1',
-                type: 'users'
-            };
-            
-            downloadJSON(dataToExport, `tokenz-users-${new Date().toISOString().split('T')[0]}.json`);
-            document.getElementById('exportMenu').classList.add('hidden');
-        }
-
-        function downloadJSON(data, filename) {
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function exportToCSV() {
-            // Create CSV for merchants
-            let merchantsCSV = 'Name,Category,Description,Email,Phone,Address,Website,Logo URL,Status,Created\n';
-            adminData.merchants.forEach(merchant => {
-                merchantsCSV += `"${merchant.name}","${merchant.category}","${(merchant.description || '').replace(/"/g, '""')}","${merchant.email || ''}","${merchant.phone || ''}","${merchant.address || ''}","${merchant.website || ''}","${merchant.logo || ''}","${merchant.status}","${merchant.created}"\n`;
-            });
-
-            // Create CSV for products
-            let productsCSV = 'Name,Merchant,Short Description,Long Description,Price,Category,Stock,Image URLs,Status,Created\n';
-            adminData.products.forEach(product => {
-                const merchant = adminData.merchants.find(m => m.id === product.merchantId);
-                const imageUrls = (product.images || []).join('; ');
-                const shortDesc = (product.shortDescription || product.description || '').replace(/"/g, '""');
-                const longDesc = (product.longDescription || '').replace(/"/g, '""');
-                productsCSV += `"${product.name}","${merchant ? merchant.name : 'Unknown'}","${shortDesc}","${longDesc}","${product.price}","${product.category}","${product.stock || 0}","${imageUrls}","${product.status}","${product.created}"\n`;
-            });
-
-            // Create CSV for users
-            let usersCSV = 'Name,Email,Role,Membership Type,Joined,Expiry,Status\n';
-            adminData.users.forEach(user => {
-                usersCSV += `"${user.name}","${user.email}","${user.role || 'member'}","${user.membershipType || 'standard'}","${user.joined}","${user.expiry || ''}","${user.status}"\n`;
-            });
-
-            // Create zip-like structure (multiple downloads)
-            downloadCSV(merchantsCSV, 'merchants');
-            setTimeout(() => downloadCSV(productsCSV, 'products'), 500);
-            setTimeout(() => downloadCSV(usersCSV, 'users'), 1000);
-            
-            document.getElementById('exportMenu').classList.add('hidden');
-        }
-
-        function downloadCSV(csvContent, filename) {
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `tokenz-${filename}-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Filter functions
-        function filterMerchants() {
-            const searchTerm = document.getElementById('merchantSearch').value.toLowerCase();
-            const categoryFilter = document.getElementById('merchantCategoryFilter').value;
-            const statusFilter = document.getElementById('merchantStatusFilter').value;
-            
-            const filteredMerchants = adminData.merchants.filter(merchant => {
-                const matchesSearch = merchant.name.toLowerCase().includes(searchTerm) || 
-                                    (merchant.description && merchant.description.toLowerCase().includes(searchTerm));
-                const matchesCategory = !categoryFilter || merchant.category === categoryFilter;
-                const matchesStatus = !statusFilter || merchant.status === statusFilter;
-                
-                return matchesSearch && matchesCategory && matchesStatus;
-            });
-            
-            populateMerchantsTable(filteredMerchants);
-        }
-
-        function filterProducts() {
-            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
-            const merchantFilter = document.getElementById('productMerchantFilter').value;
-            const categoryFilter = document.getElementById('productCategoryFilter').value;
-            const statusFilter = document.getElementById('productStatusFilter').value;
-            
-            const filteredProducts = adminData.products.filter(product => {
-                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
-                                    (product.description && product.description.toLowerCase().includes(searchTerm));
-                const matchesMerchant = !merchantFilter || product.merchantId.toString() === merchantFilter;
-                const matchesCategory = !categoryFilter || product.category === categoryFilter;
-                const matchesStatus = !statusFilter || product.status === statusFilter;
-                
-                return matchesSearch && matchesMerchant && matchesCategory && matchesStatus;
-            });
-            
-            populateProductsTable(filteredProducts);
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if (file) {
-                const fileName = file.name.toLowerCase();
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        if (fileName.endsWith('.json')) {
-                            // Handle JSON import
-                            const importedData = JSON.parse(e.target.result);
-                            if (confirm('This will replace all existing data. Are you sure?')) {
-                                adminData = {
-                                    merchants: importedData.merchants || [],
-                                    products: importedData.products || [],
-                                    users: importedData.users || [],
-                                    categories: importedData.categories || adminData.categories,
-                                    recentActivity: importedData.recentActivity || []
-                                };
-                                saveAdminData();
-                                initAdmin();
-                                alert('JSON data imported successfully!');
-                            }
-                        } else if (fileName.endsWith('.csv')) {
-                            // Handle CSV import
-                            alert('CSV import is not yet supported. Please use JSON format for importing data. You can export your data as JSON and import it on another system.');
-                        } else {
-                            alert('Unsupported file format. Please use JSON files for importing data.');
-                        }
-                    } catch (error) {
-                        if (fileName.endsWith('.json')) {
-                            alert('Error importing JSON data: ' + error.message + '\n\nPlease ensure the file is a valid JSON export from this system.');
-                        } else {
-                            alert('Error reading file: ' + error.message);
-                        }
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function importSpecificData(type) {
-            const fileInput = document.getElementById(`import${type.charAt(0).toUpperCase() + type.slice(1)}File`);
-            fileInput.click();
-            document.getElementById('importMenu').classList.add('hidden');
-        }
-
-        function importSpecificFile(input, type) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    // Validate the import file
-                    if (importedData.type && importedData.type !== type) {
-                        alert(`This file is for ${importedData.type}, but you're trying to import ${type}. Please select the correct file.`);
-                        return;
-                    }
-                    
-                    let importCount = 0;
-                    let confirmMessage = '';
-                    
-                    switch (type) {
-                        case 'categories':
-                            if (importedData.categories) {
-                                confirmMessage = `Import ${Object.keys(importedData.categories).length} category types? This will merge with existing categories.`;
-                                if (confirm(confirmMessage)) {
-                                    // Merge categories
-                                    Object.keys(importedData.categories).forEach(categoryType => {
-                                        if (!adminData.categories[categoryType]) {
-                                            adminData.categories[categoryType] = [];
-                                        }
-                                        
-                                        importedData.categories[categoryType].forEach(category => {
-                                            if (!adminData.categories[categoryType].includes(category)) {
-                                                adminData.categories[categoryType].push(category);
-                                                importCount++;
-                                            }
-                                        });
-                                        
-                                        // Sort categories
-                                        adminData.categories[categoryType].sort();
-                                    });
-                                    
-                                    saveAdminData();
-                                    alert(`Successfully imported ${importCount} new categories!`);
-                                    addActivity('system', `Imported ${importCount} categories`);
-                                }
-                            } else {
-                                alert('No categories found in the selected file.');
-                            }
-                            break;
-                            
-                        case 'merchants':
-                            if (importedData.merchants) {
-                                confirmMessage = `Import ${importedData.merchants.length} merchants? This will add to existing merchants.`;
-                                if (confirm(confirmMessage)) {
-                                    importedData.merchants.forEach(merchant => {
-                                        // Assign new ID to avoid conflicts
-                                        merchant.id = generateId();
-                                        adminData.merchants.push(merchant);
-                                        importCount++;
-                                    });
-                                    
-                                    saveAdminData();
-                                    populateMerchantsTable();
-                                    populateMerchantDropdown();
-                                    updateDashboardStats();
-                                    alert(`Successfully imported ${importCount} merchants!`);
-                                    addActivity('merchant', `Imported ${importCount} merchants`);
-                                }
-                            } else {
-                                alert('No merchants found in the selected file.');
-                            }
-                            break;
-                            
-                        case 'products':
-                            if (importedData.products) {
-                                confirmMessage = `Import ${importedData.products.length} products? This will add to existing products.`;
-                                if (confirm(confirmMessage)) {
-                                    importedData.products.forEach(product => {
-                                        // Assign new ID to avoid conflicts
-                                        product.id = generateId();
-                                        adminData.products.push(product);
-                                        importCount++;
-                                    });
-                                    
-                                    saveAdminData();
-                                    populateProductsTable();
-                                    updateDashboardStats();
-                                    alert(`Successfully imported ${importCount} products!`);
-                                    addActivity('product', `Imported ${importCount} products`);
-                                }
-                            } else {
-                                alert('No products found in the selected file.');
-                            }
-                            break;
-                            
-                        case 'users':
-                            if (importedData.users) {
-                                confirmMessage = `Import ${importedData.users.length} users? This will add to existing users.`;
-                                if (confirm(confirmMessage)) {
-                                    importedData.users.forEach(user => {
-                                        // Assign new ID to avoid conflicts
-                                        user.id = generateId();
-                                        adminData.users.push(user);
-                                        importCount++;
-                                    });
-                                    
-                                    saveAdminData();
-                                    populateUsersTable();
-                                    updateDashboardStats();
-                                    alert(`Successfully imported ${importCount} users!`);
-                                    addActivity('user', `Imported ${importCount} users`);
-                                }
-                            } else {
-                                alert('No users found in the selected file.');
-                            }
-                            break;
-                    }
-                    
-                } catch (error) {
-                    alert(`Error importing ${type}: ${error.message}\n\nPlease ensure the file is a valid JSON export from this system.`);
-                }
-            };
-            reader.readAsText(file);
-            
-            // Clear the input
-            input.value = '';
-        }
-
-        function clearAllData() {
-            if (confirm('This will delete ALL data permanently. Are you absolutely sure?')) {
-                if (confirm('Last chance! This cannot be undone. Delete everything?')) {
-                    adminData = { merchants: [], products: [], users: [] };
-                    saveAdminData();
-                    initAdmin();
-                    alert('All data has been cleared.');
-                }
-            }
-        }
-
-        // Form submission handlers
-        document.getElementById('adminAuthForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('adminUsername').value;
-            const password = document.getElementById('adminPassword').value;
-            
-            if (authenticateAdmin(username, password)) {
-                closeAdminAuth();
-            } else {
-                const errorEl = document.getElementById('authError');
-                errorEl.textContent = 'Invalid credentials. Try admin/tokenz2024';
-                errorEl.classList.remove('hidden');
-            }
-        });
-
-        document.getElementById('merchantForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const merchantData = {
-                name: document.getElementById('merchantName').value,
-                category: document.getElementById('merchantCategory').value,
-                description: document.getElementById('merchantDescription').value,
-                email: document.getElementById('merchantEmail').value,
-                phone: document.getElementById('merchantPhone').value,
-                address: document.getElementById('merchantAddress').value,
-                website: document.getElementById('merchantWebsite').value,
-                status: document.getElementById('merchantStatus').value,
-                logo: document.getElementById('merchantLogoPreview').querySelector('img')?.src || null
-            };
-            
-            if (currentEditingMerchant) {
-                const index = adminData.merchants.findIndex(m => m.id === currentEditingMerchant);
-                adminData.merchants[index] = { ...adminData.merchants[index], ...merchantData };
-                addActivity('merchant', `Merchant "${merchantData.name}" updated`);
-            } else {
-                merchantData.id = generateId();
-                merchantData.created = new Date().toISOString();
-                adminData.merchants.push(merchantData);
-                addActivity('merchant', `New merchant "${merchantData.name}" added`);
+            if (statusFilter) {
+                filteredRatings = filteredRatings.filter(r => r.status === statusFilter);
             }
             
-            saveAdminData();
-            populateMerchantsTable();
-            populateMerchantDropdown();
-            updateDashboardStats();
-            closeMerchantForm();
-        });
-
-        document.getElementById('productForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const productData = {
-                name: document.getElementById('productName').value,
-                merchantId: parseInt(document.getElementById('productMerchant').value),
-                shortDescription: document.getElementById('productShortDescription').value,
-                longDescription: document.getElementById('productLongDescription').value,
-                description: document.getElementById('productShortDescription').value, // Keep for backward compatibility
-                price: parseFloat(document.getElementById('productPrice').value),
-                category: document.getElementById('productCategory').value,
-                stock: parseInt(document.getElementById('productStock').value) || 0,
-                status: document.getElementById('productStatus').value,
-                images: getGalleryMedia('productImageGallery')
-            };
-            
-            if (currentEditingProduct) {
-                const index = adminData.products.findIndex(p => p.id === currentEditingProduct);
-                adminData.products[index] = { ...adminData.products[index], ...productData };
-                addActivity('product', `Product "${productData.name}" updated`);
-            } else {
-                productData.id = generateId();
-                productData.created = new Date().toISOString();
-                adminData.products.push(productData);
-                addActivity('product', `New product "${productData.name}" added`);
+            if (ratingFilter) {
+                filteredRatings = filteredRatings.filter(r => r.rating === parseInt(ratingFilter));
             }
             
-            saveAdminData();
-            populateProductsTable();
-            updateDashboardStats();
-            closeProductForm();
-        });
+            displayRatings(filteredRatings);
+        }
 
-        // User edit form handler
-        document.getElementById('userEditForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (currentEditingUser) {
-                const index = adminData.users.findIndex(u => u.id === currentEditingUser);
-                if (index !== -1) {
-                    const userData = {
-                        role: document.getElementById('editUserRole').value,
-                        membershipType: document.getElementById('editUserMembershipType').value,
-                        expiry: document.getElementById('editUserExpiry').value ? 
-                               new Date(document.getElementById('editUserExpiry').value).toISOString() : null,
-                        status: document.getElementById('editUserStatus').value
-                    };
-                    
-                    adminData.users[index] = { ...adminData.users[index], ...userData };
-                    saveAdminData();
-                    populateUsersTable();
-                    closeUserEdit();
-                    addActivity('user', `User "${adminData.users[index].name}" updated`);
-                }
-            }
-        });
-
-        // Sidebar toggle
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.getElementById('adminSidebar').classList.toggle('collapsed');
-        });
-
-        // Initialize admin interface when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 TokenZ Admin CMS v5.1 Loading...');
-            console.log('📊 Current URL:', window.location.href);
-            
-            // Set static release timestamp for GMT+2 timezone
-            document.getElementById('releaseTimestamp').textContent = 'Version 5.1 - Released: 12 July 2024, 23:16 (GMT+2)';
-            
-            try {
-                // Always show admin auth on direct access
-                console.log('🔐 Showing admin authentication...');
-                showAdminAuth();
-                
-                // Test data loading
-                console.log('💾 Testing data storage...');
-                loadStoredData();
-                console.log('📈 Current data:', {
-                    merchants: adminData.merchants.length,
-                    products: adminData.products.length,
-                    users: adminData.users.length
-                });
-                
-            } catch (error) {
-                console.error('❌ Initialization error:', error);
-                alert('Admin system failed to initialize. Check console for details.');
-            }
-        });
-
-        // Add admin access from main site
-        window.showAdminInterface = function() {
-            console.log('🔗 Admin interface called from main site');
-            showAdminAuth();
-        };
-
-        // Debug function to test system
-        window.debugAdmin = function() {
-            console.log('🔍 Admin Debug Info:');
-            console.log('- Data:', adminData);
-            console.log('- Auth modal visible:', !document.getElementById('adminAuthModal').classList.contains('hidden'));
-            console.log('- Interface visible:', !document.getElementById('adminInterface').classList.contains('hidden'));
-            console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
-        };
+        // Start the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e390c81552253d',t:'MTc1MjM1NTAyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e419aa050373b6',t:'MTc1MjM2MDYzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
