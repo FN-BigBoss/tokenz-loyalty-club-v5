@@ -147,6 +147,7 @@
                 <div class="text-4xl mb-4">🔐</div>
                 <h2 class="text-2xl font-bold text-gray-800">Admin Access</h2>
                 <p class="text-gray-600 mt-2">Enter admin credentials to access management interface</p>
+                <p class="text-xs text-gray-500 mt-2">Version 5.1 - Released: <span id="releaseTime"></span></p>
             </div>
             
             <form id="adminAuthForm">
@@ -1198,7 +1199,7 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="capitalize text-sm text-gray-900">${merchant.category}</span>
+                        <span class="text-sm text-gray-900">${merchant.category}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ${productCount} products
@@ -1285,7 +1286,11 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 <div class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
-                                    ${product.images && product.images.length > 0 ? `<img class="h-10 w-10 rounded object-cover" src="${product.images[0]}" alt="${product.name}">` : `<span class="text-xs font-medium text-gray-600">📦</span>`}
+                                    ${product.images && product.images.length > 0 ? 
+                                        (product.images[0].match(/\.(mp4|webm|ogg|mov|avi)$/i) ? 
+                                            `<video class="h-10 w-10 rounded object-cover" src="${product.images[0]}" muted></video>` : 
+                                            `<img class="h-10 w-10 rounded object-cover" src="${product.images[0]}" alt="${product.name}">`) : 
+                                        `<span class="text-xs font-medium text-gray-600">📦</span>`}
                                 </div>
                             </div>
                             <div class="ml-4">
@@ -1301,7 +1306,7 @@
                         R${product.price.toFixed(2)}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="capitalize text-sm text-gray-900">${product.category}</span>
+                        <span class="text-sm text-gray-900">${product.category}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="status-badge status-${product.status}">${product.status}</span>
@@ -2043,6 +2048,13 @@
             console.log('📊 Current URL:', window.location.href);
             
             try {
+                // Set release timestamp
+                const releaseTime = new Date().toLocaleString();
+                const releaseTimeEl = document.getElementById('releaseTime');
+                if (releaseTimeEl) {
+                    releaseTimeEl.textContent = releaseTime;
+                }
+                
                 // Always show admin auth on direct access
                 console.log('🔐 Showing admin authentication...');
                 showAdminAuth();
@@ -2077,5 +2089,5 @@
             console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e0a67d11b4df1a',t:'MTc1MjMyNDQ1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e0d72813183575',t:'MTc1MjMyNjQ1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
