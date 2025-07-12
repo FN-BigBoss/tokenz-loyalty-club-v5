@@ -1,0 +1,1267 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Product Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- July 13, 01:16 - Product Detail Module -->
+    <style>
+        .product-image-gallery {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-image-main {
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+        
+        .product-image-main:hover {
+            transform: scale(1.1);
+        }
+        
+        .image-thumbnail {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .image-thumbnail:hover {
+            transform: scale(1.05);
+            border-color: #3B82F6;
+        }
+        
+        .image-thumbnail.active {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .rating-bar {
+            background: #E5E7EB;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .rating-fill {
+            background: linear-gradient(90deg, #FCD34D, #F59E0B);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .review-card {
+            transition: all 0.2s ease;
+        }
+        
+        .review-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subscription-plan {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .subscription-plan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subscription-plan.selected {
+            border-color: #3B82F6;
+            background: linear-gradient(135deg, #EBF4FF, #DBEAFE);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F9FAFB;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .quantity-btn:hover {
+            background: #E5E7EB;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            border: none;
+            outline: none;
+            font-weight: 600;
+        }
+        
+        .merchant-card {
+            background: linear-gradient(135deg, #F8FAFC, #E2E8F0);
+            border: 1px solid #CBD5E1;
+            transition: all 0.3s ease;
+        }
+        
+        .merchant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .related-product {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .related-product:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .price-history-chart {
+            height: 100px;
+            background: linear-gradient(135deg, #EBF4FF, #DBEAFE);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .price-trend {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(45deg, #3B82F6, #1D4ED8);
+            clip-path: polygon(0 100%, 20% 80%, 40% 85%, 60% 70%, 80% 75%, 100% 60%, 100% 100%);
+        }
+        
+        .sticky-purchase-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #E5E7EB;
+            padding: 1rem;
+            z-index: 40;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sticky-purchase-bar.show {
+            transform: translateY(0);
+        }
+        
+        .zoom-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .zoom-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .zoom-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        
+        .review-photos {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        
+        .review-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .review-photo:hover {
+            transform: scale(1.1);
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Product Details</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Share Button -->
+                    <button onclick="shareProduct()" class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-share"></i>
+                    </button>
+                    
+                    <!-- Wishlist Button -->
+                    <button onclick="toggleWishlist()" id="wishlist-btn" class="p-2 text-gray-600 hover:text-red-500 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Product Images -->
+            <div class="space-y-4">
+                <!-- Main Image -->
+                <div class="product-image-gallery bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="aspect-square bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                        <div id="main-product-image" class="product-image-main text-8xl cursor-pointer" onclick="zoomImage()">
+                            ☕
+                        </div>
+                    </div>
+                    
+                    <!-- Image Thumbnails -->
+                    <div class="flex space-x-2 overflow-x-auto">
+                        <div class="image-thumbnail active flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border-2 border-gray-200 flex items-center justify-center text-2xl" onclick="selectImage(0)">
+                            ☕
+                        </div>
+                        <div class="image-thumbnail flex-shrink-0 w-16 h-16 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg border-2 border-gray-200 flex items-center justify-center text-2xl" onclick="selectImage(1)">
+                            📦
+                        </div>
+                        <div class="image-thumbnail flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-gray-200 flex items-center justify-center text-2xl" onclick="selectImage(2)">
+                            🏷️
+                        </div>
+                        <div class="image-thumbnail flex-shrink-0 w-16 h-16 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border-2 border-gray-200 flex items-center justify-center text-2xl" onclick="selectImage(3)">
+                            📋
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Price History -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <h3 class="font-semibold text-gray-900 mb-3">Price History</h3>
+                    <div class="price-history-chart mb-3">
+                        <div class="price-trend"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>30 days ago: R350</span>
+                        <span class="text-green-600">↓ R51 (14% decrease)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Information -->
+            <div class="space-y-6">
+                <!-- Basic Info -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h1 id="product-title" class="text-3xl font-bold text-gray-900 mb-2">Premium Coffee Subscription</h1>
+                            <p id="product-merchant" class="text-lg text-gray-600">Bean & Brew</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold text-gray-900" id="product-price">R299</div>
+                            <div class="text-lg text-gray-500 line-through" id="original-price">R350</div>
+                            <div class="text-sm text-green-600 font-medium">Save R51 (14%)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rating -->
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-yellow-400 mr-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="text-gray-600 mr-2">4.8 out of 5</span>
+                        <a href="#reviews" class="text-blue-600 hover:text-blue-800">(247 reviews)</a>
+                    </div>
+                    
+                    <!-- Badges -->
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">Featured</span>
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Best Seller</span>
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Premium Quality</span>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 mb-2">Description</h3>
+                        <p class="text-gray-700 leading-relaxed">
+                            Experience the finest coffee delivered to your door every month. Our premium subscription includes 
+                            carefully selected beans from around the world, roasted to perfection and delivered fresh. 
+                            Each package includes tasting notes and brewing recommendations.
+                        </p>
+                    </div>
+                    
+                    <!-- Key Features -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 mb-3">Key Features</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Fresh roasted beans</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Monthly delivery</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Tasting notes included</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Cancel anytime</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Free shipping</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Expert curation</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Subscription Plans -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Choose Your Plan</h3>
+                    <div class="space-y-3">
+                        <div class="subscription-plan selected border-2 border-gray-200 rounded-lg p-4" onclick="selectPlan('monthly')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-semibold text-gray-900">Monthly</div>
+                                    <div class="text-sm text-gray-600">Billed monthly</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xl font-bold text-gray-900">R299</div>
+                                    <div class="text-sm text-gray-600">per month</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="subscription-plan border-2 border-gray-200 rounded-lg p-4" onclick="selectPlan('quarterly')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-semibold text-gray-900">Quarterly</div>
+                                    <div class="text-sm text-gray-600">Billed every 3 months</div>
+                                    <div class="text-xs text-green-600 font-medium">Save 10%</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xl font-bold text-gray-900">R269</div>
+                                    <div class="text-sm text-gray-600">per month</div>
+                                    <div class="text-xs text-gray-500 line-through">R299</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="subscription-plan border-2 border-gray-200 rounded-lg p-4" onclick="selectPlan('annual')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-semibold text-gray-900">Annual</div>
+                                    <div class="text-sm text-gray-600">Billed yearly</div>
+                                    <div class="text-xs text-green-600 font-medium">Save 20% + Free Gift</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xl font-bold text-gray-900">R239</div>
+                                    <div class="text-sm text-gray-600">per month</div>
+                                    <div class="text-xs text-gray-500 line-through">R299</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quantity & Actions -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                            <div class="quantity-selector">
+                                <button class="quantity-btn" onclick="changeQuantity(-1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="quantity" class="quantity-input" value="1" min="1" max="10" onchange="updateTotal()">
+                                <button class="quantity-btn" onclick="changeQuantity(1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Total</div>
+                            <div id="total-price" class="text-2xl font-bold text-gray-900">R299</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <button onclick="subscribeNow()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                            Subscribe Now
+                        </button>
+                        <button onclick="addToCart()" class="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 py-3 px-6 rounded-lg font-semibold transition-colors">
+                            Add to Cart
+                        </button>
+                        <button onclick="buyNow()" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                            Buy Now
+                        </button>
+                    </div>
+                    
+                    <!-- Gift Option -->
+                    <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="gift-option" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                            <span class="text-sm text-gray-700">Send as a gift</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Merchant Information -->
+        <div class="merchant-card rounded-lg p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">About Bean & Brew</h2>
+                <button onclick="viewMerchant()" class="text-blue-600 hover:text-blue-800 font-medium">
+                    View Store <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                    <p class="text-gray-700 mb-4">
+                        Bean & Brew has been crafting exceptional coffee experiences for over 15 years. 
+                        We source our beans directly from farmers and roast them in small batches to ensure 
+                        the highest quality and freshness.
+                    </p>
+                    
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span class="font-semibold">4.9</span>
+                            <span class="text-gray-600 ml-1">(1,234 reviews)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1"></i>
+                            <span class="text-gray-600">Est. 2008</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-shipping-fast text-gray-400 mr-1"></i>
+                            <span class="text-gray-600">Fast Shipping</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <button onclick="contactMerchant('call')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-phone mr-2"></i>Call Now
+                    </button>
+                    <button onclick="contactMerchant('message')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-comment mr-2"></i>Message
+                    </button>
+                    <button onclick="contactMerchant('visit')" class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 py-2 px-4 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-map-marker-alt mr-2"></i>Visit Store
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reviews Section -->
+        <div id="reviews" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">Customer Reviews</h2>
+                <button onclick="writeReview()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    Write Review
+                </button>
+            </div>
+            
+            <!-- Review Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <div class="text-center mb-4">
+                        <div class="text-4xl font-bold text-gray-900">4.8</div>
+                        <div class="flex justify-center text-yellow-400 mb-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <div class="text-gray-600">Based on 247 reviews</div>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600 w-12">5 star</span>
+                        <div class="rating-bar flex-1 mx-3">
+                            <div class="rating-fill" style="width: 75%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-12">185</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600 w-12">4 star</span>
+                        <div class="rating-bar flex-1 mx-3">
+                            <div class="rating-fill" style="width: 15%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-12">37</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600 w-12">3 star</span>
+                        <div class="rating-bar flex-1 mx-3">
+                            <div class="rating-fill" style="width: 6%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-12">15</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600 w-12">2 star</span>
+                        <div class="rating-bar flex-1 mx-3">
+                            <div class="rating-fill" style="width: 3%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-12">7</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600 w-12">1 star</span>
+                        <div class="rating-bar flex-1 mx-3">
+                            <div class="rating-fill" style="width: 1%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600 w-12">3</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Review Filters -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button onclick="filterReviews('all')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">All Reviews</button>
+                <button onclick="filterReviews('5')" class="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">5 Stars</button>
+                <button onclick="filterReviews('4')" class="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">4 Stars</button>
+                <button onclick="filterReviews('verified')" class="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">Verified Only</button>
+                <button onclick="filterReviews('photos')" class="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">With Photos</button>
+            </div>
+            
+            <!-- Individual Reviews -->
+            <div id="reviews-list" class="space-y-6">
+                <!-- Review 1 -->
+                <div class="review-card border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                S
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Sarah Johnson</div>
+                                <div class="text-sm text-gray-600">Verified Purchase • 2 weeks ago</div>
+                            </div>
+                        </div>
+                        <div class="flex text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 mb-3">
+                        Absolutely love this coffee subscription! The beans are always fresh and the variety 
+                        keeps things interesting. The tasting notes help me appreciate the different flavors. 
+                        Highly recommend!
+                    </p>
+                    
+                    <div class="review-photos">
+                        <div class="review-photo bg-gradient-to-br from-brown-100 to-yellow-100 flex items-center justify-center text-2xl cursor-pointer" onclick="viewReviewPhoto(1)">
+                            📦
+                        </div>
+                        <div class="review-photo bg-gradient-to-br from-brown-200 to-orange-100 flex items-center justify-center text-2xl cursor-pointer" onclick="viewReviewPhoto(2)">
+                            ☕
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+                        <div class="flex items-center space-x-4">
+                            <button onclick="helpfulReview(1)" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-thumbs-up mr-1"></i>Helpful (23)
+                            </button>
+                            <button onclick="reportReview(1)" class="text-sm text-gray-600 hover:text-red-600 transition-colors">
+                                <i class="fas fa-flag mr-1"></i>Report
+                            </button>
+                        </div>
+                        
+                        <!-- Merchant Response -->
+                        <button onclick="toggleMerchantResponse(1)" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            View Response
+                        </button>
+                    </div>
+                    
+                    <div id="merchant-response-1" class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded" style="display: none;">
+                        <div class="flex items-center mb-2">
+                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-semibold mr-2">
+                                B
+                            </div>
+                            <span class="font-semibold text-gray-900">Bean & Brew</span>
+                            <span class="text-sm text-gray-600 ml-2">• 1 week ago</span>
+                        </div>
+                        <p class="text-gray-700 text-sm">
+                            Thank you so much for the wonderful review, Sarah! We're thrilled you're enjoying 
+                            the variety and freshness of our coffee. Your feedback means the world to us! ☕️
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Review 2 -->
+                <div class="review-card border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                M
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Mike Chen</div>
+                                <div class="text-sm text-gray-600">Verified Purchase • 1 month ago</div>
+                            </div>
+                        </div>
+                        <div class="flex text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 mb-3">
+                        Great quality coffee and reliable delivery. The only reason I'm not giving 5 stars 
+                        is that I wish there were more single-origin options. Overall very satisfied with the service.
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+                        <div class="flex items-center space-x-4">
+                            <button onclick="helpfulReview(2)" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-thumbs-up mr-1"></i>Helpful (15)
+                            </button>
+                            <button onclick="reportReview(2)" class="text-sm text-gray-600 hover:text-red-600 transition-colors">
+                                <i class="fas fa-flag mr-1"></i>Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Load More Reviews -->
+            <div class="text-center mt-6">
+                <button onclick="loadMoreReviews()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    Load More Reviews
+                </button>
+            </div>
+        </div>
+        
+        <!-- Related Products -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">You Might Also Like</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="related-product bg-gray-50 rounded-lg p-4" onclick="viewProduct(2)">
+                    <div class="h-32 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg flex items-center justify-center mb-3">
+                        <span class="text-4xl">🍃</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Tea Subscription</h3>
+                    <p class="text-sm text-gray-600 mb-2">Leaf & Brew</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-600">R199</span>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400 text-sm">★</span>
+                            <span class="text-sm text-gray-600 ml-1">4.6</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="related-product bg-gray-50 rounded-lg p-4" onclick="viewProduct(3)">
+                    <div class="h-32 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg flex items-center justify-center mb-3">
+                        <span class="text-4xl">🍫</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Artisan Chocolate Box</h3>
+                    <p class="text-sm text-gray-600 mb-2">Sweet Delights</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-600">R149</span>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400 text-sm">★</span>
+                            <span class="text-sm text-gray-600 ml-1">4.9</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="related-product bg-gray-50 rounded-lg p-4" onclick="viewProduct(4)">
+                    <div class="h-32 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg flex items-center justify-center mb-3">
+                        <span class="text-4xl">🥐</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Fresh Pastry Delivery</h3>
+                    <p class="text-sm text-gray-600 mb-2">Morning Bakery</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-600">R89</span>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400 text-sm">★</span>
+                            <span class="text-sm text-gray-600 ml-1">4.7</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="related-product bg-gray-50 rounded-lg p-4" onclick="viewProduct(5)">
+                    <div class="h-32 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg flex items-center justify-center mb-3">
+                        <span class="text-4xl">🍷</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Wine Tasting Kit</h3>
+                    <p class="text-sm text-gray-600 mb-2">Vintage Selections</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-600">R399</span>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400 text-sm">★</span>
+                            <span class="text-sm text-gray-600 ml-1">4.8</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sticky Purchase Bar (Mobile) -->
+    <div id="sticky-purchase-bar" class="sticky-purchase-bar md:hidden">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="font-bold text-gray-900">R299</div>
+                <div class="text-sm text-gray-600">Premium Coffee</div>
+            </div>
+            <button onclick="subscribeNow()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                Subscribe Now
+            </button>
+        </div>
+    </div>
+    
+    <!-- Image Zoom Overlay -->
+    <div id="zoom-overlay" class="zoom-overlay" onclick="closeZoom()">
+        <img id="zoom-image" class="zoom-image" src="" alt="Product Image">
+        <button onclick="closeZoom()" class="absolute top-4 right-4 text-white text-2xl">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <!-- Write Review Modal -->
+    <div id="review-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Write a Review</h3>
+                <button onclick="closeReviewModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form onsubmit="submitReview(event)">
+                    <!-- Rating Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
+                        <div class="flex space-x-1">
+                            <button type="button" onclick="setRating(1)" class="rating-star text-2xl text-gray-300 hover:text-yellow-400 transition-colors">★</button>
+                            <button type="button" onclick="setRating(2)" class="rating-star text-2xl text-gray-300 hover:text-yellow-400 transition-colors">★</button>
+                            <button type="button" onclick="setRating(3)" class="rating-star text-2xl text-gray-300 hover:text-yellow-400 transition-colors">★</button>
+                            <button type="button" onclick="setRating(4)" class="rating-star text-2xl text-gray-300 hover:text-yellow-400 transition-colors">★</button>
+                            <button type="button" onclick="setRating(5)" class="rating-star text-2xl text-gray-300 hover:text-yellow-400 transition-colors">★</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Review Title -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Review Title</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Summarize your experience">
+                    </div>
+                    
+                    <!-- Review Text -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
+                        <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Share your thoughts about this product..."></textarea>
+                    </div>
+                    
+                    <!-- Photo Upload -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Add Photos (Optional)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-600">Click to upload photos</p>
+                            <input type="file" multiple accept="image/*" class="hidden">
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product Detail State
+        let productState = {
+            currentProduct: {
+                id: 1,
+                name: 'Premium Coffee Subscription',
+                merchant: 'Bean & Brew',
+                price: 299,
+                originalPrice: 350,
+                discount: 14,
+                rating: 4.8,
+                reviews: 247,
+                images: ['☕', '📦', '🏷️', '📋'],
+                inWishlist: false
+            },
+            selectedPlan: 'monthly',
+            quantity: 1,
+            selectedImageIndex: 0,
+            userRating: 0
+        };
+
+        // Initialize Product Detail
+        function initProductDetail() {
+            console.log('📱 July 13, 01:16 - Initializing Product Detail Module...');
+            
+            // Setup sticky purchase bar for mobile
+            setupStickyPurchaseBar();
+            
+            // Load product data (in real app, this would come from URL params or API)
+            loadProductData();
+            
+            // Setup intersection observer for reviews
+            setupReviewsObserver();
+            
+            console.log('✅ Product Detail Module initialized');
+        }
+
+        function loadProductData() {
+            // In a real app, this would fetch data based on product ID
+            updateProductDisplay();
+            updateWishlistButton();
+        }
+
+        function updateProductDisplay() {
+            const product = productState.currentProduct;
+            
+            document.getElementById('product-title').textContent = product.name;
+            document.getElementById('product-merchant').textContent = product.merchant;
+            document.getElementById('product-price').textContent = `R${product.price}`;
+            document.getElementById('original-price').textContent = `R${product.originalPrice}`;
+            
+            updateTotal();
+        }
+
+        // Image Gallery Functions
+        function selectImage(index) {
+            productState.selectedImageIndex = index;
+            
+            // Update main image
+            const images = ['☕', '📦', '🏷️', '📋'];
+            document.getElementById('main-product-image').textContent = images[index];
+            
+            // Update thumbnail active state
+            document.querySelectorAll('.image-thumbnail').forEach((thumb, i) => {
+                if (i === index) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+        }
+
+        function zoomImage() {
+            const overlay = document.getElementById('zoom-overlay');
+            const zoomImage = document.getElementById('zoom-image');
+            
+            // In a real app, this would show the actual image
+            overlay.classList.add('active');
+        }
+
+        function closeZoom() {
+            document.getElementById('zoom-overlay').classList.remove('active');
+        }
+
+        // Subscription Plan Functions
+        function selectPlan(planType) {
+            productState.selectedPlan = planType;
+            
+            // Update UI
+            document.querySelectorAll('.subscription-plan').forEach(plan => {
+                plan.classList.remove('selected');
+            });
+            
+            event.target.classList.add('selected');
+            
+            // Update pricing based on plan
+            const prices = {
+                monthly: 299,
+                quarterly: 269,
+                annual: 239
+            };
+            
+            productState.currentProduct.price = prices[planType];
+            document.getElementById('product-price').textContent = `R${prices[planType]}`;
+            updateTotal();
+        }
+
+        // Quantity Functions
+        function changeQuantity(delta) {
+            const quantityInput = document.getElementById('quantity');
+            let newQuantity = parseInt(quantityInput.value) + delta;
+            
+            if (newQuantity < 1) newQuantity = 1;
+            if (newQuantity > 10) newQuantity = 10;
+            
+            quantityInput.value = newQuantity;
+            productState.quantity = newQuantity;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const total = productState.currentProduct.price * productState.quantity;
+            document.getElementById('total-price').textContent = `R${total}`;
+        }
+
+        // Purchase Functions
+        function subscribeNow() {
+            const giftOption = document.getElementById('gift-option').checked;
+            
+            showToast(`Subscribing to ${productState.currentProduct.name}...`, 'info');
+            
+            // Simulate subscription process
+            setTimeout(() => {
+                showToast('Subscription successful! Welcome to premium coffee!', 'success');
+                
+                // In real app, redirect to subscription management
+            }, 2000);
+        }
+
+        function addToCart() {
+            showToast('Added to cart!', 'success');
+            
+            // In real app, update cart state
+        }
+
+        function buyNow() {
+            showToast('Redirecting to checkout...', 'info');
+            
+            // In real app, redirect to checkout
+        }
+
+        // Wishlist Functions
+        function toggleWishlist() {
+            productState.currentProduct.inWishlist = !productState.currentProduct.inWishlist;
+            updateWishlistButton();
+            
+            const message = productState.currentProduct.inWishlist ? 
+                'Added to wishlist!' : 'Removed from wishlist';
+            showToast(message, 'success');
+        }
+
+        function updateWishlistButton() {
+            const btn = document.getElementById('wishlist-btn');
+            if (productState.currentProduct.inWishlist) {
+                btn.classList.add('text-red-500');
+                btn.classList.remove('text-gray-600');
+            } else {
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-gray-600');
+            }
+        }
+
+        // Review Functions
+        function writeReview() {
+            document.getElementById('review-modal').style.display = 'flex';
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').style.display = 'none';
+            productState.userRating = 0;
+            updateRatingStars();
+        }
+
+        function setRating(rating) {
+            productState.userRating = rating;
+            updateRatingStars();
+        }
+
+        function updateRatingStars() {
+            document.querySelectorAll('.rating-star').forEach((star, index) => {
+                if (index < productState.userRating) {
+                    star.classList.add('text-yellow-400');
+                    star.classList.remove('text-gray-300');
+                } else {
+                    star.classList.remove('text-yellow-400');
+                    star.classList.add('text-gray-300');
+                }
+            });
+        }
+
+        function submitReview(event) {
+            event.preventDefault();
+            
+            if (productState.userRating === 0) {
+                showToast('Please select a rating', 'error');
+                return;
+            }
+            
+            showToast('Submitting your review...', 'info');
+            
+            setTimeout(() => {
+                showToast('Review submitted successfully!', 'success');
+                closeReviewModal();
+                
+                // In real app, refresh reviews section
+            }, 1500);
+        }
+
+        function filterReviews(filter) {
+            // Update filter buttons
+            event.target.parentElement.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            event.target.classList.remove('bg-gray-100', 'text-gray-700');
+            event.target.classList.add('bg-blue-600', 'text-white');
+            
+            // In real app, filter and reload reviews
+            showToast(`Filtering reviews: ${filter}`, 'info');
+        }
+
+        function helpfulReview(reviewId) {
+            showToast('Marked as helpful!', 'success');
+            
+            // In real app, update helpful count
+        }
+
+        function reportReview(reviewId) {
+            if (confirm('Report this review as inappropriate?')) {
+                showToast('Review reported. Thank you for your feedback.', 'info');
+            }
+        }
+
+        function toggleMerchantResponse(reviewId) {
+            const response = document.getElementById(`merchant-response-${reviewId}`);
+            if (response.style.display === 'none') {
+                response.style.display = 'block';
+            } else {
+                response.style.display = 'none';
+            }
+        }
+
+        function loadMoreReviews() {
+            showToast('Loading more reviews...', 'info');
+            
+            // In real app, load additional reviews
+        }
+
+        function viewReviewPhoto(photoId) {
+            // In real app, show photo in lightbox
+            showToast('Photo viewer coming soon!', 'info');
+        }
+
+        // Merchant Functions
+        function viewMerchant() {
+            showToast('Opening merchant profile...', 'info');
+            
+            // In real app, navigate to merchant page
+        }
+
+        function contactMerchant(method) {
+            const messages = {
+                call: 'Opening dialer...',
+                message: 'Opening messaging...',
+                visit: 'Opening map directions...'
+            };
+            
+            showToast(messages[method], 'info');
+        }
+
+        // Related Products
+        function viewProduct(productId) {
+            showToast(`Loading product ${productId}...`, 'info');
+            
+            // In real app, navigate to product detail page
+        }
+
+        // Utility Functions
+        function setupStickyPurchaseBar() {
+            const stickyBar = document.getElementById('sticky-purchase-bar');
+            
+            window.addEventListener('scroll', () => {
+                const scrollPosition = window.scrollY;
+                const windowHeight = window.innerHeight;
+                
+                if (scrollPosition > windowHeight * 0.5) {
+                    stickyBar.classList.add('show');
+                } else {
+                    stickyBar.classList.remove('show');
+                }
+            });
+        }
+
+        function setupReviewsObserver() {
+            const reviewsSection = document.getElementById('reviews');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Load reviews when section comes into view
+                        console.log('Reviews section visible - loading reviews');
+                    }
+                });
+            });
+            
+            observer.observe(reviewsSection);
+        }
+
+        function shareProduct() {
+            const product = productState.currentProduct;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: product.name,
+                    text: `Check out ${product.name} from ${product.merchant}`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback - copy to clipboard
+                navigator.clipboard.writeText(`${product.name} - ${window.location.href}`);
+                showToast('Product link copied to clipboard!', 'success');
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm fade-in`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initProductDetail);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e4464215b2738a',t:'MTc1MjM2MjQ2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
