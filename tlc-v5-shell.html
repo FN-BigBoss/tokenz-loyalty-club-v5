@@ -4,430 +4,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TokenZ Loyalty Club v5.0 - Modular Container</title>
+    <title>TokenZ Loyalty Club v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- TLC Configuration - Your Config File URL -->
-    <script src="https://raw.githubusercontent.com/fn-bigboss/tokenz-loyalty-club-v5/main/tlc-config-v5.0.js"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        .loading { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .success-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .config-panel { max-height: 80vh; overflow-y: auto; }
+        /* Loading screen styles */
+        #initialLoader {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .loader-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+        }
+        
+        .loader-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        .loader-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-success { background: rgba(34, 197, 94, 0.2); }
+        .status-error { background: rgba(239, 68, 68, 0.2); }
+        .status-loading { background: rgba(59, 130, 246, 0.2); }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Module Configuration Panel -->
-    <div id="configPanel" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 config-panel">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">🎯 TokenZ Loyalty Club v5.0</h1>
-                        <p class="text-gray-600 mt-1">Modular Application Container</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-500">Status</div>
-                        <div id="systemStatus" class="font-semibold text-yellow-600">⏳ Initializing...</div>
-                    </div>
+<body>
+    <!-- Initial Loading Screen -->
+    <div id="initialLoader">
+        <div class="loader-content">
+            <div class="loader-icon">🎯</div>
+            <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">TokenZ Loyalty Club v5.1</h2>
+            <p style="margin-bottom: 1rem; opacity: 0.9;">Loading modular system...</p>
+            <div class="loader-spinner"></div>
+            
+            <div id="moduleStatus" style="margin-top: 1.5rem; text-align: left;">
+                <div class="status-item status-loading" id="status-config">
+                    <span>📋 Configuration</span>
+                    <span>⏳</span>
+                </div>
+                <div class="status-item status-loading" id="status-data">
+                    <span>🗃️ Data</span>
+                    <span>⏳</span>
+                </div>
+                <div class="status-item status-loading" id="status-utils">
+                    <span>🛠️ Utils</span>
+                    <span>⏳</span>
+                </div>
+                <div class="status-item status-loading" id="status-core">
+                    <span>⚙️ Core</span>
+                    <span>⏳</span>
+                </div>
+                <div class="status-item status-loading" id="status-ui">
+                    <span>🎨 UI</span>
+                    <span>⏳</span>
+                </div>
+                <div class="status-item status-loading" id="status-styles">
+                    <span>💄 Styles</span>
+                    <span>⏳</span>
                 </div>
             </div>
             
-            <div class="p-6">
-                <!-- Configuration Status -->
-                <div class="mb-6">
-                    <h2 class="text-lg font-semibold mb-3">📋 Configuration Status</h2>
-                    <div id="configStatus" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <div class="loading w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full mr-3"></div>
-                            <span class="text-yellow-800">Loading configuration...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Module Loading Progress -->
-                <div class="mb-6">
-                    <h2 class="text-lg font-semibold mb-3">📦 Module Loading Progress</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium">Overall Progress</span>
-                            <span id="overallProgress" class="text-sm text-gray-600">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <div id="loadingStatus" class="text-sm text-gray-600">Waiting to start...</div>
-                    </div>
-                </div>
-
-                <!-- Module Status Grid -->
-                <div class="mb-6">
-                    <h2 class="text-lg font-semibold mb-3">🔧 Module Status</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="moduleStatusGrid">
-                        <!-- Module status cards will be populated here -->
-                    </div>
-                </div>
-
-                <!-- System Information -->
-                <div class="mb-6">
-                    <h2 class="text-lg font-semibold mb-3">ℹ️ System Information</h2>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span class="font-medium">Version:</span>
-                                <span class="ml-2 text-gray-600">5.0</span>
-                            </div>
-                            <div>
-                                <span class="font-medium">Load Time:</span>
-                                <span id="loadTime" class="ml-2 text-gray-600">Calculating...</span>
-                            </div>
-                            <div>
-                                <span class="font-medium">Browser:</span>
-                                <span id="browserInfo" class="ml-2 text-gray-600">Detecting...</span>
-                            </div>
-                            <div>
-                                <span class="font-medium">Timestamp:</span>
-                                <span id="timestamp" class="ml-2 text-gray-600">--</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-wrap gap-3">
-                    <button id="launchBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        🚀 Launch Application
-                    </button>
-                    <button id="reloadBtn" class="bg-gray-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors">
-                        🔄 Reload Modules
-                    </button>
-                    <button id="debugBtn" class="bg-yellow-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-yellow-700 transition-colors">
-                        🐛 Debug Info
-                    </button>
-                </div>
-            </div>
+            <div id="loadingMessage" style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.8;"></div>
         </div>
     </div>
 
-    <!-- Main Application Container (Hidden Initially) -->
-    <div id="mainApp" class="hidden">
-        <!-- The main TLC application will be loaded here -->
-    </div>
-
-    <!-- Error Display -->
-    <div id="errorDisplay" class="hidden fixed inset-0 bg-red-50 flex items-center justify-center z-50">
-        <div class="bg-white border border-red-200 rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
-            <div class="flex items-center mb-4">
-                <div class="text-red-500 text-2xl mr-3">⚠️</div>
-                <h2 class="text-xl font-bold text-red-800">Application Error</h2>
-            </div>
-            <div id="errorMessage" class="text-red-700 mb-4"></div>
-            <div class="flex gap-3">
-                <button onclick="location.reload()" class="bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700">
-                    🔄 Reload Page
-                </button>
-                <button id="hideErrorBtn" class="bg-gray-600 text-white px-4 py-2 rounded font-medium hover:bg-gray-700">
-                    ❌ Close
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Main App Container -->
+    <div id="tlcApp"></div>
 
     <script>
-        console.log('🎯 TokenZ Loyalty Club v5.0 - Modular Container Starting...');
-        
-        // Application state
-        const APP_STATE = {
-            startTime: Date.now(),
-            configLoaded: false,
-            modulesLoaded: false,
-            errors: [],
-            loadingProgress: 0
-        };
-
-        // Check if configuration is loaded
-        function checkConfiguration() {
-            const configStatus = document.getElementById('configStatus');
+        // TLC Module Loader v5.1 - CMS Edition
+        window.TLC_LOADER = {
+            version: '5.1',
+            baseUrl: 'https://tlc.netlify.app/',
+            loadedModules: new Set(),
+            failedModules: new Set(),
+            totalModules: 6,
             
-            if (typeof window.TLC_CONFIG === 'undefined') {
-                configStatus.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="text-red-500 text-xl mr-3">❌</div>
-                        <div>
-                            <div class="font-medium text-red-800">Configuration Not Loaded</div>
-                            <div class="text-red-600 text-sm mt-1">
-                                Please update the config file URL in the HTML head section
-                            </div>
-                        </div>
-                    </div>
-                `;
-                return false;
-            }
-
-            // Validate configuration
-            if (!window.TLC_CONFIG.validate()) {
-                configStatus.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="text-yellow-500 text-xl mr-3">⚠️</div>
-                        <div>
-                            <div class="font-medium text-yellow-800">Configuration Incomplete</div>
-                            <div class="text-yellow-600 text-sm mt-1">
-                                Please update the module URLs in tlc-config-v5.0.js
-                            </div>
-                        </div>
-                    </div>
-                `;
-                return false;
-            }
-
-            configStatus.innerHTML = `
-                <div class="flex items-center">
-                    <div class="text-green-500 text-xl mr-3 success-pulse">✅</div>
-                    <div>
-                        <div class="font-medium text-green-800">Configuration Loaded Successfully</div>
-                        <div class="text-green-600 text-sm mt-1">
-                            All module URLs configured and validated
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Module configuration
+            modules: [
+                { name: 'config', file: 'tlc-config-v5.0.js', displayName: 'Configuration', icon: '📋' },
+                { name: 'data', file: 'tlc-data-v5.0.js', displayName: 'Data', icon: '🗃️' },
+                { name: 'utils', file: 'tlc-utils-v5.0.js', displayName: 'Utils', icon: '🛠️' },
+                { name: 'core', file: 'tlc-core-v5.0.js', displayName: 'Core', icon: '⚙️' },
+                { name: 'ui', file: 'tlc-ui-v5.0.js', displayName: 'UI', icon: '🎨' },
+                { name: 'styles', file: 'tlc-styles-v5.0.js', displayName: 'Styles', icon: '💄' }
+            ],
             
-            APP_STATE.configLoaded = true;
-            return true;
-        }
-
-        // MODULE URLS - Now loaded from configuration file
-        function getModuleUrls() {
-            if (!window.TLC_CONFIG) {
-                return {
-                    manager: 'Configuration file not loaded',
-                    data: 'Configuration file not loaded',
-                    utils: 'Configuration file not loaded', 
-                    core: 'Configuration file not loaded',
-                    ui: 'Configuration file not loaded',
-                    styles: 'Configuration file not loaded'
-                };
-            }
-            return window.TLC_CONFIG.modules;
-        }
-
-        // Initialize module status display
-        function initializeModuleStatus() {
-            const moduleStatusGrid = document.getElementById('moduleStatusGrid');
-            const modules = [
-                { key: 'manager', name: 'Module Manager', icon: '🔧', description: 'Handles module loading' },
-                { key: 'data', name: 'Sample Data', icon: '📊', description: 'Application data' },
-                { key: 'utils', name: 'Utilities', icon: '🛠️', description: 'Helper functions' },
-                { key: 'core', name: 'Core Logic', icon: '⚙️', description: 'Business logic' },
-                { key: 'ui', name: 'UI Components', icon: '🎨', description: 'User interface' },
-                { key: 'styles', name: 'Styles', icon: '💄', description: 'CSS styling' }
-            ];
-
-            moduleStatusGrid.innerHTML = modules.map(module => `
-                <div id="module-${module.key}" class="bg-white border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center">
-                            <span class="text-xl mr-2">${module.icon}</span>
-                            <span class="font-medium text-gray-900">${module.name}</span>
-                        </div>
-                        <div id="status-${module.key}" class="text-yellow-500">⏳</div>
-                    </div>
-                    <div class="text-sm text-gray-600">${module.description}</div>
-                    <div id="progress-${module.key}" class="mt-2 text-xs text-gray-500">Waiting...</div>
-                </div>
-            `).join('');
-        }
-
-        // Update system information
-        function updateSystemInfo() {
-            document.getElementById('browserInfo').textContent = navigator.userAgent.split(' ')[0];
-            document.getElementById('timestamp').textContent = new Date().toLocaleString();
-        }
-
-        // Update loading progress
-        function updateProgress(progress, message) {
-            APP_STATE.loadingProgress = progress;
-            document.getElementById('overallProgress').textContent = `${progress}%`;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-            document.getElementById('loadingStatus').textContent = message;
-            
-            // Update load time
-            const elapsed = Date.now() - APP_STATE.startTime;
-            document.getElementById('loadTime').textContent = `${(elapsed / 1000).toFixed(1)}s`;
-        }
-
-        // Update module status
-        function updateModuleStatus(moduleKey, status, message = '') {
-            const statusElement = document.getElementById(`status-${moduleKey}`);
-            const progressElement = document.getElementById(`progress-${moduleKey}`);
-            
-            if (statusElement) {
-                switch (status) {
-                    case 'loading':
-                        statusElement.innerHTML = '<div class="loading w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>';
-                        break;
-                    case 'success':
-                        statusElement.innerHTML = '<span class="text-green-500">✅</span>';
-                        break;
-                    case 'error':
-                        statusElement.innerHTML = '<span class="text-red-500">❌</span>';
-                        break;
-                    default:
-                        statusElement.innerHTML = '<span class="text-yellow-500">⏳</span>';
-                }
-            }
-            
-            if (progressElement && message) {
-                progressElement.textContent = message;
-            }
-        }
-
-        // Show error
-        function showError(message) {
-            APP_STATE.errors.push(message);
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorDisplay').classList.remove('hidden');
-            document.getElementById('systemStatus').innerHTML = '<span class="text-red-600">❌ Error</span>';
-        }
-
-        // Hide error
-        function hideError() {
-            document.getElementById('errorDisplay').classList.add('hidden');
-        }
-
-        // Launch application
-        function launchApplication() {
-            if (!APP_STATE.modulesLoaded) {
-                showError('Cannot launch: Modules not fully loaded');
-                return;
-            }
-
-            console.log('🚀 Launching TokenZ Loyalty Club...');
-            document.getElementById('configPanel').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('systemStatus').innerHTML = '<span class="text-green-600 success-pulse">✅ Running</span>';
-        }
-
-        // Reload modules
-        function reloadModules() {
-            location.reload();
-        }
-
-        // Show debug information
-        function showDebugInfo() {
-            const debugInfo = {
-                appState: APP_STATE,
-                config: window.TLC_CONFIG || 'Not loaded',
-                moduleUrls: getModuleUrls(),
-                performance: {
-                    loadTime: Date.now() - APP_STATE.startTime,
-                    memoryUsage: performance.memory ? {
-                        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
-                        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB'
-                    } : 'Not available'
-                }
-            };
-            
-            console.log('🐛 TLC Debug Information:', debugInfo);
-            alert('Debug information logged to console. Press F12 to view.');
-        }
-
-        // Load modules using the module manager
-        function loadModules() {
-            if (!APP_STATE.configLoaded) {
-                showError('Configuration must be loaded before loading modules');
-                return;
-            }
-
-            const moduleUrls = getModuleUrls();
-            console.log('📦 Starting module loading with URLs:', moduleUrls);
-
-            // First load the module manager
-            const script = document.createElement('script');
-            script.src = moduleUrls.manager;
-            script.onload = function() {
-                console.log('✅ Module Manager loaded, starting module loading sequence...');
+            updateStatus: function(moduleName, status) {
+                const statusEl = document.getElementById(`status-${moduleName}`);
+                const messageEl = document.getElementById('loadingMessage');
                 
-                // Initialize module manager with callbacks
-                if (window.TLC_MODULE_MANAGER) {
-                    window.TLC_MODULE_MANAGER.init(moduleUrls, {
-                        onProgress: function(data) {
-                            updateProgress(data.progress, data.message);
-                            console.log(`📈 Progress: ${data.progress}% - ${data.message}`);
-                        },
-                        onComplete: function(data) {
-                            console.log('🎉 All modules loaded successfully!', data);
-                            APP_STATE.modulesLoaded = true;
-                            document.getElementById('launchBtn').disabled = false;
-                            document.getElementById('systemStatus').innerHTML = '<span class="text-green-600">✅ Ready</span>';
-                            updateProgress(100, 'All modules loaded successfully!');
-                        },
-                        onError: function(message) {
-                            console.error('❌ Module loading error:', message);
-                            showError(`Module loading failed: ${message}`);
-                        }
-                    });
-                } else {
-                    showError('Module Manager failed to initialize');
+                if (statusEl) {
+                    statusEl.className = `status-item status-${status}`;
+                    const statusIcon = status === 'success' ? '✅' : status === 'error' ? '❌' : '⏳';
+                    statusEl.querySelector('span:last-child').textContent = statusIcon;
                 }
-            };
-            script.onerror = function() {
-                showError('Failed to load Module Manager. Check the manager URL in configuration.');
-            };
-            document.head.appendChild(script);
-        }
-
-        // Initialize application
-        function initializeApp() {
-            console.log('🎯 Initializing TLC Container...');
-            
-            // Initialize UI
-            initializeModuleStatus();
-            updateSystemInfo();
-            
-            // Check configuration
-            setTimeout(() => {
-                if (checkConfiguration()) {
-                    // Start loading modules
-                    setTimeout(() => {
-                        loadModules();
-                    }, 1000);
-                } else {
-                    document.getElementById('systemStatus').innerHTML = '<span class="text-red-600">❌ Config Error</span>';
+                
+                if (messageEl) {
+                    const loaded = this.loadedModules.size;
+                    const failed = this.failedModules.size;
+                    const total = this.totalModules;
+                    messageEl.textContent = `Loaded: ${loaded}/${total} | Failed: ${failed}`;
                 }
-            }, 500);
+                
+                console.log(`📦 ${moduleName}: ${status}`);
+            },
+            
+            loadScript: function(module) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = this.baseUrl + module.file;
+                    script.type = 'text/javascript';
+                    
+                    // Add timestamp to prevent caching issues
+                    script.src += '?v=' + Date.now();
+                    
+                    script.onload = () => {
+                        this.loadedModules.add(module.name);
+                        this.updateStatus(module.name, 'success');
+                        console.log(`✅ ${module.displayName} loaded successfully`);
+                        resolve(module);
+                    };
+                    
+                    script.onerror = (error) => {
+                        this.failedModules.add(module.name);
+                        this.updateStatus(module.name, 'error');
+                        console.error(`❌ Failed to load ${module.displayName}:`, error);
+                        reject(new Error(`Failed to load ${module.displayName}`));
+                    };
+                    
+                    document.head.appendChild(script);
+                });
+            },
+            
+            async loadAllModules() {
+                console.log('🚀 Starting TLC v5.1 module loading from Netlify...');
+                
+                // Load modules sequentially to maintain dependencies
+                for (const module of this.modules) {
+                    try {
+                        await this.loadScript(module);
+                        // Small delay between modules
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.warn(`⚠️ ${module.displayName} failed to load, continuing...`);
+                    }
+                }
+                
+                // Check if we have minimum required modules
+                const hasConfig = this.loadedModules.has('config');
+                const hasData = this.loadedModules.has('data');
+                const hasUI = this.loadedModules.has('ui');
+                
+                if (hasConfig && hasData && hasUI) {
+                    console.log('✅ Minimum modules loaded, initializing app...');
+                    this.initializeApp();
+                } else {
+                    console.log('❌ Critical modules missing, showing error...');
+                    this.showError();
+                }
+            },
+            
+            initializeApp: function() {
+                setTimeout(() => {
+                    // Remove loader with fade effect
+                    const loader = document.getElementById('initialLoader');
+                    if (loader) {
+                        loader.style.opacity = '0';
+                        loader.style.transition = 'opacity 0.5s ease';
+                        setTimeout(() => loader.remove(), 500);
+                    }
+                    
+                    // Initialize TLC system
+                    if (window.TLC_UI && typeof window.TLC_UI.init === 'function') {
+                        console.log('🎯 Initializing TLC UI System...');
+                        window.TLC_UI.init(document.getElementById('tlcApp'));
+                    } else {
+                        console.log('⚠️ TLC_UI not available, showing fallback');
+                        this.showFallback();
+                    }
+                }, 1500);
+            },
+            
+            showError: function() {
+                setTimeout(() => {
+                    const loader = document.getElementById('initialLoader');
+                    if (loader) {
+                        loader.innerHTML = `
+                            <div class="loader-content">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                                <h2 style="color: #ef4444; margin-bottom: 1rem;">Module Loading Failed</h2>
+                                <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                                    <p style="margin-bottom: 0.5rem;"><strong>Critical modules failed to load:</strong></p>
+                                    <ul style="text-align: left; font-size: 0.9rem;">
+                                        ${!this.loadedModules.has('config') ? '<li>❌ Configuration module</li>' : ''}
+                                        ${!this.loadedModules.has('data') ? '<li>❌ Data module</li>' : ''}
+                                        ${!this.loadedModules.has('ui') ? '<li>❌ UI module</li>' : ''}
+                                    </ul>
+                                </div>
+                                <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+                                    Please check that all module files are deployed to:<br>
+                                    <code style="background: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 0.25rem;">
+                                        ${this.baseUrl}
+                                    </code>
+                                </p>
+                                <button onclick="location.reload()" 
+                                        style="background: white; color: #667eea; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: bold; cursor: pointer;">
+                                    🔄 Retry Loading
+                                </button>
+                            </div>
+                        `;
+                    }
+                }, 1000);
+            },
+            
+            showFallback: function() {
+                document.getElementById('tlcApp').innerHTML = `
+                    <div class="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center text-white p-4">
+                        <div class="text-center max-w-2xl">
+                            <div class="text-6xl mb-6">🎯</div>
+                            <h1 class="text-4xl font-bold mb-4">TokenZ Loyalty Club v5.1</h1>
+                            <p class="text-xl mb-8 opacity-90">Partial System Loaded</p>
+                            
+                            <div class="bg-white bg-opacity-10 rounded-lg p-6 mb-6">
+                                <h3 class="text-lg font-semibold mb-4">Module Status:</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                    ${this.modules.map(module => `
+                                        <div class="flex items-center justify-between">
+                                            <span>${module.icon} ${module.displayName}</span>
+                                            <span>${this.loadedModules.has(module.name) ? '✅' : '❌'}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white bg-opacity-10 rounded-lg p-4 mb-6">
+                                <p class="text-sm opacity-90">
+                                    <strong>Loaded:</strong> ${this.loadedModules.size}/${this.totalModules} modules<br>
+                                    <strong>Source:</strong> ${this.baseUrl}<br>
+                                    <strong>Status:</strong> ${this.loadedModules.size >= 3 ? 'Partial functionality available' : 'Critical modules missing'}
+                                </p>
+                            </div>
+                            
+                            <button onclick="location.reload()" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                                🔄 Reload System
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+        
+        // Start loading when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.TLC_LOADER.loadAllModules();
+            });
+        } else {
+            window.TLC_LOADER.loadAllModules();
         }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded, initializing...');
-            
-            // Button event listeners
-            document.getElementById('launchBtn').addEventListener('click', launchApplication);
-            document.getElementById('reloadBtn').addEventListener('click', reloadModules);
-            document.getElementById('debugBtn').addEventListener('click', showDebugInfo);
-            document.getElementById('hideErrorBtn').addEventListener('click', hideError);
-            
-            // Initialize the application
-            initializeApp();
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
         });
-
-        // Global error handling
-        window.addEventListener('error', function(event) {
-            console.error('🚨 Global Error:', event.error);
-            APP_STATE.errors.push(event.error.message);
+        
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
         });
-
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('🚨 Unhandled Promise Rejection:', event.reason);
-            APP_STATE.errors.push(event.reason);
-        });
-
-        console.log('✅ TLC Container script loaded');
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95b2c56bb6d9bc14',t:'MTc1MTg0MzM4MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95deb1d120314ed0',t:'MTc1MjMwMzk1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
