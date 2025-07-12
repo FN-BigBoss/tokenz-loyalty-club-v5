@@ -70,6 +70,73 @@
             object-fit: cover;
             border-radius: 0.5rem;
         }
+        
+        .media-gallery-item {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .media-gallery-item img,
+        .media-gallery-item video {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .media-gallery-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .drag-over {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+        
+        .notification {
+            background: white;
+            border-left: 4px solid;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification.warning {
+            border-color: #f59e0b;
+            background-color: #fffbeb;
+        }
+        
+        .notification.error {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -119,19 +186,33 @@
                     </div>
                     
                     <div class="flex items-center space-x-4">
-                        <button id="exportDataBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <span>Export</span>
-                        </button>
+                        <div class="relative">
+                            <button id="exportDataBtn" onclick="showExportMenu()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>Export</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                                <div class="py-1">
+                                    <button onclick="exportAllData()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export JSON</button>
+                                    <button onclick="exportToCSV()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export CSV</button>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <button id="importDataBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                            </svg>
-                            <span>Import</span>
-                        </button>
+                        <div class="relative">
+                            <input type="file" id="importFileHeader" accept=".json,.csv" class="hidden" onchange="importData(this)">
+                            <button onclick="document.getElementById('importFileHeader').click()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                </svg>
+                                <span>Import</span>
+                            </button>
+                        </div>
                         
                         <button onclick="logoutAdmin()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Logout</button>
                     </div>
@@ -308,6 +389,32 @@
                     </div>
                     
                     <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-4 border-b">
+                            <div class="flex flex-wrap gap-4">
+                                <div class="flex-1 min-w-64">
+                                    <input type="text" id="merchantSearch" placeholder="Search merchants..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="filterMerchants()">
+                                </div>
+                                <div>
+                                    <select id="merchantCategoryFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterMerchants()">
+                                        <option value="">All Categories</option>
+                                        <option value="restaurant">Restaurant</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="services">Services</option>
+                                        <option value="entertainment">Entertainment</option>
+                                        <option value="health">Health & Wellness</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <select id="merchantStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterMerchants()">
+                                        <option value="">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="pending">Pending</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="data-table">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -343,6 +450,36 @@
                     </div>
                     
                     <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-4 border-b">
+                            <div class="flex flex-wrap gap-4">
+                                <div class="flex-1 min-w-64">
+                                    <input type="text" id="productSearch" placeholder="Search products..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="filterProducts()">
+                                </div>
+                                <div>
+                                    <select id="productMerchantFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterProducts()">
+                                        <option value="">All Merchants</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <select id="productCategoryFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterProducts()">
+                                        <option value="">All Categories</option>
+                                        <option value="food">Food & Beverage</option>
+                                        <option value="clothing">Clothing</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="services">Services</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <select id="productStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterProducts()">
+                                        <option value="">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="out_of_stock">Out of Stock</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="data-table">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -385,8 +522,9 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sponsor</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membership</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -421,6 +559,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
                                     <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="ZAR" selected>ZAR (R)</option>
                                         <option value="USD">USD ($)</option>
                                         <option value="EUR">EUR (€)</option>
                                         <option value="GBP">GBP (£)</option>
@@ -484,15 +623,17 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <select id="merchantCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Select Category</option>
-                            <option value="restaurant">Restaurant</option>
-                            <option value="retail">Retail</option>
-                            <option value="services">Services</option>
-                            <option value="entertainment">Entertainment</option>
-                            <option value="health">Health & Wellness</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <div class="relative">
+                            <input type="text" id="merchantCategory" list="merchantCategoryList" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type or select category..." onchange="handleCategoryInput(this, 'merchant')">
+                            <datalist id="merchantCategoryList">
+                                <option value="restaurant">Restaurant</option>
+                                <option value="retail">Retail</option>
+                                <option value="services">Services</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="health">Health & Wellness</option>
+                                <option value="other">Other</option>
+                            </datalist>
+                        </div>
                     </div>
                     
                     <div class="md:col-span-2">
@@ -531,13 +672,25 @@
                     
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
-                        <div class="image-upload-area" onclick="document.getElementById('merchantLogo').click()">
-                            <input type="file" id="merchantLogo" accept="image/*" class="hidden" onchange="previewImage(this, 'merchantLogoPreview')">
+                        
+                        <!-- URL Input -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Image URL</label>
+                            <div class="flex space-x-2">
+                                <input type="url" id="merchantLogoUrl" placeholder="https://example.com/logo.jpg" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="validateImageUrl(this, 'merchantLogoPreview')">
+                                <button type="button" onclick="validateImageUrl(document.getElementById('merchantLogoUrl'), 'merchantLogoPreview')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Preview</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Drag & Drop Upload -->
+                        <div class="image-upload-area" id="merchantLogoDropArea" ondrop="handleDrop(event, 'merchantLogoPreview')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('merchantLogo').click()">
+                            <input type="file" id="merchantLogo" accept="image/*,video/*" multiple class="hidden" onchange="handleFileSelect(this, 'merchantLogoPreview')">
                             <div id="merchantLogoPreview">
                                 <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
-                                <p class="text-sm text-gray-600">Click to upload logo</p>
+                                <p class="text-sm text-gray-600">Drag & drop files here or click to upload</p>
+                                <p class="text-xs text-gray-500 mt-1">Supports images and videos</p>
                             </div>
                         </div>
                     </div>
@@ -589,14 +742,16 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <select id="productCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Select Category</option>
-                            <option value="food">Food & Beverage</option>
-                            <option value="clothing">Clothing</option>
-                            <option value="electronics">Electronics</option>
-                            <option value="services">Services</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <div class="relative">
+                            <input type="text" id="productCategory" list="productCategoryList" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type or select category..." onchange="handleCategoryInput(this, 'product')">
+                            <datalist id="productCategoryList">
+                                <option value="food">Food & Beverage</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="services">Services</option>
+                                <option value="other">Other</option>
+                            </datalist>
+                        </div>
                     </div>
                     
                     <div>
@@ -614,15 +769,30 @@
                     </div>
                     
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-                        <div class="image-upload-area" onclick="document.getElementById('productImage').click()">
-                            <input type="file" id="productImage" accept="image/*" class="hidden" onchange="previewImage(this, 'productImagePreview')">
-                            <div id="productImagePreview">
-                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <p class="text-sm text-gray-600">Click to upload image</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Images/Videos</label>
+                        
+                        <!-- URL Input -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Media URL</label>
+                            <div class="flex space-x-2">
+                                <input type="url" id="productImageUrl" placeholder="https://example.com/product.jpg" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button type="button" onclick="addMediaUrl('productImageUrl', 'productImageGallery')" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Add</button>
                             </div>
+                        </div>
+                        
+                        <!-- Drag & Drop Upload -->
+                        <div class="image-upload-area mb-4" id="productImageDropArea" ondrop="handleDrop(event, 'productImageGallery')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('productImage').click()">
+                            <input type="file" id="productImage" accept="image/*,video/*" multiple class="hidden" onchange="handleFileSelect(this, 'productImageGallery')">
+                            <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600">Drag & drop multiple files here or click to upload</p>
+                            <p class="text-xs text-gray-500 mt-1">Supports images and videos</p>
+                        </div>
+                        
+                        <!-- Media Gallery -->
+                        <div id="productImageGallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- Media items will be added here -->
                         </div>
                     </div>
                 </div>
@@ -633,6 +803,76 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- User Edit Modal -->
+    <div id="userEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Edit User</h3>
+                <button onclick="closeUserEdit()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="userEditForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                        <input type="text" id="editUserName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="editUserEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                        <select id="editUserRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="member">Member</option>
+                            <option value="merchant">Merchant</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Membership Type</label>
+                        <select id="editUserMembershipType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="standard">Standard</option>
+                            <option value="perpetual">Perpetual</option>
+                            <option value="passive">Passive</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                        <input type="date" id="editUserExpiry" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="editUserStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeUserEdit()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Membership Expiry Notifications -->
+    <div id="expiryNotifications" class="fixed top-20 right-6 space-y-2 z-40">
+        <!-- Notifications will be added here -->
     </div>
 
     <!-- Public Site Button -->
@@ -649,6 +889,7 @@
         // Admin CMS System v5.1
         let currentEditingMerchant = null;
         let currentEditingProduct = null;
+        let currentEditingUser = null;
         
         // Sample data structure
         let adminData = {
@@ -677,7 +918,7 @@
                     category: "food",
                     stock: 100,
                     status: "active",
-                    image: null,
+                    images: [],
                     created: new Date().toISOString()
                 }
             ],
@@ -688,10 +929,73 @@
                     email: "john@example.com",
                     sponsor: null,
                     joined: new Date().toISOString(),
-                    status: "active"
+                    expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+                    status: "active",
+                    role: "member",
+                    membershipType: "standard"
                 }
-            ]
+            ],
+            categories: {
+                merchant: ["restaurant", "retail", "services", "entertainment", "health", "other"],
+                product: ["food", "clothing", "electronics", "services", "other"]
+            },
+            recentActivity: []
         };
+
+        // Activity tracking
+        function addActivity(type, description) {
+            adminData.recentActivity.unshift({
+                id: Date.now(),
+                type: type,
+                description: description,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Keep only last 10 activities
+            if (adminData.recentActivity.length > 10) {
+                adminData.recentActivity = adminData.recentActivity.slice(0, 10);
+            }
+            
+            updateRecentActivity();
+            saveAdminData();
+        }
+
+        function updateRecentActivity() {
+            const container = document.querySelector('.space-y-3');
+            if (container && adminData.recentActivity.length > 0) {
+                container.innerHTML = '';
+                adminData.recentActivity.slice(0, 3).forEach(activity => {
+                    const timeAgo = getTimeAgo(new Date(activity.timestamp));
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center space-x-3';
+                    div.innerHTML = `
+                        <div class="w-2 h-2 bg-${getActivityColor(activity.type)}-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">${activity.description}</span>
+                        <span class="text-xs text-gray-400">${timeAgo}</span>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        function getActivityColor(type) {
+            const colors = {
+                'merchant': 'green',
+                'product': 'blue',
+                'user': 'purple',
+                'system': 'gray'
+            };
+            return colors[type] || 'gray';
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            if (hours < 1) return 'Just now';
+            if (hours === 1) return '1 hour ago';
+            return `${hours} hours ago`;
+        }
 
         // Initialize admin system
         function initAdmin() {
@@ -848,11 +1152,13 @@
         }
 
         // Merchant management functions
-        function populateMerchantsTable() {
+        function populateMerchantsTable(merchants = null) {
             const tbody = document.getElementById('merchantsTableBody');
             tbody.innerHTML = '';
             
-            adminData.merchants.forEach(merchant => {
+            const merchantsToShow = merchants || adminData.merchants;
+            
+            merchantsToShow.forEach(merchant => {
                 const productCount = adminData.products.filter(p => p.merchantId === merchant.id).length;
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -943,11 +1249,13 @@
         }
 
         // Product management functions
-        function populateProductsTable() {
+        function populateProductsTable(products = null) {
             const tbody = document.getElementById('productsTableBody');
             tbody.innerHTML = '';
             
-            adminData.products.forEach(product => {
+            const productsToShow = products || adminData.products;
+            
+            productsToShow.forEach(product => {
                 const merchant = adminData.merchants.find(m => m.id === product.merchantId);
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -955,7 +1263,7 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 <div class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
-                                    ${product.image ? `<img class="h-10 w-10 rounded object-cover" src="${product.image}" alt="${product.name}">` : `<span class="text-xs font-medium text-gray-600">📦</span>`}
+                                    ${product.images && product.images.length > 0 ? `<img class="h-10 w-10 rounded object-cover" src="${product.images[0]}" alt="${product.name}">` : `<span class="text-xs font-medium text-gray-600">📦</span>`}
                                 </div>
                             </div>
                             <div class="ml-4">
@@ -968,7 +1276,7 @@
                         ${merchant ? merchant.name : 'Unknown'}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        $${product.price.toFixed(2)}
+                        R${product.price.toFixed(2)}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="capitalize text-sm text-gray-900">${product.category}</span>
@@ -983,6 +1291,27 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            // Update product merchant filter
+            updateProductMerchantFilter();
+        }
+
+        function updateProductMerchantFilter() {
+            const select = document.getElementById('productMerchantFilter');
+            if (select) {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">All Merchants</option>';
+                
+                adminData.merchants.forEach(merchant => {
+                    const option = document.createElement('option');
+                    option.value = merchant.id;
+                    option.textContent = merchant.name;
+                    if (merchant.id.toString() === currentValue) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            }
         }
 
         function populateMerchantDropdown() {
@@ -1015,18 +1344,12 @@
                     document.getElementById('productStock').value = product.stock || '';
                     document.getElementById('productStatus').value = product.status;
                     
-                    if (product.image) {
-                        document.getElementById('productImagePreview').innerHTML = `<img src="${product.image}" class="image-preview mx-auto">`;
-                    }
+                    // Populate gallery with existing images
+                    populateGallery('productImageGallery', product.images || []);
                 }
             } else {
                 form.reset();
-                document.getElementById('productImagePreview').innerHTML = `
-                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
-                    <p class="text-sm text-gray-600">Click to upload image</p>
-                `;
+                document.getElementById('productImageGallery').innerHTML = '';
             }
             
             modal.classList.remove('hidden');
@@ -1057,6 +1380,9 @@
             
             adminData.users.forEach(user => {
                 const sponsor = user.sponsor ? adminData.users.find(u => u.id === user.sponsor) : null;
+                const expiryDate = user.expiry ? new Date(user.expiry) : null;
+                const expiryStatus = getExpiryStatus(expiryDate);
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -1074,11 +1400,15 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ${user.email}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${sponsor ? sponsor.name : 'Direct signup'}
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="capitalize text-sm text-gray-900">${user.role || 'member'}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="capitalize text-sm text-gray-900">${user.membershipType || 'standard'}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${new Date(user.joined).toLocaleDateString()}
+                        ${expiryDate ? expiryDate.toLocaleDateString() : 'No expiry'}
+                        ${expiryStatus ? `<div class="text-xs text-${expiryStatus.color}-600">${expiryStatus.text}</div>` : ''}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="status-badge status-${user.status}">${user.status}</span>
@@ -1090,6 +1420,266 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            // Check for expiry notifications
+            checkExpiryNotifications();
+        }
+
+        function getExpiryStatus(expiryDate) {
+            if (!expiryDate) return null;
+            
+            const now = new Date();
+            const diffTime = expiryDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return { text: 'Expired', color: 'red' };
+            } else if (diffDays <= 30) {
+                return { text: `${diffDays} days left`, color: 'red' };
+            } else if (diffDays <= 60) {
+                return { text: `${diffDays} days left`, color: 'yellow' };
+            }
+            return null;
+        }
+
+        function checkExpiryNotifications() {
+            const notifications = [];
+            const now = new Date();
+            
+            adminData.users.forEach(user => {
+                if (user.expiry && user.status === 'active') {
+                    const expiryDate = new Date(user.expiry);
+                    const diffTime = expiryDate - now;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays <= 30 && diffDays > 0) {
+                        notifications.push({
+                            type: 'warning',
+                            message: `${user.name}'s membership expires in ${diffDays} days`,
+                            user: user
+                        });
+                    } else if (diffDays <= 60 && diffDays > 30) {
+                        notifications.push({
+                            type: 'info',
+                            message: `${user.name}'s membership expires in ${diffDays} days`,
+                            user: user
+                        });
+                    }
+                }
+            });
+            
+            displayNotifications(notifications);
+        }
+
+        function displayNotifications(notifications) {
+            const container = document.getElementById('expiryNotifications');
+            container.innerHTML = '';
+            
+            notifications.forEach((notification, index) => {
+                const div = document.createElement('div');
+                div.className = `notification ${notification.type}`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">${notification.message}</p>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+                
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    if (div.parentElement) {
+                        div.remove();
+                    }
+                }, 10000);
+            });
+        }
+
+        function editUser(id) {
+            const user = adminData.users.find(u => u.id === id);
+            if (user) {
+                document.getElementById('editUserName').value = user.name;
+                document.getElementById('editUserEmail').value = user.email;
+                document.getElementById('editUserRole').value = user.role || 'member';
+                document.getElementById('editUserMembershipType').value = user.membershipType || 'standard';
+                document.getElementById('editUserExpiry').value = user.expiry ? user.expiry.split('T')[0] : '';
+                document.getElementById('editUserStatus').value = user.status;
+                
+                document.getElementById('userEditModal').classList.remove('hidden');
+                currentEditingUser = id;
+            }
+        }
+
+        function closeUserEdit() {
+            document.getElementById('userEditModal').classList.add('hidden');
+            currentEditingUser = null;
+        }
+
+        function deleteUser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                adminData.users = adminData.users.filter(u => u.id !== id);
+                saveAdminData();
+                populateUsersTable();
+                updateDashboardStats();
+                addActivity('user', `User deleted`);
+            }
+        }
+
+        // Media handling functions
+        function validateImageUrl(input, previewId) {
+            const url = input.value.trim();
+            if (!url) return;
+            
+            const img = new Image();
+            img.onload = function() {
+                if (previewId === 'merchantLogoPreview') {
+                    document.getElementById(previewId).innerHTML = `<img src="${url}" class="image-preview mx-auto">`;
+                } else {
+                    addMediaToGallery(url, previewId);
+                }
+            };
+            img.onerror = function() {
+                alert('Invalid image URL or image could not be loaded');
+            };
+            img.src = url;
+        }
+
+        function addMediaUrl(inputId, galleryId) {
+            const input = document.getElementById(inputId);
+            const url = input.value.trim();
+            if (!url) return;
+            
+            // Check if it's an image or video
+            const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
+            const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+            
+            if (isImage) {
+                const img = new Image();
+                img.onload = function() {
+                    addMediaToGallery(url, galleryId, 'image');
+                    input.value = '';
+                };
+                img.onerror = function() {
+                    alert('Invalid image URL or image could not be loaded');
+                };
+                img.src = url;
+            } else if (isVideo) {
+                addMediaToGallery(url, galleryId, 'video');
+                input.value = '';
+            } else {
+                alert('Please enter a valid image or video URL');
+            }
+        }
+
+        function addMediaToGallery(src, galleryId, type = 'image') {
+            const gallery = document.getElementById(galleryId);
+            const mediaItem = document.createElement('div');
+            mediaItem.className = 'media-gallery-item';
+            
+            const mediaElement = type === 'video' ? 
+                `<video src="${src}" controls></video>` : 
+                `<img src="${src}" alt="Media">`;
+            
+            mediaItem.innerHTML = `
+                ${mediaElement}
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            gallery.appendChild(mediaItem);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, galleryId) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const files = Array.from(e.dataTransfer.files);
+            handleFiles(files, galleryId);
+        }
+
+        function handleFileSelect(input, galleryId) {
+            const files = Array.from(input.files);
+            handleFiles(files, galleryId);
+        }
+
+        function handleFiles(files, galleryId) {
+            files.forEach(file => {
+                if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const type = file.type.startsWith('video/') ? 'video' : 'image';
+                        addMediaToGallery(e.target.result, galleryId, type);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert(`File ${file.name} is not a supported image or video format`);
+                }
+            });
+        }
+
+        function getGalleryMedia(galleryId) {
+            const gallery = document.getElementById(galleryId);
+            const mediaItems = gallery.querySelectorAll('.media-gallery-item');
+            const mediaUrls = [];
+            
+            mediaItems.forEach(item => {
+                const img = item.querySelector('img');
+                const video = item.querySelector('video');
+                if (img) mediaUrls.push(img.src);
+                if (video) mediaUrls.push(video.src);
+            });
+            
+            return mediaUrls;
+        }
+
+        function populateGallery(galleryId, mediaUrls) {
+            const gallery = document.getElementById(galleryId);
+            gallery.innerHTML = '';
+            
+            if (mediaUrls && mediaUrls.length > 0) {
+                mediaUrls.forEach(url => {
+                    const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
+                    addMediaToGallery(url, galleryId, isVideo ? 'video' : 'image');
+                });
+            }
+        }
+
+        function handleCategoryInput(input, type) {
+            const value = input.value.trim();
+            const existingCategories = adminData.categories[type] || [];
+            
+            if (value && !existingCategories.includes(value.toLowerCase())) {
+                if (confirm(`Category "${value}" doesn't exist. Would you like to create it?`)) {
+                    if (!adminData.categories[type]) {
+                        adminData.categories[type] = [];
+                    }
+                    adminData.categories[type].push(value.toLowerCase());
+                    
+                    // Update the datalist
+                    const datalist = document.getElementById(type + 'CategoryList');
+                    const option = document.createElement('option');
+                    option.value = value.toLowerCase();
+                    datalist.appendChild(option);
+                    
+                    saveAdminData();
+                    addActivity('system', `New ${type} category "${value}" created`);
+                }
+            }
         }
 
         // Utility functions
@@ -1109,11 +1699,26 @@
         }
 
         // Export/Import functions
+        function showExportMenu() {
+            const menu = document.getElementById('exportMenu');
+            menu.classList.toggle('hidden');
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest('#exportDataBtn') && !e.target.closest('#exportMenu')) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
         function exportAllData() {
             const dataToExport = {
                 merchants: adminData.merchants,
                 products: adminData.products,
                 users: adminData.users,
+                categories: adminData.categories,
+                recentActivity: adminData.recentActivity,
                 exported: new Date().toISOString(),
                 version: '5.1'
             };
@@ -1127,6 +1732,84 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportToCSV() {
+            // Create CSV for merchants
+            let merchantsCSV = 'Name,Category,Email,Phone,Address,Website,Status,Created\n';
+            adminData.merchants.forEach(merchant => {
+                merchantsCSV += `"${merchant.name}","${merchant.category}","${merchant.email || ''}","${merchant.phone || ''}","${merchant.address || ''}","${merchant.website || ''}","${merchant.status}","${merchant.created}"\n`;
+            });
+
+            // Create CSV for products
+            let productsCSV = 'Name,Merchant,Price,Category,Stock,Status,Created\n';
+            adminData.products.forEach(product => {
+                const merchant = adminData.merchants.find(m => m.id === product.merchantId);
+                productsCSV += `"${product.name}","${merchant ? merchant.name : 'Unknown'}","${product.price}","${product.category}","${product.stock || 0}","${product.status}","${product.created}"\n`;
+            });
+
+            // Create CSV for users
+            let usersCSV = 'Name,Email,Role,Membership Type,Joined,Expiry,Status\n';
+            adminData.users.forEach(user => {
+                usersCSV += `"${user.name}","${user.email}","${user.role || 'member'}","${user.membershipType || 'standard'}","${user.joined}","${user.expiry || ''}","${user.status}"\n`;
+            });
+
+            // Create zip-like structure (multiple downloads)
+            downloadCSV(merchantsCSV, 'merchants');
+            setTimeout(() => downloadCSV(productsCSV, 'products'), 500);
+            setTimeout(() => downloadCSV(usersCSV, 'users'), 1000);
+            
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tokenz-${filename}-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Filter functions
+        function filterMerchants() {
+            const searchTerm = document.getElementById('merchantSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('merchantCategoryFilter').value;
+            const statusFilter = document.getElementById('merchantStatusFilter').value;
+            
+            const filteredMerchants = adminData.merchants.filter(merchant => {
+                const matchesSearch = merchant.name.toLowerCase().includes(searchTerm) || 
+                                    (merchant.description && merchant.description.toLowerCase().includes(searchTerm));
+                const matchesCategory = !categoryFilter || merchant.category === categoryFilter;
+                const matchesStatus = !statusFilter || merchant.status === statusFilter;
+                
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+            
+            populateMerchantsTable(filteredMerchants);
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const merchantFilter = document.getElementById('productMerchantFilter').value;
+            const categoryFilter = document.getElementById('productCategoryFilter').value;
+            const statusFilter = document.getElementById('productStatusFilter').value;
+            
+            const filteredProducts = adminData.products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                    (product.description && product.description.toLowerCase().includes(searchTerm));
+                const matchesMerchant = !merchantFilter || product.merchantId.toString() === merchantFilter;
+                const matchesCategory = !categoryFilter || product.category === categoryFilter;
+                const matchesStatus = !statusFilter || product.status === statusFilter;
+                
+                return matchesSearch && matchesMerchant && matchesCategory && matchesStatus;
+            });
+            
+            populateProductsTable(filteredProducts);
         }
 
         function importData(input) {
@@ -1198,10 +1881,12 @@
             if (currentEditingMerchant) {
                 const index = adminData.merchants.findIndex(m => m.id === currentEditingMerchant);
                 adminData.merchants[index] = { ...adminData.merchants[index], ...merchantData };
+                addActivity('merchant', `Merchant "${merchantData.name}" updated`);
             } else {
                 merchantData.id = generateId();
                 merchantData.created = new Date().toISOString();
                 adminData.merchants.push(merchantData);
+                addActivity('merchant', `New merchant "${merchantData.name}" added`);
             }
             
             saveAdminData();
@@ -1222,22 +1907,48 @@
                 category: document.getElementById('productCategory').value,
                 stock: parseInt(document.getElementById('productStock').value) || 0,
                 status: document.getElementById('productStatus').value,
-                image: document.getElementById('productImagePreview').querySelector('img')?.src || null
+                images: getGalleryMedia('productImageGallery')
             };
             
             if (currentEditingProduct) {
                 const index = adminData.products.findIndex(p => p.id === currentEditingProduct);
                 adminData.products[index] = { ...adminData.products[index], ...productData };
+                addActivity('product', `Product "${productData.name}" updated`);
             } else {
                 productData.id = generateId();
                 productData.created = new Date().toISOString();
                 adminData.products.push(productData);
+                addActivity('product', `New product "${productData.name}" added`);
             }
             
             saveAdminData();
             populateProductsTable();
             updateDashboardStats();
             closeProductForm();
+        });
+
+        // User edit form handler
+        document.getElementById('userEditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (currentEditingUser) {
+                const index = adminData.users.findIndex(u => u.id === currentEditingUser);
+                if (index !== -1) {
+                    const userData = {
+                        role: document.getElementById('editUserRole').value,
+                        membershipType: document.getElementById('editUserMembershipType').value,
+                        expiry: document.getElementById('editUserExpiry').value ? 
+                               new Date(document.getElementById('editUserExpiry').value).toISOString() : null,
+                        status: document.getElementById('editUserStatus').value
+                    };
+                    
+                    adminData.users[index] = { ...adminData.users[index], ...userData };
+                    saveAdminData();
+                    populateUsersTable();
+                    closeUserEdit();
+                    addActivity('user', `User "${adminData.users[index].name}" updated`);
+                }
+            }
         });
 
         // Sidebar toggle
@@ -1285,5 +1996,5 @@
             console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95df039e328eaa15',t:'MTc1MjMwNzMwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95df6d76737f73d5',t:'MTc1MjMxMTYzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
