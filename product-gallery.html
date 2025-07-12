@@ -1,0 +1,1278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Product Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .product-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .featured-badge {
+            background: linear-gradient(45deg, #8B5CF6, #EC4899);
+            animation: pulse 2s infinite;
+        }
+        
+        .discount-badge {
+            background: linear-gradient(45deg, #EF4444, #F97316);
+        }
+        
+        .rating-stars {
+            color: #FCD34D;
+        }
+        
+        .filter-chip {
+            transition: all 0.2s ease;
+        }
+        
+        .filter-chip:hover {
+            transform: scale(1.05);
+        }
+        
+        .filter-chip.active {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+        }
+        
+        .search-suggestions {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .category-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .category-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .price-range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: #E5E7EB;
+            outline: none;
+        }
+        
+        .price-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6;
+            cursor: pointer;
+        }
+        
+        .wishlist-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .wishlist-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .wishlist-btn.active {
+            color: #EF4444;
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .sort-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .sort-dropdown.open {
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Product Gallery</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- View Toggle -->
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button onclick="setViewMode('grid')" id="grid-view-btn" class="px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white text-gray-900 shadow-sm">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button onclick="setViewMode('list')" id="list-view-btn" class="px-3 py-1 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Wishlist -->
+                    <button onclick="showWishlist()" class="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-heart"></i>
+                        <span id="wishlist-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" style="display: none;">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Search and Filters -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <!-- Search Bar -->
+            <div class="relative mb-6">
+                <input type="text" id="product-search" placeholder="Search products, brands, or categories..." 
+                       class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <button onclick="clearSearch()" id="clear-search" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <!-- Search Suggestions -->
+                <div id="search-suggestions" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-20" style="display: none;">
+                    <div class="search-suggestions p-2"></div>
+                </div>
+            </div>
+            
+            <!-- Category Filters -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Categories</h3>
+                <div class="category-scroll flex space-x-3 overflow-x-auto pb-2">
+                    <button onclick="filterByCategory('all')" class="filter-chip active flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        All Products
+                    </button>
+                    <button onclick="filterByCategory('food')" class="filter-chip flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        🍕 Food & Dining
+                    </button>
+                    <button onclick="filterByCategory('fitness')" class="filter-chip flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        💪 Fitness & Health
+                    </button>
+                    <button onclick="filterByCategory('entertainment')" class="filter-chip flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        🎬 Entertainment
+                    </button>
+                    <button onclick="filterByCategory('shopping')" class="filter-chip flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        🛍️ Shopping
+                    </button>
+                    <button onclick="filterByCategory('services')" class="filter-chip flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        🔧 Services
+                    </button>
+                    <button onclick="filterByCategory('travel')" class="filter-chip flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+                        ✈️ Travel
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Advanced Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Price Range -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                    <div class="space-y-2">
+                        <input type="range" id="price-min" class="price-range-slider w-full" min="0" max="1000" value="0" oninput="updatePriceFilter()">
+                        <input type="range" id="price-max" class="price-range-slider w-full" min="0" max="1000" value="1000" oninput="updatePriceFilter()">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>R<span id="price-min-display">0</span></span>
+                            <span>R<span id="price-max-display">1000</span>+</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rating Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+                    <select id="rating-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="applyFilters()">
+                        <option value="0">Any Rating</option>
+                        <option value="4">4+ Stars</option>
+                        <option value="4.5">4.5+ Stars</option>
+                        <option value="5">5 Stars Only</option>
+                    </select>
+                </div>
+                
+                <!-- Availability -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                    <select id="availability-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="applyFilters()">
+                        <option value="all">All Products</option>
+                        <option value="available">Available Now</option>
+                        <option value="featured">Featured Only</option>
+                        <option value="discounted">On Sale</option>
+                    </select>
+                </div>
+                
+                <!-- Sort By -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <select id="sort-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="applySorting()">
+                        <option value="featured">Featured First</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="newest">Newest First</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Active Filters Display -->
+            <div id="active-filters" class="mt-4 flex flex-wrap gap-2" style="display: none;">
+                <span class="text-sm text-gray-600 mr-2">Active filters:</span>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">
+                    <span id="results-count">0</span> Products Found
+                </h2>
+                <p class="text-sm text-gray-600" id="results-description">Showing all available products</p>
+            </div>
+            
+            <button onclick="toggleFilters()" class="md:hidden bg-blue-600 text-white px-4 py-2 rounded-lg">
+                <i class="fas fa-filter mr-2"></i>Filters
+            </button>
+        </div>
+
+        <!-- Featured Products Section -->
+        <div id="featured-section" class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">⭐ Featured Products</h3>
+                <button onclick="scrollFeatured('right')" class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="relative">
+                <div id="featured-products" class="flex space-x-4 overflow-x-auto pb-4" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    <!-- Featured products will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="products-container">
+            <div id="products-grid" class="product-grid">
+                <!-- Products will be loaded here -->
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loading-state" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Loading skeletons -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="loading-skeleton h-48"></div>
+                    <div class="p-4">
+                        <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                        <div class="loading-skeleton h-3 mb-2 rounded w-3/4"></div>
+                        <div class="loading-skeleton h-4 rounded w-1/2"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="loading-skeleton h-48"></div>
+                    <div class="p-4">
+                        <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                        <div class="loading-skeleton h-3 mb-2 rounded w-3/4"></div>
+                        <div class="loading-skeleton h-4 rounded w-1/2"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="loading-skeleton h-48"></div>
+                    <div class="p-4">
+                        <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                        <div class="loading-skeleton h-3 mb-2 rounded w-3/4"></div>
+                        <div class="loading-skeleton h-4 rounded w-1/2"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="loading-skeleton h-48"></div>
+                    <div class="p-4">
+                        <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                        <div class="loading-skeleton h-3 mb-2 rounded w-3/4"></div>
+                        <div class="loading-skeleton h-4 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Load More Button -->
+            <div class="text-center mt-8">
+                <button id="load-more-btn" onclick="loadMoreProducts()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors" style="display: none;">
+                    Load More Products
+                </button>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-16" style="display: none;">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+            <p class="text-gray-500 mb-6">Try adjusting your search or filters</p>
+            <button onclick="clearAllFilters()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                Clear All Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Product Details</h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="product-modal-content" class="p-6">
+                <!-- Product details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div id="wishlist-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">My Wishlist</h3>
+                <button onclick="closeWishlistModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="wishlist-content" class="p-6">
+                <!-- Wishlist items will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product Gallery State
+        let galleryState = {
+            products: [],
+            filteredProducts: [],
+            featuredProducts: [],
+            wishlist: [],
+            currentFilters: {
+                category: 'all',
+                priceMin: 0,
+                priceMax: 1000,
+                rating: 0,
+                availability: 'all',
+                search: ''
+            },
+            currentSort: 'featured',
+            viewMode: 'grid',
+            currentPage: 1,
+            productsPerPage: 12,
+            isLoading: false
+        };
+
+        // Initialize Product Gallery
+        function initProductGallery() {
+            console.log('🛍️ Initializing Product Gallery...');
+            
+            // Load saved wishlist
+            loadWishlist();
+            
+            // Setup search functionality
+            setupSearch();
+            
+            // Load initial products
+            loadProducts();
+            
+            // Setup price range sliders
+            setupPriceSliders();
+            
+            console.log('✅ Product Gallery initialized');
+        }
+
+        // Load Products Data
+        function loadProducts() {
+            galleryState.isLoading = true;
+            showLoadingState();
+            
+            // Simulate API call
+            setTimeout(() => {
+                galleryState.products = generateMockProducts();
+                galleryState.featuredProducts = galleryState.products.filter(p => p.featured);
+                
+                applyFilters();
+                loadFeaturedProducts();
+                
+                galleryState.isLoading = false;
+                hideLoadingState();
+            }, 1000);
+        }
+
+        function generateMockProducts() {
+            const categories = ['food', 'fitness', 'entertainment', 'shopping', 'services', 'travel'];
+            const merchants = [
+                'Bean & Brew', 'FitLife Gym', 'StreamMax', 'TechStore', 'Beauty Salon', 'Travel Plus',
+                'Pizza Palace', 'Yoga Studio', 'Game Zone', 'Fashion Hub', 'Car Service', 'Hotel Luxury'
+            ];
+            
+            const products = [];
+            
+            for (let i = 1; i <= 48; i++) {
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const merchant = merchants[Math.floor(Math.random() * merchants.length)];
+                const basePrice = Math.floor(Math.random() * 800) + 50;
+                const discount = Math.random() > 0.7 ? Math.floor(Math.random() * 30) + 10 : 0;
+                const rating = (Math.random() * 2 + 3).toFixed(1); // 3.0 to 5.0
+                const reviews = Math.floor(Math.random() * 500) + 10;
+                
+                products.push({
+                    id: i,
+                    name: generateProductName(category, i),
+                    merchant: merchant,
+                    category: category,
+                    price: basePrice,
+                    originalPrice: discount > 0 ? Math.floor(basePrice / (1 - discount/100)) : basePrice,
+                    discount: discount,
+                    rating: parseFloat(rating),
+                    reviews: reviews,
+                    image: getProductEmoji(category),
+                    description: generateProductDescription(category),
+                    features: generateProductFeatures(category),
+                    featured: Math.random() > 0.8,
+                    available: Math.random() > 0.1,
+                    popular: Math.random() > 0.7,
+                    dateAdded: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+                });
+            }
+            
+            return products;
+        }
+
+        function generateProductName(category, index) {
+            const names = {
+                food: ['Premium Coffee Subscription', 'Gourmet Meal Plan', 'Fresh Juice Cleanse', 'Artisan Pizza Deal', 'Healthy Snack Box'],
+                fitness: ['Gym Membership Pro', 'Personal Training Package', 'Yoga Class Bundle', 'Fitness Equipment Rental', 'Nutrition Consultation'],
+                entertainment: ['Streaming Service Bundle', 'Gaming Subscription', 'Movie Theater Pass', 'Concert Tickets', 'Book Club Membership'],
+                shopping: ['Fashion Wardrobe Box', 'Tech Gadget Bundle', 'Home Decor Package', 'Beauty Product Set', 'Seasonal Collection'],
+                services: ['Car Maintenance Package', 'Home Cleaning Service', 'Pet Grooming Bundle', 'Phone Repair Service', 'Delivery Subscription'],
+                travel: ['Weekend Getaway Package', 'Flight Booking Credit', 'Hotel Stay Voucher', 'Car Rental Deal', 'Travel Insurance Plan']
+            };
+            
+            const categoryNames = names[category] || ['Premium Service Package'];
+            return categoryNames[index % categoryNames.length] + ` #${index}`;
+        }
+
+        function getProductEmoji(category) {
+            const emojis = {
+                food: ['☕', '🍕', '🥗', '🍔', '🥤', '🍰', '🥪', '🍜'][Math.floor(Math.random() * 8)],
+                fitness: ['💪', '🏋️', '🧘', '🏃', '⚽', '🏊', '🚴', '🤸'][Math.floor(Math.random() * 8)],
+                entertainment: ['🎬', '🎮', '🎵', '📚', '🎭', '🎪', '🎨', '🎯'][Math.floor(Math.random() * 8)],
+                shopping: ['👕', '👟', '💄', '📱', '💻', '🎒', '⌚', '🕶️'][Math.floor(Math.random() * 8)],
+                services: ['🔧', '🚗', '🏠', '🐕', '📞', '🧹', '🔒', '💼'][Math.floor(Math.random() * 8)],
+                travel: ['✈️', '🏨', '🚗', '🗺️', '🧳', '🏖️', '🏔️', '🚢'][Math.floor(Math.random() * 8)]
+            };
+            
+            return emojis[category] || '🎁';
+        }
+
+        function generateProductDescription(category) {
+            const descriptions = {
+                food: 'Delicious and fresh food options delivered to your door with premium quality ingredients.',
+                fitness: 'Professional fitness services to help you achieve your health and wellness goals.',
+                entertainment: 'Premium entertainment content and experiences for your leisure time.',
+                shopping: 'Curated selection of high-quality products for your lifestyle needs.',
+                services: 'Professional services to make your life easier and more convenient.',
+                travel: 'Amazing travel experiences and deals for your next adventure.'
+            };
+            
+            return descriptions[category] || 'Premium service offering exceptional value and quality.';
+        }
+
+        function generateProductFeatures(category) {
+            const features = {
+                food: ['Fresh ingredients', 'Fast delivery', 'Nutritional info', 'Custom options'],
+                fitness: ['Expert trainers', 'Flexible schedule', 'Progress tracking', 'Equipment included'],
+                entertainment: ['HD quality', 'Multiple devices', 'Offline access', 'Family sharing'],
+                shopping: ['Free shipping', 'Easy returns', 'Quality guarantee', 'Gift wrapping'],
+                services: ['Professional staff', '24/7 support', 'Satisfaction guarantee', 'Flexible booking'],
+                travel: ['Best price guarantee', 'Free cancellation', 'Travel insurance', '24/7 assistance']
+            };
+            
+            return features[category] || ['Premium quality', 'Great value', 'Excellent service', 'Customer support'];
+        }
+
+        // Search Functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('product-search');
+            const suggestionsContainer = document.getElementById('search-suggestions');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                galleryState.currentFilters.search = query;
+                
+                if (query.length > 0) {
+                    document.getElementById('clear-search').style.display = 'flex';
+                    showSearchSuggestions(query);
+                } else {
+                    document.getElementById('clear-search').style.display = 'none';
+                    hideSearchSuggestions();
+                }
+                
+                // Debounced search
+                clearTimeout(searchInput.searchTimeout);
+                searchInput.searchTimeout = setTimeout(() => {
+                    applyFilters();
+                }, 300);
+            });
+            
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim().length > 0) {
+                    showSearchSuggestions(this.value.trim());
+                }
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('#product-search') && !event.target.closest('#search-suggestions')) {
+                    hideSearchSuggestions();
+                }
+            });
+        }
+
+        function showSearchSuggestions(query) {
+            const suggestions = generateSearchSuggestions(query);
+            const container = document.querySelector('#search-suggestions .search-suggestions');
+            
+            if (suggestions.length === 0) {
+                hideSearchSuggestions();
+                return;
+            }
+            
+            container.innerHTML = suggestions.map(suggestion => `
+                <div class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="selectSuggestion('${suggestion}')">
+                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                    ${suggestion}
+                </div>
+            `).join('');
+            
+            document.getElementById('search-suggestions').style.display = 'block';
+        }
+
+        function hideSearchSuggestions() {
+            document.getElementById('search-suggestions').style.display = 'none';
+        }
+
+        function generateSearchSuggestions(query) {
+            const suggestions = new Set();
+            const queryLower = query.toLowerCase();
+            
+            // Add product name matches
+            galleryState.products.forEach(product => {
+                if (product.name.toLowerCase().includes(queryLower)) {
+                    suggestions.add(product.name);
+                }
+                if (product.merchant.toLowerCase().includes(queryLower)) {
+                    suggestions.add(product.merchant);
+                }
+            });
+            
+            // Add category suggestions
+            const categories = ['Food & Dining', 'Fitness & Health', 'Entertainment', 'Shopping', 'Services', 'Travel'];
+            categories.forEach(category => {
+                if (category.toLowerCase().includes(queryLower)) {
+                    suggestions.add(category);
+                }
+            });
+            
+            return Array.from(suggestions).slice(0, 5);
+        }
+
+        function selectSuggestion(suggestion) {
+            document.getElementById('product-search').value = suggestion;
+            galleryState.currentFilters.search = suggestion;
+            hideSearchSuggestions();
+            applyFilters();
+        }
+
+        function clearSearch() {
+            document.getElementById('product-search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            galleryState.currentFilters.search = '';
+            hideSearchSuggestions();
+            applyFilters();
+        }
+
+        // Filter Functions
+        function filterByCategory(category) {
+            // Update active filter chip
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            galleryState.currentFilters.category = category;
+            applyFilters();
+        }
+
+        function setupPriceSliders() {
+            const minSlider = document.getElementById('price-min');
+            const maxSlider = document.getElementById('price-max');
+            
+            minSlider.addEventListener('input', updatePriceFilter);
+            maxSlider.addEventListener('input', updatePriceFilter);
+        }
+
+        function updatePriceFilter() {
+            const minPrice = parseInt(document.getElementById('price-min').value);
+            const maxPrice = parseInt(document.getElementById('price-max').value);
+            
+            // Ensure min is not greater than max
+            if (minPrice >= maxPrice) {
+                document.getElementById('price-min').value = maxPrice - 10;
+                return;
+            }
+            
+            document.getElementById('price-min-display').textContent = minPrice;
+            document.getElementById('price-max-display').textContent = maxPrice;
+            
+            galleryState.currentFilters.priceMin = minPrice;
+            galleryState.currentFilters.priceMax = maxPrice;
+            
+            // Debounced filter application
+            clearTimeout(updatePriceFilter.timeout);
+            updatePriceFilter.timeout = setTimeout(applyFilters, 500);
+        }
+
+        function applyFilters() {
+            let filtered = [...galleryState.products];
+            
+            // Category filter
+            if (galleryState.currentFilters.category !== 'all') {
+                filtered = filtered.filter(product => product.category === galleryState.currentFilters.category);
+            }
+            
+            // Price filter
+            filtered = filtered.filter(product => 
+                product.price >= galleryState.currentFilters.priceMin && 
+                product.price <= galleryState.currentFilters.priceMax
+            );
+            
+            // Rating filter
+            const minRating = parseFloat(document.getElementById('rating-filter').value);
+            if (minRating > 0) {
+                filtered = filtered.filter(product => product.rating >= minRating);
+            }
+            
+            // Availability filter
+            const availability = document.getElementById('availability-filter').value;
+            switch (availability) {
+                case 'available':
+                    filtered = filtered.filter(product => product.available);
+                    break;
+                case 'featured':
+                    filtered = filtered.filter(product => product.featured);
+                    break;
+                case 'discounted':
+                    filtered = filtered.filter(product => product.discount > 0);
+                    break;
+            }
+            
+            // Search filter
+            if (galleryState.currentFilters.search) {
+                const query = galleryState.currentFilters.search.toLowerCase();
+                filtered = filtered.filter(product => 
+                    product.name.toLowerCase().includes(query) ||
+                    product.merchant.toLowerCase().includes(query) ||
+                    product.description.toLowerCase().includes(query)
+                );
+            }
+            
+            galleryState.filteredProducts = filtered;
+            applySorting();
+            updateActiveFilters();
+        }
+
+        function applySorting() {
+            const sortBy = document.getElementById('sort-filter').value;
+            let sorted = [...galleryState.filteredProducts];
+            
+            switch (sortBy) {
+                case 'featured':
+                    sorted.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+                    break;
+                case 'rating':
+                    sorted.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'price-low':
+                    sorted.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    sorted.sort((a, b) => b.price - a.price);
+                    break;
+                case 'newest':
+                    sorted.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+                    break;
+                case 'popular':
+                    sorted.sort((a, b) => b.reviews - a.reviews);
+                    break;
+            }
+            
+            galleryState.filteredProducts = sorted;
+            galleryState.currentSort = sortBy;
+            displayProducts();
+        }
+
+        function updateActiveFilters() {
+            const activeFiltersContainer = document.getElementById('active-filters');
+            const filters = [];
+            
+            if (galleryState.currentFilters.category !== 'all') {
+                filters.push(`Category: ${galleryState.currentFilters.category}`);
+            }
+            
+            if (galleryState.currentFilters.priceMin > 0 || galleryState.currentFilters.priceMax < 1000) {
+                filters.push(`Price: R${galleryState.currentFilters.priceMin} - R${galleryState.currentFilters.priceMax}`);
+            }
+            
+            const minRating = parseFloat(document.getElementById('rating-filter').value);
+            if (minRating > 0) {
+                filters.push(`Rating: ${minRating}+ stars`);
+            }
+            
+            const availability = document.getElementById('availability-filter').value;
+            if (availability !== 'all') {
+                filters.push(`Availability: ${availability}`);
+            }
+            
+            if (galleryState.currentFilters.search) {
+                filters.push(`Search: "${galleryState.currentFilters.search}"`);
+            }
+            
+            if (filters.length > 0) {
+                activeFiltersContainer.style.display = 'flex';
+                const filtersHTML = filters.map(filter => `
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                        ${filter}
+                        <button onclick="removeFilter('${filter}')" class="ml-2 text-blue-600 hover:text-blue-800">×</button>
+                    </span>
+                `).join('');
+                activeFiltersContainer.innerHTML = `<span class="text-sm text-gray-600 mr-2">Active filters:</span>${filtersHTML}`;
+            } else {
+                activeFiltersContainer.style.display = 'none';
+            }
+        }
+
+        function clearAllFilters() {
+            // Reset all filters
+            galleryState.currentFilters = {
+                category: 'all',
+                priceMin: 0,
+                priceMax: 1000,
+                rating: 0,
+                availability: 'all',
+                search: ''
+            };
+            
+            // Reset UI elements
+            document.getElementById('product-search').value = '';
+            document.getElementById('price-min').value = 0;
+            document.getElementById('price-max').value = 1000;
+            document.getElementById('rating-filter').value = 0;
+            document.getElementById('availability-filter').value = 'all';
+            document.getElementById('clear-search').style.display = 'none';
+            
+            // Reset category chips
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            document.querySelector('.filter-chip[onclick="filterByCategory(\'all\')"]').classList.add('active');
+            
+            updatePriceFilter();
+            applyFilters();
+        }
+
+        // Display Functions
+        function displayProducts() {
+            const container = document.getElementById('products-grid');
+            const products = galleryState.filteredProducts;
+            
+            // Update results count
+            document.getElementById('results-count').textContent = products.length;
+            
+            if (products.length === 0) {
+                container.style.display = 'none';
+                document.getElementById('empty-state').style.display = 'block';
+                document.getElementById('load-more-btn').style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'grid';
+            document.getElementById('empty-state').style.display = 'none';
+            
+            // Pagination
+            const startIndex = 0;
+            const endIndex = Math.min(galleryState.currentPage * galleryState.productsPerPage, products.length);
+            const displayProducts = products.slice(startIndex, endIndex);
+            
+            if (galleryState.viewMode === 'grid') {
+                container.className = 'product-grid';
+                container.innerHTML = displayProducts.map(product => createProductCard(product)).join('');
+            } else {
+                container.className = 'space-y-4';
+                container.innerHTML = displayProducts.map(product => createProductListItem(product)).join('');
+            }
+            
+            // Show/hide load more button
+            if (endIndex < products.length) {
+                document.getElementById('load-more-btn').style.display = 'block';
+            } else {
+                document.getElementById('load-more-btn').style.display = 'none';
+            }
+        }
+
+        function createProductCard(product) {
+            const isInWishlist = galleryState.wishlist.includes(product.id);
+            
+            return `
+                <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" onclick="showProductDetails(${product.id})">
+                    <div class="relative">
+                        <div class="h-48 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+                            <span class="text-6xl">${product.image}</span>
+                        </div>
+                        
+                        <!-- Badges -->
+                        <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                            ${product.featured ? '<span class="featured-badge text-white text-xs px-2 py-1 rounded-full font-medium">FEATURED</span>' : ''}
+                            ${product.discount > 0 ? `<span class="discount-badge text-white text-xs px-2 py-1 rounded-full font-medium">${product.discount}% OFF</span>` : ''}
+                        </div>
+                        
+                        <!-- Wishlist Button -->
+                        <button onclick="toggleWishlist(${product.id}, event)" class="wishlist-btn absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg ${isInWishlist ? 'active' : ''}">
+                            <i class="fas fa-heart text-sm"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2">${product.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2">${product.merchant}</p>
+                        
+                        <!-- Rating -->
+                        <div class="flex items-center mb-2">
+                            <div class="rating-stars mr-1">
+                                ${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}
+                            </div>
+                            <span class="text-sm text-gray-600">${product.rating} (${product.reviews})</span>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-lg font-bold text-gray-900">R${product.price}</span>
+                                ${product.discount > 0 ? `<span class="text-sm text-gray-500 line-through ml-2">R${product.originalPrice}</span>` : ''}
+                            </div>
+                            ${!product.available ? '<span class="text-xs text-red-600 font-medium">Out of Stock</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createProductListItem(product) {
+            const isInWishlist = galleryState.wishlist.includes(product.id);
+            
+            return `
+                <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center space-x-4" onclick="showProductDetails(${product.id})">
+                    <div class="relative flex-shrink-0">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center">
+                            <span class="text-3xl">${product.image}</span>
+                        </div>
+                        ${product.featured ? '<span class="featured-badge absolute -top-1 -right-1 text-white text-xs px-1 py-0.5 rounded-full font-medium">★</span>' : ''}
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 mb-1">${product.name}</h3>
+                                <p class="text-sm text-gray-600 mb-1">${product.merchant}</p>
+                                <div class="flex items-center mb-2">
+                                    <div class="rating-stars mr-1 text-sm">
+                                        ${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}
+                                    </div>
+                                    <span class="text-sm text-gray-600">${product.rating} (${product.reviews})</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <div class="mb-2">
+                                    <span class="text-lg font-bold text-gray-900">R${product.price}</span>
+                                    ${product.discount > 0 ? `<span class="text-sm text-gray-500 line-through ml-2">R${product.originalPrice}</span>` : ''}
+                                </div>
+                                <button onclick="toggleWishlist(${product.id}, event)" class="wishlist-btn w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 ${isInWishlist ? 'active' : ''}">
+                                    <i class="fas fa-heart text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadFeaturedProducts() {
+            const container = document.getElementById('featured-products');
+            const featured = galleryState.featuredProducts.slice(0, 8);
+            
+            if (featured.length === 0) {
+                document.getElementById('featured-section').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('featured-section').style.display = 'block';
+            container.innerHTML = featured.map(product => `
+                <div class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onclick="showProductDetails(${product.id})">
+                    <div class="relative h-32 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+                        <span class="text-4xl">${product.image}</span>
+                        <span class="featured-badge absolute top-2 left-2 text-white text-xs px-2 py-1 rounded-full font-medium">FEATURED</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-semibold text-gray-900 mb-1 text-sm line-clamp-2">${product.name}</h4>
+                        <p class="text-xs text-gray-600 mb-2">${product.merchant}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-blue-600">R${product.price}</span>
+                            <div class="flex items-center">
+                                <span class="rating-stars text-xs mr-1">★</span>
+                                <span class="text-xs text-gray-600">${product.rating}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // View Mode Functions
+        function setViewMode(mode) {
+            galleryState.viewMode = mode;
+            
+            // Update buttons
+            document.getElementById('grid-view-btn').className = mode === 'grid' 
+                ? 'px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white text-gray-900 shadow-sm'
+                : 'px-3 py-1 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900';
+                
+            document.getElementById('list-view-btn').className = mode === 'list' 
+                ? 'px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white text-gray-900 shadow-sm'
+                : 'px-3 py-1 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900';
+            
+            displayProducts();
+        }
+
+        // Wishlist Functions
+        function loadWishlist() {
+            const saved = localStorage.getItem('tokenz_wishlist');
+            if (saved) {
+                try {
+                    galleryState.wishlist = JSON.parse(saved);
+                    updateWishlistCount();
+                } catch (error) {
+                    console.error('Error loading wishlist:', error);
+                }
+            }
+        }
+
+        function saveWishlist() {
+            localStorage.setItem('tokenz_wishlist', JSON.stringify(galleryState.wishlist));
+        }
+
+        function toggleWishlist(productId, event) {
+            event.stopPropagation();
+            
+            const index = galleryState.wishlist.indexOf(productId);
+            if (index >= 0) {
+                galleryState.wishlist.splice(index, 1);
+                showToast('Removed from wishlist', 'info');
+            } else {
+                galleryState.wishlist.push(productId);
+                showToast('Added to wishlist', 'success');
+            }
+            
+            saveWishlist();
+            updateWishlistCount();
+            displayProducts(); // Refresh to update heart icons
+        }
+
+        function updateWishlistCount() {
+            const count = galleryState.wishlist.length;
+            const badge = document.getElementById('wishlist-count');
+            
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function showWishlist() {
+            const wishlistProducts = galleryState.products.filter(p => galleryState.wishlist.includes(p.id));
+            const container = document.getElementById('wishlist-content');
+            
+            if (wishlistProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="text-6xl mb-4">💝</div>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Your wishlist is empty</h3>
+                        <p class="text-gray-500 mb-6">Start adding products you love!</p>
+                        <button onclick="closeWishlistModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                            Browse Products
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${wishlistProducts.map(product => createProductCard(product)).join('')}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('wishlist-modal').style.display = 'flex';
+        }
+
+        function closeWishlistModal() {
+            document.getElementById('wishlist-modal').style.display = 'none';
+        }
+
+        // Product Detail Functions
+        function showProductDetails(productId) {
+            const product = galleryState.products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const isInWishlist = galleryState.wishlist.includes(productId);
+            
+            document.getElementById('product-modal-content').innerHTML = `
+                <div class="space-y-6">
+                    <!-- Product Header -->
+                    <div class="flex items-start space-x-6">
+                        <div class="flex-shrink-0">
+                            <div class="w-32 h-32 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center">
+                                <span class="text-6xl">${product.image}</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <h2 class="text-2xl font-bold text-gray-900">${product.name}</h2>
+                                <button onclick="toggleWishlist(${product.id}, event)" class="wishlist-btn w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 ${isInWishlist ? 'active' : ''}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                            <p class="text-lg text-gray-600 mb-3">${product.merchant}</p>
+                            
+                            <!-- Rating -->
+                            <div class="flex items-center mb-4">
+                                <div class="rating-stars mr-2">
+                                    ${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}
+                                </div>
+                                <span class="text-gray-600">${product.rating} out of 5 (${product.reviews} reviews)</span>
+                            </div>
+                            
+                            <!-- Price -->
+                            <div class="flex items-center space-x-3 mb-4">
+                                <span class="text-3xl font-bold text-gray-900">R${product.price}</span>
+                                ${product.discount > 0 ? `
+                                    <span class="text-xl text-gray-500 line-through">R${product.originalPrice}</span>
+                                    <span class="discount-badge text-white text-sm px-3 py-1 rounded-full font-medium">${product.discount}% OFF</span>
+                                ` : ''}
+                            </div>
+                            
+                            <!-- Badges -->
+                            <div class="flex space-x-2 mb-4">
+                                ${product.featured ? '<span class="featured-badge text-white text-sm px-3 py-1 rounded-full font-medium">FEATURED</span>' : ''}
+                                ${product.popular ? '<span class="bg-green-500 text-white text-sm px-3 py-1 rounded-full font-medium">POPULAR</span>' : ''}
+                                ${!product.available ? '<span class="bg-red-500 text-white text-sm px-3 py-1 rounded-full font-medium">OUT OF STOCK</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                        <p class="text-gray-700">${product.description}</p>
+                    </div>
+                    
+                    <!-- Features -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Features</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${product.features.map(feature => `
+                                <div class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    <span class="text-gray-700">${feature}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex space-x-4 pt-4 border-t border-gray-200">
+                        <button onclick="subscribeToProduct(${product.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-colors ${!product.available ? 'opacity-50 cursor-not-allowed' : ''}" ${!product.available ? 'disabled' : ''}>
+                            ${product.available ? 'Subscribe Now' : 'Out of Stock'}
+                        </button>
+                        <button onclick="shareProduct(${product.id})" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-share mr-2"></i>Share
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').style.display = 'none';
+        }
+
+        function subscribeToProduct(productId) {
+            const product = galleryState.products.find(p => p.id === productId);
+            if (product && product.available) {
+                showToast(`Subscribed to ${product.name}!`, 'success');
+                closeProductModal();
+            }
+        }
+
+        function shareProduct(productId) {
+            const product = galleryState.products.find(p => p.id === productId);
+            if (product) {
+                if (navigator.share) {
+                    navigator.share({
+                        title: product.name,
+                        text: `Check out ${product.name} from ${product.merchant}`,
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback - copy to clipboard
+                    navigator.clipboard.writeText(`${product.name} - ${window.location.href}`);
+                    showToast('Product link copied to clipboard!', 'success');
+                }
+            }
+        }
+
+        // Utility Functions
+        function loadMoreProducts() {
+            galleryState.currentPage++;
+            displayProducts();
+        }
+
+        function showLoadingState() {
+            document.getElementById('loading-state').style.display = 'grid';
+            document.getElementById('products-grid').style.display = 'none';
+        }
+
+        function hideLoadingState() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('products-grid').style.display = 'grid';
+        }
+
+        function scrollFeatured(direction) {
+            const container = document.getElementById('featured-products');
+            const scrollAmount = 280; // Width of one card plus gap
+            
+            if (direction === 'right') {
+                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            } else {
+                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        function goBack() {
+            // This would typically navigate back to the main app
+            window.history.back();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initProductGallery);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e43f56069e73d2',t:'MTc1MjM2MjE3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
