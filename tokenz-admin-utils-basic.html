@@ -1,1 +1,481 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TokenZ Admin Utilities v5.1</title>
+</head>
+<body>
+<script>
+// TokenZ Admin Utilities Module v5.1
+// This module contains utility functions for the admin system
+
+// Enhanced data structure with new features
+const AdminDataStructure = {
+    merchants: [],
+    products: [],
+    users: [],
+    ratings: [], // New: All ratings and reviews
+    featuredProducts: [], // New: Featured product tracking
+    userFollows: [], // New: User-merchant follow relationships
+    categories: {
+        merchant: [],
+        product: []
+    },
+    recentActivity: []
+};
+
+// Rating and Review Management
+const RatingUtils = {
+    // Add a new rating
+    addRating: function(userId, productId, rating, review = '') {
+        const newRating = {
+            id: this.generateRatingId(),
+            userId: userId,
+            productId: productId,
+            merchantId: this.getProductMerchantId(productId),
+            rating: rating,
+            review: review.trim(),
+            date: new Date().toISOString(),
+            status: 'active', // active, hidden, flagged
+            helpful: 0 // helpful votes
+        };
+        
+        if (!window.adminData.ratings) {
+            window.adminData.ratings = [];
+        }
+        
+        window.adminData.ratings.push(newRating);
+        this.updateProductRating(productId);
+        return newRating;
+    },
+    
+    // Update product average rating
+    updateProductRating: function(productId) {
+        const productRatings = window.adminData.ratings.filter(r => 
+            r.productId === productId && r.status === 'active'
+        );
+        
+        if (productRatings.length === 0) return;
+        
+        const average = productRatings.reduce((sum, r) => sum + r.rating, 0) / productRatings.length;
+        const product = window.adminData.products.find(p => p.id === productId);
+        
+        if (product) {
+            product.averageRating = Math.round(average * 10) / 10;
+            product.ratingCount = productRatings.length;
+        }
+    },
+    
+    // Get product merchant ID
+    getProductMerchantId: function(productId) {
+        const product = window.adminData.products.find(p => p.id === productId);
+        return product ? product.merchantId : null;
+    },
+    
+    // Generate unique rating ID
+    generateRatingId: function() {
+        const existingIds = window.adminData.ratings ? window.adminData.ratings.map(r => r.id) : [];
+        return Math.max(...existingIds, 0) + 1;
+    },
+    
+    // Get ratings for a product
+    getProductRatings: function(productId) {
+        return window.adminData.ratings ? 
+            window.adminData.ratings.filter(r => r.productId === productId) : [];
+    },
+    
+    // Get ratings by a user
+    getUserRatings: function(userId) {
+        return window.adminData.ratings ? 
+            window.adminData.ratings.filter(r => r.userId === userId) : [];
+    },
+    
+    // Moderate rating (hide/show)
+    moderateRating: function(ratingId, status) {
+        const rating = window.adminData.ratings.find(r => r.id === ratingId);
+        if (rating) {
+            rating.status = status;
+            this.updateProductRating(rating.productId);
+        }
+    },
+    
+    // Delete rating
+    deleteRating: function(ratingId) {
+        const ratingIndex = window.adminData.ratings.findIndex(r => r.id === ratingId);
+        if (ratingIndex !== -1) {
+            const rating = window.adminData.ratings[ratingIndex];
+            window.adminData.ratings.splice(ratingIndex, 1);
+            this.updateProductRating(rating.productId);
+        }
+    },
+    
+    // Generate star display HTML
+    generateStarDisplay: function(rating, showNumber = true) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let html = '<div class="flex items-center space-x-1">';
+        
+        // Full stars
+        for (let i = 0; i < fullStars; i++) {
+            html += '<svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+        }
+        
+        // Half star
+        if (hasHalfStar) {
+            html += '<svg class="w-4 h-4 text-yellow-400" viewBox="0 0 20 20"><defs><linearGradient id="half"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs><path fill="url(#half)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+        }
+        
+        // Empty stars
+        for (let i = 0; i < emptyStars; i++) {
+            html += '<svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+        }
+        
+        if (showNumber) {
+            html += `<span class="text-sm text-gray-600 ml-1">(${rating.toFixed(1)})</span>`;
+        }
+        
+        html += '</div>';
+        return html;
+    }
+};
+
+// Featured Products Management
+const FeaturedUtils = {
+    // Add product to featured list
+    addFeatured: function(productId, expiryDays = 30) {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + expiryDays);
+        
+        const featured = {
+            id: this.generateFeaturedId(),
+            productId: productId,
+            startDate: new Date().toISOString(),
+            expiryDate: expiryDate.toISOString(),
+            status: 'active',
+            addedBy: 'admin' // Could be 'admin' or 'merchant'
+        };
+        
+        if (!window.adminData.featuredProducts) {
+            window.adminData.featuredProducts = [];
+        }
+        
+        // Remove existing featured entry for this product
+        window.adminData.featuredProducts = window.adminData.featuredProducts.filter(f => f.productId !== productId);
+        
+        // Add new featured entry
+        window.adminData.featuredProducts.push(featured);
+        
+        // Update product featured status
+        const product = window.adminData.products.find(p => p.id === productId);
+        if (product) {
+            product.featured = true;
+            product.featuredExpiry = expiryDate.toISOString();
+        }
+        
+        return featured;
+    },
+    
+    // Remove product from featured list
+    removeFeatured: function(productId) {
+        window.adminData.featuredProducts = window.adminData.featuredProducts.filter(f => f.productId !== productId);
+        
+        const product = window.adminData.products.find(p => p.id === productId);
+        if (product) {
+            product.featured = false;
+            product.featuredExpiry = null;
+        }
+    },
+    
+    // Check and clean expired featured products
+    cleanExpiredFeatured: function() {
+        const now = new Date();
+        const expired = [];
+        
+        window.adminData.featuredProducts = window.adminData.featuredProducts.filter(featured => {
+            const expiryDate = new Date(featured.expiryDate);
+            if (expiryDate <= now) {
+                expired.push(featured);
+                
+                // Update product status
+                const product = window.adminData.products.find(p => p.id === featured.productId);
+                if (product) {
+                    product.featured = false;
+                    product.featuredExpiry = null;
+                }
+                
+                return false;
+            }
+            return true;
+        });
+        
+        return expired;
+    },
+    
+    // Get active featured products
+    getActiveFeatured: function() {
+        this.cleanExpiredFeatured();
+        return window.adminData.featuredProducts.filter(f => f.status === 'active');
+    },
+    
+    // Generate unique featured ID
+    generateFeaturedId: function() {
+        const existingIds = window.adminData.featuredProducts ? 
+            window.adminData.featuredProducts.map(f => f.id) : [];
+        return Math.max(...existingIds, 0) + 1;
+    },
+    
+    // Get days remaining for featured product
+    getDaysRemaining: function(featuredItem) {
+        const now = new Date();
+        const expiry = new Date(featuredItem.expiryDate);
+        const diffTime = expiry - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(0, diffDays);
+    }
+};
+
+// User Follow System
+const FollowUtils = {
+    // Add user follow relationship
+    addFollow: function(userId, merchantId) {
+        if (!window.adminData.userFollows) {
+            window.adminData.userFollows = [];
+        }
+        
+        const existingFollow = window.adminData.userFollows.find(f => 
+            f.userId === userId && f.merchantId === merchantId
+        );
+        
+        if (!existingFollow) {
+            window.adminData.userFollows.push({
+                id: this.generateFollowId(),
+                userId: userId,
+                merchantId: merchantId,
+                followDate: new Date().toISOString(),
+                status: 'active'
+            });
+        }
+    },
+    
+    // Remove user follow relationship
+    removeFollow: function(userId, merchantId) {
+        window.adminData.userFollows = window.adminData.userFollows.filter(f => 
+            !(f.userId === userId && f.merchantId === merchantId)
+        );
+    },
+    
+    // Get followers for a merchant
+    getMerchantFollowers: function(merchantId) {
+        return window.adminData.userFollows ? 
+            window.adminData.userFollows.filter(f => f.merchantId === merchantId && f.status === 'active') : [];
+    },
+    
+    // Get merchants followed by user
+    getUserFollows: function(userId) {
+        return window.adminData.userFollows ? 
+            window.adminData.userFollows.filter(f => f.userId === userId && f.status === 'active') : [];
+    },
+    
+    // Check if user follows merchant
+    isFollowing: function(userId, merchantId) {
+        return window.adminData.userFollows ? 
+            window.adminData.userFollows.some(f => 
+                f.userId === userId && f.merchantId === merchantId && f.status === 'active'
+            ) : false;
+    },
+    
+    // Generate unique follow ID
+    generateFollowId: function() {
+        const existingIds = window.adminData.userFollows ? 
+            window.adminData.userFollows.map(f => f.id) : [];
+        return Math.max(...existingIds, 0) + 1;
+    },
+    
+    // Get follower count for merchant
+    getFollowerCount: function(merchantId) {
+        return this.getMerchantFollowers(merchantId).length;
+    }
+};
+
+// Permission and Role Management
+const PermissionUtils = {
+    // Check if current user has admin permissions
+    isAdmin: function(user) {
+        return user && user.role === 'admin';
+    },
+    
+    // Check if current user has merchant permissions
+    isMerchant: function(user) {
+        return user && user.role === 'merchant';
+    },
+    
+    // Check if current user can edit merchant
+    canEditMerchant: function(user, merchantId) {
+        if (this.isAdmin(user)) return true;
+        if (this.isMerchant(user)) {
+            // Merchants can only edit their own merchant profile
+            return user.merchantId === merchantId;
+        }
+        return false;
+    },
+    
+    // Check if current user can edit product
+    canEditProduct: function(user, product) {
+        if (this.isAdmin(user)) return true;
+        if (this.isMerchant(user)) {
+            // Merchants can only edit products for their merchant
+            return user.merchantId === product.merchantId;
+        }
+        return false;
+    },
+    
+    // Get merchant ID for current user
+    getUserMerchantId: function(user) {
+        if (this.isMerchant(user)) {
+            return user.merchantId;
+        }
+        return null;
+    },
+    
+    // Filter products by user permissions
+    filterProductsByPermission: function(user, products) {
+        if (this.isAdmin(user)) return products;
+        if (this.isMerchant(user)) {
+            return products.filter(p => p.merchantId === user.merchantId);
+        }
+        return [];
+    },
+    
+    // Filter merchants by user permissions
+    filterMerchantsByPermission: function(user, merchants) {
+        if (this.isAdmin(user)) return merchants;
+        if (this.isMerchant(user)) {
+            return merchants.filter(m => m.id === user.merchantId);
+        }
+        return [];
+    }
+};
+
+// Data Migration and Compatibility
+const MigrationUtils = {
+    // Migrate old data structure to new format
+    migrateData: function(data) {
+        console.log('🔄 Migrating data to v5.1 format...');
+        
+        // Initialize new collections if they don't exist
+        if (!data.ratings) data.ratings = [];
+        if (!data.featuredProducts) data.featuredProducts = [];
+        if (!data.userFollows) data.userFollows = [];
+        
+        // Migrate products to include rating fields
+        data.products.forEach(product => {
+            if (typeof product.averageRating === 'undefined') {
+                product.averageRating = 0;
+                product.ratingCount = 0;
+            }
+            if (typeof product.featured === 'undefined') {
+                product.featured = false;
+                product.featuredExpiry = null;
+            }
+        });
+        
+        // Migrate users to include follow relationships
+        data.users.forEach(user => {
+            if (!user.followedMerchants) {
+                user.followedMerchants = [];
+            }
+            if (!user.role) {
+                user.role = 'member';
+            }
+        });
+        
+        // Migrate merchants to include follower tracking
+        data.merchants.forEach(merchant => {
+            if (typeof merchant.followerCount === 'undefined') {
+                merchant.followerCount = 0;
+            }
+        });
+        
+        console.log('✅ Data migration complete');
+        return data;
+    },
+    
+    // Validate data integrity
+    validateData: function(data) {
+        const issues = [];
+        
+        // Check for orphaned ratings
+        data.ratings.forEach(rating => {
+            const product = data.products.find(p => p.id === rating.productId);
+            const user = data.users.find(u => u.id === rating.userId);
+            
+            if (!product) issues.push(`Rating ${rating.id} references non-existent product ${rating.productId}`);
+            if (!user) issues.push(`Rating ${rating.id} references non-existent user ${rating.userId}`);
+        });
+        
+        // Check for orphaned featured products
+        data.featuredProducts.forEach(featured => {
+            const product = data.products.find(p => p.id === featured.productId);
+            if (!product) issues.push(`Featured entry ${featured.id} references non-existent product ${featured.productId}`);
+        });
+        
+        // Check for orphaned follows
+        data.userFollows.forEach(follow => {
+            const user = data.users.find(u => u.id === follow.userId);
+            const merchant = data.merchants.find(m => m.id === follow.merchantId);
+            
+            if (!user) issues.push(`Follow ${follow.id} references non-existent user ${follow.userId}`);
+            if (!merchant) issues.push(`Follow ${follow.id} references non-existent merchant ${follow.merchantId}`);
+        });
+        
+        return issues;
+    },
+    
+    // Clean orphaned data
+    cleanOrphanedData: function(data) {
+        console.log('🧹 Cleaning orphaned data...');
+        
+        // Remove orphaned ratings
+        data.ratings = data.ratings.filter(rating => {
+            const product = data.products.find(p => p.id === rating.productId);
+            const user = data.users.find(u => u.id === rating.userId);
+            return product && user;
+        });
+        
+        // Remove orphaned featured products
+        data.featuredProducts = data.featuredProducts.filter(featured => {
+            const product = data.products.find(p => p.id === featured.productId);
+            return product;
+        });
+        
+        // Remove orphaned follows
+        data.userFollows = data.userFollows.filter(follow => {
+            const user = data.users.find(u => u.id === follow.userId);
+            const merchant = data.merchants.find(m => m.id === follow.merchantId);
+            return user && merchant;
+        });
+        
+        console.log('✅ Orphaned data cleaned');
+        return data;
+    }
+};
+
+// Export utilities to global scope
+window.AdminUtils = {
+    Rating: RatingUtils,
+    Featured: FeaturedUtils,
+    Follow: FollowUtils,
+    Permission: PermissionUtils,
+    Migration: MigrationUtils
+};
+
+console.log('✅ Admin Utilities v5.1 loaded successfully');
+</script>
+</body>
+</html>
+
+
