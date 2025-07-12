@@ -730,9 +730,16 @@
                         </select>
                     </div>
                     
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                        <textarea id="productDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Short Description *</label>
+                        <input type="text" id="productShortDescription" required maxlength="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief description for product tiles">
+                        <p class="text-xs text-gray-500 mt-1">Used in product listings and tiles (max 100 characters)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Long Description</label>
+                        <textarea id="productLongDescription" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Detailed description for product page"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Detailed description shown on product detail page</p>
                     </div>
                     
                     <div>
@@ -915,7 +922,7 @@
                     merchantId: 1,
                     description: "Rich espresso with steamed milk",
                     price: 4.50,
-                    category: "food",
+                    category: "Food & Beverage",
                     stock: 100,
                     status: "active",
                     images: [],
@@ -936,8 +943,8 @@
                 }
             ],
             categories: {
-                merchant: ["restaurant", "retail", "services", "entertainment", "health", "other"],
-                product: ["food", "clothing", "electronics", "services", "other"]
+                merchant: ["Restaurant", "Retail", "Services", "Entertainment", "Health & Wellness", "Other"],
+                product: ["Food & Beverage", "Clothing", "Electronics", "Services", "Other"]
             },
             recentActivity: []
         };
@@ -1093,7 +1100,17 @@
             try {
                 const stored = localStorage.getItem('tlc_admin_data');
                 if (stored) {
-                    adminData = JSON.parse(stored);
+                    const loadedData = JSON.parse(stored);
+                    adminData = {
+                        merchants: loadedData.merchants || [],
+                        products: loadedData.products || [],
+                        users: loadedData.users || [],
+                        categories: loadedData.categories || {
+                            merchant: ["Restaurant", "Retail", "Services", "Entertainment", "Health & Wellness", "Other"],
+                            product: ["Food & Beverage", "Clothing", "Electronics", "Services", "Other"]
+                        },
+                        recentActivity: loadedData.recentActivity || []
+                    };
                 }
             } catch (error) {
                 console.warn('Error loading admin data:', error);
@@ -1128,16 +1145,21 @@
                     console.error('❌ Section not found:', section + 'Section');
                 }
                 
-                // Update navigation (only if event exists)
-                if (typeof event !== 'undefined' && event.target) {
-                    document.querySelectorAll('.admin-nav-item').forEach(el => {
-                        el.classList.remove('bg-blue-100', 'text-blue-800');
-                        el.classList.add('text-gray-700');
-                    });
-                    
-                    event.target.classList.add('bg-blue-100', 'text-blue-800');
-                    event.target.classList.remove('text-gray-700');
-                }
+                // Update navigation highlighting
+                document.querySelectorAll('.admin-nav-item').forEach(el => {
+                    el.classList.remove('bg-blue-100', 'text-blue-800');
+                    el.classList.add('text-gray-700');
+                });
+                
+                // Find and highlight the correct nav item
+                const navItems = document.querySelectorAll('.admin-nav-item');
+                navItems.forEach(item => {
+                    const onclick = item.getAttribute('onclick');
+                    if (onclick && onclick.includes(`'${section}'`)) {
+                        item.classList.add('bg-blue-100', 'text-blue-800');
+                        item.classList.remove('text-gray-700');
+                    }
+                });
                 
             } catch (error) {
                 console.error('❌ Navigation error:', error);
@@ -1268,7 +1290,7 @@
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">${product.name}</div>
-                                <div class="text-sm text-gray-500">${product.description || 'No description'}</div>
+                                <div class="text-sm text-gray-500">${product.shortDescription || product.description || 'No description'}</div>
                             </div>
                         </div>
                     </td>
@@ -1338,7 +1360,8 @@
                 if (product) {
                     document.getElementById('productName').value = product.name;
                     document.getElementById('productMerchant').value = product.merchantId;
-                    document.getElementById('productDescription').value = product.description || '';
+                    document.getElementById('productShortDescription').value = product.shortDescription || product.description || '';
+                    document.getElementById('productLongDescription').value = product.longDescription || '';
                     document.getElementById('productPrice').value = product.price;
                     document.getElementById('productCategory').value = product.category;
                     document.getElementById('productStock').value = product.stock || '';
@@ -1581,6 +1604,7 @@
             const gallery = document.getElementById(galleryId);
             const mediaItem = document.createElement('div');
             mediaItem.className = 'media-gallery-item';
+            mediaItem.draggable = true;
             
             const mediaElement = type === 'video' ? 
                 `<video src="${src}" controls></video>` : 
@@ -1589,9 +1613,57 @@
             mediaItem.innerHTML = `
                 ${mediaElement}
                 <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+                <div class="drag-handle" style="position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.7); color: white; padding: 2px 4px; border-radius: 2px; font-size: 10px; cursor: move;">⋮⋮</div>
             `;
             
+            // Add drag event listeners
+            mediaItem.addEventListener('dragstart', handleDragStart);
+            mediaItem.addEventListener('dragover', handleDragOverItem);
+            mediaItem.addEventListener('drop', handleDropItem);
+            mediaItem.addEventListener('dragend', handleDragEnd);
+            
             gallery.appendChild(mediaItem);
+        }
+
+        let draggedItem = null;
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.style.opacity = '0.5';
+        }
+
+        function handleDragOverItem(e) {
+            e.preventDefault();
+            if (this !== draggedItem) {
+                this.style.borderLeft = '3px solid #3b82f6';
+            }
+        }
+
+        function handleDropItem(e) {
+            e.preventDefault();
+            if (this !== draggedItem) {
+                const gallery = this.parentElement;
+                const allItems = Array.from(gallery.children);
+                const draggedIndex = allItems.indexOf(draggedItem);
+                const targetIndex = allItems.indexOf(this);
+                
+                if (draggedIndex < targetIndex) {
+                    gallery.insertBefore(draggedItem, this.nextSibling);
+                } else {
+                    gallery.insertBefore(draggedItem, this);
+                }
+            }
+            this.style.borderLeft = '';
+        }
+
+        function handleDragEnd(e) {
+            this.style.opacity = '';
+            // Clear all border styles
+            const gallery = this.parentElement;
+            Array.from(gallery.children).forEach(item => {
+                item.style.borderLeft = '';
+            });
+            draggedItem = null;
         }
 
         function handleDragOver(e) {
@@ -1663,17 +1735,21 @@
             const value = input.value.trim();
             const existingCategories = adminData.categories[type] || [];
             
-            if (value && !existingCategories.includes(value.toLowerCase())) {
+            // Keep original case for display, use lowercase for comparison
+            const valueForComparison = value.toLowerCase();
+            const existingForComparison = existingCategories.map(cat => cat.toLowerCase());
+            
+            if (value && !existingForComparison.includes(valueForComparison)) {
                 if (confirm(`Category "${value}" doesn't exist. Would you like to create it?`)) {
                     if (!adminData.categories[type]) {
                         adminData.categories[type] = [];
                     }
-                    adminData.categories[type].push(value.toLowerCase());
+                    adminData.categories[type].push(value); // Keep original case
                     
                     // Update the datalist
                     const datalist = document.getElementById(type + 'CategoryList');
                     const option = document.createElement('option');
-                    option.value = value.toLowerCase();
+                    option.value = value; // Keep original case
                     datalist.appendChild(option);
                     
                     saveAdminData();
@@ -1737,16 +1813,19 @@
 
         function exportToCSV() {
             // Create CSV for merchants
-            let merchantsCSV = 'Name,Category,Email,Phone,Address,Website,Status,Created\n';
+            let merchantsCSV = 'Name,Category,Description,Email,Phone,Address,Website,Logo URL,Status,Created\n';
             adminData.merchants.forEach(merchant => {
-                merchantsCSV += `"${merchant.name}","${merchant.category}","${merchant.email || ''}","${merchant.phone || ''}","${merchant.address || ''}","${merchant.website || ''}","${merchant.status}","${merchant.created}"\n`;
+                merchantsCSV += `"${merchant.name}","${merchant.category}","${(merchant.description || '').replace(/"/g, '""')}","${merchant.email || ''}","${merchant.phone || ''}","${merchant.address || ''}","${merchant.website || ''}","${merchant.logo || ''}","${merchant.status}","${merchant.created}"\n`;
             });
 
             // Create CSV for products
-            let productsCSV = 'Name,Merchant,Price,Category,Stock,Status,Created\n';
+            let productsCSV = 'Name,Merchant,Short Description,Long Description,Price,Category,Stock,Image URLs,Status,Created\n';
             adminData.products.forEach(product => {
                 const merchant = adminData.merchants.find(m => m.id === product.merchantId);
-                productsCSV += `"${product.name}","${merchant ? merchant.name : 'Unknown'}","${product.price}","${product.category}","${product.stock || 0}","${product.status}","${product.created}"\n`;
+                const imageUrls = (product.images || []).join('; ');
+                const shortDesc = (product.shortDescription || product.description || '').replace(/"/g, '""');
+                const longDesc = (product.longDescription || '').replace(/"/g, '""');
+                productsCSV += `"${product.name}","${merchant ? merchant.name : 'Unknown'}","${shortDesc}","${longDesc}","${product.price}","${product.category}","${product.stock || 0}","${imageUrls}","${product.status}","${product.created}"\n`;
             });
 
             // Create CSV for users
@@ -1902,7 +1981,9 @@
             const productData = {
                 name: document.getElementById('productName').value,
                 merchantId: parseInt(document.getElementById('productMerchant').value),
-                description: document.getElementById('productDescription').value,
+                shortDescription: document.getElementById('productShortDescription').value,
+                longDescription: document.getElementById('productLongDescription').value,
+                description: document.getElementById('productShortDescription').value, // Keep for backward compatibility
                 price: parseFloat(document.getElementById('productPrice').value),
                 category: document.getElementById('productCategory').value,
                 stock: parseInt(document.getElementById('productStock').value) || 0,
@@ -1996,5 +2077,5 @@
             console.log('- Local storage:', localStorage.getItem('tlc_admin_data'));
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95df7358476ffff4',t:'MTc1MjMxMTg3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e09987d6b26c9c',t:'MTc1MjMyMzkyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
