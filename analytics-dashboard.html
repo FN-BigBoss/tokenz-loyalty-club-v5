@@ -1,0 +1,1370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Analytics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- July 13, 01:30 - Analytics Dashboard Module -->
+    <style>
+        .analytics-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analytics-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .analytics-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .line-chart {
+            height: 300px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-line {
+            position: absolute;
+            bottom: 20%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 1px;
+        }
+        
+        .chart-points {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            padding: 1rem;
+        }
+        
+        .chart-point {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .chart-point:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+        }
+        
+        .bar-chart {
+            height: 250px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-bars {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            padding: 1rem;
+        }
+        
+        .chart-bar {
+            background: rgba(255, 255, 255, 0.8);
+            width: 24px;
+            border-radius: 2px 2px 0 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .chart-bar:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scaleY(1.1);
+        }
+        
+        .donut-chart {
+            height: 200px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .donut-center {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .trend-up {
+            background: #DCFCE7;
+            color: #166534;
+        }
+        
+        .trend-down {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .trend-neutral {
+            background: #F3F4F6;
+            color: #374151;
+        }
+        
+        .filter-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .filter-button:hover {
+            background: #F3F4F6;
+        }
+        
+        .filter-button.active {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-row {
+            transition: all 0.2s ease;
+        }
+        
+        .table-row:hover {
+            background: #F9FAFB;
+        }
+        
+        .export-button {
+            transition: all 0.2s ease;
+        }
+        
+        .export-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .insight-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .insight-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .performance-gauge {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#10B981 0deg 252deg, #E5E7EB 252deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .gauge-center {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            padding: 1rem;
+        }
+        
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            position: relative;
+        }
+        
+        .heat-low { background: #DBEAFE; }
+        .heat-medium { background: #93C5FD; }
+        .heat-high { background: #3B82F6; }
+        .heat-very-high { background: #1D4ED8; }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .tab-button:hover {
+            color: #3B82F6;
+        }
+        
+        .tab-button.active {
+            color: #3B82F6;
+            border-bottom: 2px solid #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .real-time-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        .alert-banner {
+            background: linear-gradient(135deg, #FEF3C7, #FCD34D);
+            border-left: 4px solid #F59E0B;
+        }
+        
+        .success-banner {
+            background: linear-gradient(135deg, #DCFCE7, #BBF7D0);
+            border-left: 4px solid #10B981;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Analytics Dashboard</h1>
+                    <div class="ml-4 flex items-center">
+                        <div class="real-time-indicator w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-sm text-gray-600">Live Data</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Date Range Selector -->
+                    <select id="date-range" onchange="updateDateRange()" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="7d">Last 7 days</option>
+                        <option value="30d" selected>Last 30 days</option>
+                        <option value="90d">Last 90 days</option>
+                        <option value="1y">Last year</option>
+                        <option value="custom">Custom range</option>
+                    </select>
+                    
+                    <!-- Export Options -->
+                    <div class="relative">
+                        <button onclick="toggleExportMenu()" class="export-button bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <div id="export-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-40">
+                            <button onclick="exportData('pdf')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-file-pdf mr-2"></i>Export as PDF
+                            </button>
+                            <button onclick="exportData('excel')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-file-excel mr-2"></i>Export as Excel
+                            </button>
+                            <button onclick="exportData('csv')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-file-csv mr-2"></i>Export as CSV
+                            </button>
+                            <hr class="my-2">
+                            <button onclick="scheduleReport()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-clock mr-2"></i>Schedule Report
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Refresh Button -->
+                    <button onclick="refreshData()" class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Analytics Hero Section -->
+        <div class="analytics-hero rounded-lg mb-6 overflow-hidden">
+            <div class="analytics-hero-content p-8 text-center text-white">
+                <h2 class="text-3xl font-bold mb-2">Analytics Overview</h2>
+                <p class="text-lg opacity-90 mb-4">Comprehensive insights into your TokenZ performance</p>
+                <div class="flex justify-center space-x-8">
+                    <div>
+                        <div class="text-2xl font-bold">98.7%</div>
+                        <div class="text-sm opacity-80">Uptime</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">2.3s</div>
+                        <div class="text-sm opacity-80">Avg Response</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">15.2K</div>
+                        <div class="text-sm opacity-80">Total Requests</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="metric-card bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Total Revenue</h3>
+                    <i class="fas fa-dollar-sign text-green-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">R47,832</div>
+                <div class="trend-indicator trend-up">
+                    <i class="fas fa-arrow-up mr-1"></i>12.5%
+                </div>
+            </div>
+            
+            <div class="metric-card bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Active Users</h3>
+                    <i class="fas fa-users text-blue-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">1,247</div>
+                <div class="trend-indicator trend-up">
+                    <i class="fas fa-arrow-up mr-1"></i>8.3%
+                </div>
+            </div>
+            
+            <div class="metric-card bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">API Calls</h3>
+                    <i class="fas fa-code text-purple-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">156.8K</div>
+                <div class="trend-indicator trend-up">
+                    <i class="fas fa-arrow-up mr-1"></i>15.7%
+                </div>
+            </div>
+            
+            <div class="metric-card bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Error Rate</h3>
+                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">0.12%</div>
+                <div class="trend-indicator trend-down">
+                    <i class="fas fa-arrow-down mr-1"></i>2.1%
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-button active py-4 px-2 text-sm font-medium" onclick="showTab('overview')">
+                        Overview
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('performance')">
+                        Performance
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('users')">
+                        User Analytics
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('revenue')">
+                        Revenue
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showTab('reports')">
+                        Reports
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div id="overview-tab" class="tab-content p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Main Charts -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Traffic Overview -->
+                        <div class="chart-container p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Traffic Overview</h3>
+                                <div class="flex space-x-2">
+                                    <button class="filter-button active px-3 py-1 rounded-lg text-sm">Requests</button>
+                                    <button class="filter-button px-3 py-1 rounded-lg text-sm">Users</button>
+                                    <button class="filter-button px-3 py-1 rounded-lg text-sm">Revenue</button>
+                                </div>
+                            </div>
+                            <div class="line-chart">
+                                <div class="chart-line"></div>
+                                <div class="chart-points">
+                                    <div class="chart-point" style="bottom: 20%"></div>
+                                    <div class="chart-point" style="bottom: 35%"></div>
+                                    <div class="chart-point" style="bottom: 25%"></div>
+                                    <div class="chart-point" style="bottom: 50%"></div>
+                                    <div class="chart-point" style="bottom: 45%"></div>
+                                    <div class="chart-point" style="bottom: 65%"></div>
+                                    <div class="chart-point" style="bottom: 70%"></div>
+                                </div>
+                                <div class="absolute top-4 left-4 text-white">
+                                    <div class="text-2xl font-bold">15.2K</div>
+                                    <div class="text-sm opacity-90">Total Requests</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Usage Distribution -->
+                        <div class="chart-container p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Usage Distribution</h3>
+                            <div class="bar-chart">
+                                <div class="chart-bars">
+                                    <div class="chart-bar" style="height: 60%"></div>
+                                    <div class="chart-bar" style="height: 80%"></div>
+                                    <div class="chart-bar" style="height: 45%"></div>
+                                    <div class="chart-bar" style="height: 90%"></div>
+                                    <div class="chart-bar" style="height: 70%"></div>
+                                    <div class="chart-bar" style="height: 85%"></div>
+                                    <div class="chart-bar" style="height: 55%"></div>
+                                </div>
+                                <div class="absolute top-4 left-4 text-white">
+                                    <div class="text-xl font-bold">API Endpoints</div>
+                                    <div class="text-sm opacity-90">Usage by Category</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Performance Score -->
+                        <div class="chart-container p-6 text-center">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Score</h3>
+                            <div class="performance-gauge mx-auto mb-4">
+                                <div class="gauge-center">
+                                    <div class="text-2xl font-bold text-gray-900">87</div>
+                                    <div class="text-xs text-gray-600">Score</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600">Excellent performance</div>
+                        </div>
+                        
+                        <!-- Top Endpoints -->
+                        <div class="chart-container p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Endpoints</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900">/api/tokens</div>
+                                        <div class="text-sm text-gray-600">Token generation</div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900">45.2%</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900">/api/validate</div>
+                                        <div class="text-sm text-gray-600">Token validation</div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900">28.7%</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <div class="font-medium text-gray-900">/api/refresh</div>
+                                        <div class="text-sm text-gray-600">Token refresh</div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900">16.8%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Heatmap -->
+                        <div class="chart-container p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Activity Heatmap</h3>
+                            <div class="heatmap">
+                                <div class="heatmap-cell heat-low"></div>
+                                <div class="heatmap-cell heat-medium"></div>
+                                <div class="heatmap-cell heat-high"></div>
+                                <div class="heatmap-cell heat-low"></div>
+                                <div class="heatmap-cell heat-very-high"></div>
+                                <div class="heatmap-cell heat-medium"></div>
+                                <div class="heatmap-cell heat-low"></div>
+                                <div class="heatmap-cell heat-high"></div>
+                                <div class="heatmap-cell heat-medium"></div>
+                                <div class="heatmap-cell heat-low"></div>
+                                <div class="heatmap-cell heat-very-high"></div>
+                                <div class="heatmap-cell heat-high"></div>
+                                <div class="heatmap-cell heat-medium"></div>
+                                <div class="heatmap-cell heat-low"></div>
+                                <div class="heatmap-cell heat-medium"></div>
+                                <div class="heatmap-cell heat-high"></div>
+                                <div class="heatmap-cell heat-low"></div>
+                                <div class="heatmap-cell heat-very-high"></div>
+                                <div class="heatmap-cell heat-medium"></div>
+                                <div class="heatmap-cell heat-high"></div>
+                                <div class="heatmap-cell heat-low"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-2">
+                                <span>Less</span>
+                                <span>More</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Tab -->
+            <div id="performance-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Response Time Chart -->
+                    <div class="chart-container p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Response Time Trends</h3>
+                        <div class="line-chart">
+                            <div class="chart-points">
+                                <div class="chart-point" style="bottom: 40%"></div>
+                                <div class="chart-point" style="bottom: 35%"></div>
+                                <div class="chart-point" style="bottom: 45%"></div>
+                                <div class="chart-point" style="bottom: 30%"></div>
+                                <div class="chart-point" style="bottom: 38%"></div>
+                                <div class="chart-point" style="bottom: 42%"></div>
+                                <div class="chart-point" style="bottom: 36%"></div>
+                            </div>
+                            <div class="absolute top-4 left-4 text-white">
+                                <div class="text-2xl font-bold">2.3s</div>
+                                <div class="text-sm opacity-90">Avg Response Time</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Error Rate Chart -->
+                    <div class="chart-container p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Error Rate Analysis</h3>
+                        <div class="bar-chart">
+                            <div class="chart-bars">
+                                <div class="chart-bar" style="height: 15%"></div>
+                                <div class="chart-bar" style="height: 10%"></div>
+                                <div class="chart-bar" style="height: 20%"></div>
+                                <div class="chart-bar" style="height: 8%"></div>
+                                <div class="chart-bar" style="height: 12%"></div>
+                                <div class="chart-bar" style="height: 5%"></div>
+                                <div class="chart-bar" style="height: 18%"></div>
+                            </div>
+                            <div class="absolute top-4 left-4 text-white">
+                                <div class="text-2xl font-bold">0.12%</div>
+                                <div class="text-sm opacity-90">Error Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics Table -->
+                <div class="data-table">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Performance Metrics</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Endpoint</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Response</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Success Rate</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requests</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr class="table-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">/api/tokens</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1.8s</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">99.2%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">7,234</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="trend-indicator trend-up">Healthy</span>
+                                    </td>
+                                </tr>
+                                <tr class="table-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">/api/validate</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">0.9s</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">99.8%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">4,567</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="trend-indicator trend-up">Excellent</span>
+                                    </td>
+                                </tr>
+                                <tr class="table-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">/api/refresh</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2.1s</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">98.5%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2,891</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="trend-indicator trend-neutral">Good</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Analytics Tab -->
+            <div id="users-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- User Growth -->
+                    <div class="lg:col-span-2 chart-container p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">User Growth</h3>
+                        <div class="line-chart">
+                            <div class="chart-points">
+                                <div class="chart-point" style="bottom: 30%"></div>
+                                <div class="chart-point" style="bottom: 45%"></div>
+                                <div class="chart-point" style="bottom: 40%"></div>
+                                <div class="chart-point" style="bottom: 60%"></div>
+                                <div class="chart-point" style="bottom: 55%"></div>
+                                <div class="chart-point" style="bottom: 70%"></div>
+                                <div class="chart-point" style="bottom: 75%"></div>
+                            </div>
+                            <div class="absolute top-4 left-4 text-white">
+                                <div class="text-2xl font-bold">1,247</div>
+                                <div class="text-sm opacity-90">Active Users</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Distribution -->
+                    <div class="chart-container p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">User Types</h3>
+                        <div class="donut-chart">
+                            <div class="donut-center">
+                                <div class="text-lg font-bold text-gray-900">1,247</div>
+                                <div class="text-xs text-gray-600">Total</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Premium</span>
+                                <span class="font-medium">65%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Basic</span>
+                                <span class="font-medium">30%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Trial</span>
+                                <span class="font-medium">5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Engagement Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="chart-container p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Daily Active Users</h4>
+                        <div class="text-3xl font-bold text-blue-600 mb-2">892</div>
+                        <div class="trend-indicator trend-up">
+                            <i class="fas fa-arrow-up mr-1"></i>5.2%
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Session Duration</h4>
+                        <div class="text-3xl font-bold text-green-600 mb-2">12m</div>
+                        <div class="trend-indicator trend-up">
+                            <i class="fas fa-arrow-up mr-1"></i>8.7%
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Retention Rate</h4>
+                        <div class="text-3xl font-bold text-purple-600 mb-2">87%</div>
+                        <div class="trend-indicator trend-up">
+                            <i class="fas fa-arrow-up mr-1"></i>2.1%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Revenue Tab -->
+            <div id="revenue-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Revenue Chart -->
+                    <div class="chart-container p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Trends</h3>
+                        <div class="line-chart">
+                            <div class="chart-points">
+                                <div class="chart-point" style="bottom: 25%"></div>
+                                <div class="chart-point" style="bottom: 40%"></div>
+                                <div class="chart-point" style="bottom: 35%"></div>
+                                <div class="chart-point" style="bottom: 55%"></div>
+                                <div class="chart-point" style="bottom: 50%"></div>
+                                <div class="chart-point" style="bottom: 70%"></div>
+                                <div class="chart-point" style="bottom: 75%"></div>
+                            </div>
+                            <div class="absolute top-4 left-4 text-white">
+                                <div class="text-2xl font-bold">R47.8K</div>
+                                <div class="text-sm opacity-90">Monthly Revenue</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Revenue by Plan -->
+                    <div class="chart-container p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue by Plan</h3>
+                        <div class="bar-chart">
+                            <div class="chart-bars">
+                                <div class="chart-bar" style="height: 80%"></div>
+                                <div class="chart-bar" style="height: 45%"></div>
+                                <div class="chart-bar" style="height: 25%"></div>
+                            </div>
+                            <div class="absolute bottom-4 left-4 right-4 flex justify-between text-white text-xs">
+                                <span>Premium</span>
+                                <span>Basic</span>
+                                <span>Trial</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Revenue Insights -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="insight-card p-6">
+                        <div class="insight-content">
+                            <h4 class="text-lg font-semibold mb-2">Monthly Recurring Revenue</h4>
+                            <div class="text-3xl font-bold mb-2">R47,832</div>
+                            <div class="text-sm opacity-90">+12.5% from last month</div>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card p-6">
+                        <div class="insight-content">
+                            <h4 class="text-lg font-semibold mb-2">Average Revenue Per User</h4>
+                            <div class="text-3xl font-bold mb-2">R384</div>
+                            <div class="text-sm opacity-90">+8.3% from last month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reports Tab -->
+            <div id="reports-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Report Generation -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Custom Report Builder -->
+                        <div class="chart-container p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Custom Report Builder</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Performance Summary</option>
+                                        <option>User Analytics</option>
+                                        <option>Revenue Report</option>
+                                        <option>Custom Metrics</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Last 7 days</option>
+                                        <option>Last 30 days</option>
+                                        <option>Last 90 days</option>
+                                        <option>Custom range</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Include Metrics</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="mr-2">
+                                        <span class="text-sm">API Performance</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="mr-2">
+                                        <span class="text-sm">User Activity</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="mr-2">
+                                        <span class="text-sm">Revenue Data</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="mr-2">
+                                        <span class="text-sm">Error Analysis</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button onclick="generateReport()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                                Generate Report
+                            </button>
+                        </div>
+                        
+                        <!-- Recent Reports -->
+                        <div class="data-table">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900">Recent Reports</h3>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                <div class="table-row p-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="font-medium text-gray-900">Monthly Performance Report</div>
+                                        <div class="text-sm text-gray-600">Generated on July 12, 2024</div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="viewReport('monthly-performance')" class="text-blue-600 hover:text-blue-700 text-sm">View</button>
+                                        <button onclick="downloadReport('monthly-performance')" class="text-gray-600 hover:text-gray-700 text-sm">Download</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-row p-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="font-medium text-gray-900">User Analytics Summary</div>
+                                        <div class="text-sm text-gray-600">Generated on July 10, 2024</div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="viewReport('user-analytics')" class="text-blue-600 hover:text-blue-700 text-sm">View</button>
+                                        <button onclick="downloadReport('user-analytics')" class="text-gray-600 hover:text-gray-700 text-sm">Download</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-row p-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="font-medium text-gray-900">Revenue Analysis Q2</div>
+                                        <div class="text-sm text-gray-600">Generated on July 8, 2024</div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="viewReport('revenue-q2')" class="text-blue-600 hover:text-blue-700 text-sm">View</button>
+                                        <button onclick="downloadReport('revenue-q2')" class="text-gray-600 hover:text-gray-700 text-sm">Download</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Scheduled Reports -->
+                    <div class="space-y-6">
+                        <div class="chart-container p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Scheduled Reports</h3>
+                            
+                            <div class="space-y-3 mb-4">
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <div class="font-medium text-gray-900">Weekly Summary</div>
+                                    <div class="text-sm text-gray-600">Every Monday at 9:00 AM</div>
+                                    <div class="text-xs text-green-600 mt-1">Active</div>
+                                </div>
+                                
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <div class="font-medium text-gray-900">Monthly Report</div>
+                                    <div class="text-sm text-gray-600">1st of each month</div>
+                                    <div class="text-xs text-green-600 mt-1">Active</div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="addScheduledReport()" class="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Add Scheduled Report
+                            </button>
+                        </div>
+                        
+                        <!-- Export Options -->
+                        <div class="chart-container p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Export Options</h3>
+                            
+                            <div class="space-y-3">
+                                <button onclick="exportData('pdf')" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-file-pdf mr-2"></i>Export as PDF
+                                </button>
+                                
+                                <button onclick="exportData('excel')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-file-excel mr-2"></i>Export as Excel
+                                </button>
+                                
+                                <button onclick="exportData('csv')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-file-csv mr-2"></i>Export as CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Analytics Dashboard State
+        let analyticsState = {
+            currentTab: 'overview',
+            dateRange: '30d',
+            exportMenuOpen: false,
+            realTimeData: true,
+            refreshInterval: null
+        };
+
+        // Initialize Analytics Dashboard
+        function initAnalyticsDashboard() {
+            console.log('📊 July 13, 01:30 - Initializing Analytics Dashboard Module...');
+            
+            // Load analytics data
+            loadAnalyticsData();
+            
+            // Setup real-time updates
+            setupRealTimeUpdates();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Show default tab
+            showTab('overview');
+            
+            console.log('✅ Analytics Dashboard Module initialized');
+        }
+
+        function loadAnalyticsData() {
+            // Simulate loading analytics data
+            updateMetrics();
+            updateCharts();
+        }
+
+        function setupRealTimeUpdates() {
+            if (analyticsState.realTimeData) {
+                analyticsState.refreshInterval = setInterval(() => {
+                    updateRealTimeMetrics();
+                }, 30000); // Update every 30 seconds
+            }
+        }
+
+        function setupEventListeners() {
+            // Close export menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const exportMenu = document.getElementById('export-menu');
+                const button = event.target.closest('button');
+                
+                if (!button || !button.onclick || button.onclick.toString().indexOf('toggleExportMenu') === -1) {
+                    if (analyticsState.exportMenuOpen) {
+                        exportMenu.classList.add('hidden');
+                        analyticsState.exportMenuOpen = false;
+                    }
+                }
+            });
+        }
+
+        // Tab Management
+        function showTab(tabName) {
+            analyticsState.currentTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'performance':
+                    loadPerformanceData();
+                    break;
+                case 'users':
+                    loadUserAnalytics();
+                    break;
+                case 'revenue':
+                    loadRevenueData();
+                    break;
+                case 'reports':
+                    loadReportsData();
+                    break;
+            }
+        }
+
+        // Data Loading Functions
+        function loadPerformanceData() {
+            showToast('Loading performance data...', 'info');
+            // Simulate API call
+            setTimeout(() => {
+                updatePerformanceCharts();
+                showToast('Performance data updated', 'success');
+            }, 1000);
+        }
+
+        function loadUserAnalytics() {
+            showToast('Loading user analytics...', 'info');
+            // Simulate API call
+            setTimeout(() => {
+                updateUserCharts();
+                showToast('User analytics updated', 'success');
+            }, 1000);
+        }
+
+        function loadRevenueData() {
+            showToast('Loading revenue data...', 'info');
+            // Simulate API call
+            setTimeout(() => {
+                updateRevenueCharts();
+                showToast('Revenue data updated', 'success');
+            }, 1000);
+        }
+
+        function loadReportsData() {
+            showToast('Loading reports...', 'info');
+            // Simulate API call
+            setTimeout(() => {
+                updateReportsList();
+                showToast('Reports loaded', 'success');
+            }, 1000);
+        }
+
+        // Chart Update Functions
+        function updateMetrics() {
+            // Update key metrics with animation
+            animateCounter('.metric-card .text-2xl', 0, 47832, 'R');
+        }
+
+        function updateCharts() {
+            // Update chart visualizations
+            console.log('Charts updated');
+        }
+
+        function updatePerformanceCharts() {
+            // Update performance-specific charts
+            console.log('Performance charts updated');
+        }
+
+        function updateUserCharts() {
+            // Update user analytics charts
+            console.log('User charts updated');
+        }
+
+        function updateRevenueCharts() {
+            // Update revenue charts
+            console.log('Revenue charts updated');
+        }
+
+        function updateReportsList() {
+            // Update reports list
+            console.log('Reports list updated');
+        }
+
+        function updateRealTimeMetrics() {
+            // Update metrics with real-time data
+            console.log('Real-time metrics updated');
+        }
+
+        // Date Range Management
+        function updateDateRange() {
+            const dateRange = document.getElementById('date-range').value;
+            analyticsState.dateRange = dateRange;
+            
+            if (dateRange === 'custom') {
+                showCustomDatePicker();
+            } else {
+                refreshData();
+            }
+        }
+
+        function showCustomDatePicker() {
+            showToast('Opening custom date picker...', 'info');
+        }
+
+        // Export Functions
+        function toggleExportMenu() {
+            const exportMenu = document.getElementById('export-menu');
+            
+            if (analyticsState.exportMenuOpen) {
+                exportMenu.classList.add('hidden');
+                analyticsState.exportMenuOpen = false;
+            } else {
+                exportMenu.classList.remove('hidden');
+                analyticsState.exportMenuOpen = true;
+            }
+        }
+
+        function exportData(format) {
+            showToast(`Exporting data as ${format.toUpperCase()}...`, 'info');
+            
+            // Simulate export process
+            setTimeout(() => {
+                showToast(`Data exported successfully as ${format.toUpperCase()}`, 'success');
+            }, 2000);
+            
+            // Close export menu
+            document.getElementById('export-menu').classList.add('hidden');
+            analyticsState.exportMenuOpen = false;
+        }
+
+        function scheduleReport() {
+            showToast('Opening report scheduler...', 'info');
+            document.getElementById('export-menu').classList.add('hidden');
+            analyticsState.exportMenuOpen = false;
+        }
+
+        // Report Functions
+        function generateReport() {
+            showToast('Generating custom report...', 'info');
+            
+            // Simulate report generation
+            setTimeout(() => {
+                showToast('Report generated successfully!', 'success');
+            }, 3000);
+        }
+
+        function viewReport(reportId) {
+            showToast(`Opening report: ${reportId}`, 'info');
+        }
+
+        function downloadReport(reportId) {
+            showToast(`Downloading report: ${reportId}`, 'info');
+        }
+
+        function addScheduledReport() {
+            showToast('Opening scheduled report form...', 'info');
+        }
+
+        // Data Refresh
+        function refreshData() {
+            showToast('Refreshing analytics data...', 'info');
+            
+            // Add loading state
+            document.querySelectorAll('.chart-container').forEach(container => {
+                container.style.opacity = '0.6';
+            });
+            
+            // Simulate data refresh
+            setTimeout(() => {
+                loadAnalyticsData();
+                
+                // Remove loading state
+                document.querySelectorAll('.chart-container').forEach(container => {
+                    container.style.opacity = '1';
+                });
+                
+                showToast('Data refreshed successfully', 'success');
+            }, 2000);
+        }
+
+        // Utility Functions
+        function goBack() {
+            window.history.back();
+        }
+
+        function animateCounter(selector, start, end, prefix = '') {
+            const element = document.querySelector(selector);
+            if (!element) return;
+            
+            const duration = 1000;
+            const increment = (end - start) / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = prefix + Math.floor(current).toLocaleString();
+            }, 16);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm fade-in`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initAnalyticsDashboard);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (analyticsState.refreshInterval) {
+                clearInterval(analyticsState.refreshInterval);
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e45fd740fa7394',t:'MTc1MjM2MzUwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
