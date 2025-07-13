@@ -1,0 +1,1679 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Integration Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- July 13, 02:15 - Integration Hub Module -->
+    <style>
+        .integration-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .integration-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        .integration-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .integration-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #E5E7EB;
+            background: white;
+        }
+        
+        .integration-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            border-color: #3B82F6;
+        }
+        
+        .integration-card.connected {
+            border-left: 4px solid #10B981;
+            background: linear-gradient(135deg, #ECFDF5, #FFFFFF);
+        }
+        
+        .integration-card.available {
+            border-left: 4px solid #3B82F6;
+            background: linear-gradient(135deg, #EFF6FF, #FFFFFF);
+        }
+        
+        .integration-card.premium {
+            border-left: 4px solid #F59E0B;
+            background: linear-gradient(135deg, #FFFBEB, #FFFFFF);
+            position: relative;
+        }
+        
+        .integration-card.premium::after {
+            content: 'PRO';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+        }
+        
+        .integration-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-connected {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+        
+        .status-disconnected {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FCD34D;
+        }
+        
+        .status-available {
+            background: #E0E7FF;
+            color: #3730A3;
+            border: 1px solid #C7D2FE;
+        }
+        
+        .webhook-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s ease;
+        }
+        
+        .webhook-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-color: #3B82F6;
+        }
+        
+        .webhook-active {
+            border-left: 4px solid #10B981;
+            background: linear-gradient(90deg, #ECFDF5, #FFFFFF);
+        }
+        
+        .webhook-inactive {
+            border-left: 4px solid #EF4444;
+            background: linear-gradient(90deg, #FEF2F2, #FFFFFF);
+        }
+        
+        .webhook-pending {
+            border-left: 4px solid #F59E0B;
+            background: linear-gradient(90deg, #FFFBEB, #FFFFFF);
+        }
+        
+        .api-connector {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .api-connector::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        }
+        
+        .api-connector:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .marketplace-category {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .marketplace-category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-color: #3B82F6;
+        }
+        
+        .integration-flow {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .integration-flow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .flow-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .flow-step {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .flow-step:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .flow-arrow {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+        }
+        
+        .integration-metric {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #E5E7EB;
+        }
+        
+        .integration-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10B981, #34D399);
+        }
+        
+        .integration-metric:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tab-button:hover {
+            color: #3B82F6;
+        }
+        
+        .tab-button.active {
+            color: #3B82F6;
+            border-bottom: 2px solid #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #3B82F6;
+        }
+        
+        .integration-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .integration-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #10B981;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .connection-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online { 
+            background: #10B981; 
+            animation: pulse 2s infinite;
+        }
+        
+        .status-offline { background: #EF4444; }
+        .status-warning { background: #F59E0B; }
+        
+        .integration-search {
+            position: relative;
+        }
+        
+        .integration-search input {
+            padding-left: 2.5rem;
+        }
+        
+        .integration-search .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9CA3AF;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #3B82F6;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .integration-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-new {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        
+        .badge-popular {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .badge-featured {
+            background: #F3E8FF;
+            color: #7C3AED;
+        }
+        
+        .integration-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .star-filled {
+            color: #F59E0B;
+        }
+        
+        .star-empty {
+            color: #D1D5DB;
+        }
+        
+        .webhook-log {
+            font-family: 'Courier New', monospace;
+            background: #1F2937;
+            color: #F9FAFB;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-success { color: #34D399; }
+        .log-error { color: #F87171; }
+        .log-warning { color: #FBBF24; }
+        .log-info { color: #60A5FA; }
+        
+        .config-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+        }
+        
+        .config-item {
+            transition: all 0.2s ease;
+        }
+        
+        .config-item:hover {
+            background: #F9FAFB;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Integration Hub</h1>
+                    <div class="ml-4 flex items-center">
+                        <div class="connection-status status-online"></div>
+                        <span class="text-sm text-gray-600">12 Active Integrations</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Integration Search -->
+                    <div class="integration-search">
+                        <input type="text" placeholder="Search integrations..." class="w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <button onclick="createWebhook()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>New Webhook
+                    </button>
+                    
+                    <button onclick="browseMarketplace()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-store mr-2"></i>Marketplace
+                    </button>
+                    
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" class="p-2 text-gray-600 hover:text-gray-900 transition-colors relative">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Integration Hero Section -->
+        <div class="integration-hero rounded-lg mb-6 overflow-hidden">
+            <div class="integration-hero-content p-8 text-center text-white">
+                <h2 class="text-3xl font-bold mb-2">Integration Hub</h2>
+                <p class="text-lg opacity-90 mb-6">Connect TokenZ with your favorite tools and services</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">47</div>
+                        <div class="text-sm opacity-80">Available Integrations</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">12</div>
+                        <div class="text-sm opacity-80">Active Connections</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">8</div>
+                        <div class="text-sm opacity-80">Webhooks</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">99.9%</div>
+                        <div class="text-sm opacity-80">Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="integration-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">API Calls Today</h3>
+                    <i class="fas fa-chart-line text-blue-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">24,847</div>
+                <div class="text-sm text-green-600">+18% from yesterday</div>
+            </div>
+            
+            <div class="integration-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Success Rate</h3>
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">99.7%</div>
+                <div class="text-sm text-green-600">Excellent performance</div>
+            </div>
+            
+            <div class="integration-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Avg Response</h3>
+                    <i class="fas fa-clock text-yellow-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">127ms</div>
+                <div class="text-sm text-green-600">-23ms from last week</div>
+            </div>
+            
+            <div class="integration-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Data Synced</h3>
+                    <i class="fas fa-sync text-purple-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">1.2TB</div>
+                <div class="text-sm text-blue-600">This month</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-button active py-4 px-2 text-sm font-medium" onclick="showIntegrationTab('connected')">
+                        Connected Apps
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showIntegrationTab('marketplace')">
+                        Marketplace
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showIntegrationTab('webhooks')">
+                        Webhooks
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showIntegrationTab('api-connectors')">
+                        API Connectors
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showIntegrationTab('workflows')">
+                        Workflows
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Connected Apps Tab -->
+            <div id="connected-tab" class="tab-content p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Slack Integration -->
+                    <div class="integration-card connected p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-slack text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Slack</h3>
+                                    <p class="text-sm text-gray-600">Team Communication</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Send notifications and alerts to your Slack channels automatically.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">Last sync: 2 min ago</div>
+                            <div class="flex space-x-2">
+                                <button onclick="configureIntegration('slack')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Configure</button>
+                                <button onclick="disconnectIntegration('slack')" class="text-red-600 hover:text-red-700 text-sm font-medium">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stripe Integration -->
+                    <div class="integration-card connected p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-stripe text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Stripe</h3>
+                                    <p class="text-sm text-gray-600">Payment Processing</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Process payments and manage subscriptions seamlessly.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">Last sync: 5 min ago</div>
+                            <div class="flex space-x-2">
+                                <button onclick="configureIntegration('stripe')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Configure</button>
+                                <button onclick="disconnectIntegration('stripe')" class="text-red-600 hover:text-red-700 text-sm font-medium">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Google Analytics Integration -->
+                    <div class="integration-card connected p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-google text-orange-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Google Analytics</h3>
+                                    <p class="text-sm text-gray-600">Web Analytics</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Track user behavior and analyze website performance.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">Last sync: 1 hour ago</div>
+                            <div class="flex space-x-2">
+                                <button onclick="configureIntegration('analytics')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Configure</button>
+                                <button onclick="disconnectIntegration('analytics')" class="text-red-600 hover:text-red-700 text-sm font-medium">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mailchimp Integration -->
+                    <div class="integration-card connected p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-mailchimp text-yellow-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Mailchimp</h3>
+                                    <p class="text-sm text-gray-600">Email Marketing</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync contacts and automate email marketing campaigns.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">Last sync: 30 min ago</div>
+                            <div class="flex space-x-2">
+                                <button onclick="configureIntegration('mailchimp')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Configure</button>
+                                <button onclick="disconnectIntegration('mailchimp')" class="text-red-600 hover:text-red-700 text-sm font-medium">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Salesforce Integration -->
+                    <div class="integration-card connected p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-salesforce text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Salesforce</h3>
+                                    <p class="text-sm text-gray-600">CRM Platform</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-pending">Syncing</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync customer data and manage sales pipeline.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">Syncing in progress...</div>
+                            <div class="flex space-x-2">
+                                <button onclick="configureIntegration('salesforce')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Configure</button>
+                                <button onclick="disconnectIntegration('salesforce')" class="text-red-600 hover:text-red-700 text-sm font-medium">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Zapier Integration -->
+                    <div class="integration-card connected p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-bolt text-orange-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Zapier</h3>
+                                    <p class="text-sm text-gray-600">Automation Platform</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Connect with 5000+ apps through automated workflows.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">3 active Zaps</div>
+                            <div class="flex space-x-2">
+                                <button onclick="configureIntegration('zapier')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Configure</button>
+                                <button onclick="disconnectIntegration('zapier')" class="text-red-600 hover:text-red-700 text-sm font-medium">Disconnect</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Marketplace Tab -->
+            <div id="marketplace-tab" class="tab-content hidden p-6">
+                <!-- Categories -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+                    <div class="marketplace-category p-4 text-center" onclick="filterCategory('all')">
+                        <i class="fas fa-th-large text-2xl text-blue-600 mb-2"></i>
+                        <div class="text-sm font-medium text-gray-900">All</div>
+                        <div class="text-xs text-gray-600">47 apps</div>
+                    </div>
+                    
+                    <div class="marketplace-category p-4 text-center" onclick="filterCategory('communication')">
+                        <i class="fas fa-comments text-2xl text-purple-600 mb-2"></i>
+                        <div class="text-sm font-medium text-gray-900">Communication</div>
+                        <div class="text-xs text-gray-600">8 apps</div>
+                    </div>
+                    
+                    <div class="marketplace-category p-4 text-center" onclick="filterCategory('payments')">
+                        <i class="fas fa-credit-card text-2xl text-green-600 mb-2"></i>
+                        <div class="text-sm font-medium text-gray-900">Payments</div>
+                        <div class="text-xs text-gray-600">6 apps</div>
+                    </div>
+                    
+                    <div class="marketplace-category p-4 text-center" onclick="filterCategory('analytics')">
+                        <i class="fas fa-chart-bar text-2xl text-orange-600 mb-2"></i>
+                        <div class="text-sm font-medium text-gray-900">Analytics</div>
+                        <div class="text-xs text-gray-600">12 apps</div>
+                    </div>
+                    
+                    <div class="marketplace-category p-4 text-center" onclick="filterCategory('crm')">
+                        <i class="fas fa-users text-2xl text-blue-600 mb-2"></i>
+                        <div class="text-sm font-medium text-gray-900">CRM</div>
+                        <div class="text-xs text-gray-600">9 apps</div>
+                    </div>
+                    
+                    <div class="marketplace-category p-4 text-center" onclick="filterCategory('productivity')">
+                        <i class="fas fa-tasks text-2xl text-indigo-600 mb-2"></i>
+                        <div class="text-sm font-medium text-gray-900">Productivity</div>
+                        <div class="text-xs text-gray-600">12 apps</div>
+                    </div>
+                </div>
+                
+                <!-- Available Integrations -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Discord Integration -->
+                    <div class="integration-card available p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-discord text-indigo-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Discord</h3>
+                                    <p class="text-sm text-gray-600">Community Chat</p>
+                                </div>
+                            </div>
+                            <span class="integration-badge badge-popular">Popular</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Send notifications and updates to your Discord server channels.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="integration-rating">
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <span class="text-sm text-gray-600 ml-2">4.9 (127)</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Free</span>
+                        </div>
+                        <button onclick="connectIntegration('discord')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                    
+                    <!-- Notion Integration -->
+                    <div class="integration-card available p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-sticky-note text-gray-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Notion</h3>
+                                    <p class="text-sm text-gray-600">Workspace</p>
+                                </div>
+                            </div>
+                            <span class="integration-badge badge-new">New</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync data with your Notion databases and pages automatically.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="integration-rating">
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-empty"></i>
+                                <span class="text-sm text-gray-600 ml-2">4.2 (89)</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Free</span>
+                        </div>
+                        <button onclick="connectIntegration('notion')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                    
+                    <!-- HubSpot Integration -->
+                    <div class="integration-card premium p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-hubspot text-orange-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">HubSpot</h3>
+                                    <p class="text-sm text-gray-600">Marketing Hub</p>
+                                </div>
+                            </div>
+                            <span class="integration-badge badge-featured">Featured</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Advanced CRM integration with marketing automation features.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="integration-rating">
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <span class="text-sm text-gray-600 ml-2">4.8 (203)</span>
+                            </div>
+                            <span class="text-sm text-blue-600 font-medium">Pro Plan</span>
+                        </div>
+                        <button onclick="connectIntegration('hubspot')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                    
+                    <!-- Twilio Integration -->
+                    <div class="integration-card available p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-sms text-red-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Twilio</h3>
+                                    <p class="text-sm text-gray-600">SMS & Voice</p>
+                                </div>
+                            </div>
+                            <span class="integration-badge badge-popular">Popular</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Send SMS notifications and voice alerts to your users.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="integration-rating">
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-empty"></i>
+                                <span class="text-sm text-gray-600 ml-2">4.3 (156)</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Free</span>
+                        </div>
+                        <button onclick="connectIntegration('twilio')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                    
+                    <!-- Airtable Integration -->
+                    <div class="integration-card available p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-table text-yellow-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Airtable</h3>
+                                    <p class="text-sm text-gray-600">Database</p>
+                                </div>
+                            </div>
+                            <span class="integration-badge badge-new">New</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync data with your Airtable bases and automate workflows.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="integration-rating">
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-empty"></i>
+                                <span class="text-sm text-gray-600 ml-2">4.1 (74)</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Free</span>
+                        </div>
+                        <button onclick="connectIntegration('airtable')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                    
+                    <!-- Shopify Integration -->
+                    <div class="integration-card premium p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fab fa-shopify text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Shopify</h3>
+                                    <p class="text-sm text-gray-600">E-commerce</p>
+                                </div>
+                            </div>
+                            <span class="integration-badge badge-featured">Featured</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync orders, customers, and inventory with your Shopify store.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="integration-rating">
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <i class="fas fa-star star-filled"></i>
+                                <span class="text-sm text-gray-600 ml-2">4.7 (312)</span>
+                            </div>
+                            <span class="text-sm text-blue-600 font-medium">Pro Plan</span>
+                        </div>
+                        <button onclick="connectIntegration('shopify')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Webhooks Tab -->
+            <div id="webhooks-tab" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Webhook Management</h3>
+                    <button onclick="createWebhook()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Create Webhook
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Active Webhooks -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-900">Active Webhooks</h4>
+                        
+                        <div class="webhook-card webhook-active p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h5 class="font-medium text-gray-900">User Registration</h5>
+                                    <p class="text-sm text-gray-600">https://api.example.com/webhooks/user-register</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label class="integration-toggle">
+                                        <input type="checkbox" checked onchange="toggleWebhook('user-register')">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">Events: user.created, user.updated</span>
+                                <div class="flex space-x-2">
+                                    <button onclick="testWebhook('user-register')" class="text-blue-600 hover:text-blue-700 font-medium">Test</button>
+                                    <button onclick="editWebhook('user-register')" class="text-gray-600 hover:text-gray-700 font-medium">Edit</button>
+                                    <button onclick="deleteWebhook('user-register')" class="text-red-600 hover:text-red-700 font-medium">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="webhook-card webhook-active p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h5 class="font-medium text-gray-900">Payment Processing</h5>
+                                    <p class="text-sm text-gray-600">https://api.stripe.com/webhooks/payment</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label class="integration-toggle">
+                                        <input type="checkbox" checked onchange="toggleWebhook('payment')">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">Events: payment.succeeded, payment.failed</span>
+                                <div class="flex space-x-2">
+                                    <button onclick="testWebhook('payment')" class="text-blue-600 hover:text-blue-700 font-medium">Test</button>
+                                    <button onclick="editWebhook('payment')" class="text-gray-600 hover:text-gray-700 font-medium">Edit</button>
+                                    <button onclick="deleteWebhook('payment')" class="text-red-600 hover:text-red-700 font-medium">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="webhook-card webhook-pending p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h5 class="font-medium text-gray-900">Order Updates</h5>
+                                    <p class="text-sm text-gray-600">https://api.shopify.com/webhooks/orders</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="integration-status status-pending">Pending</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">Events: order.created, order.updated</span>
+                                <div class="flex space-x-2">
+                                    <button onclick="retryWebhook('orders')" class="text-yellow-600 hover:text-yellow-700 font-medium">Retry</button>
+                                    <button onclick="editWebhook('orders')" class="text-gray-600 hover:text-gray-700 font-medium">Edit</button>
+                                    <button onclick="deleteWebhook('orders')" class="text-red-600 hover:text-red-700 font-medium">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Webhook Logs -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Recent Webhook Activity</h4>
+                        <div class="webhook-log">
+                            <div class="log-success">✓ 2024-07-13 02:15:23 - User registration webhook delivered successfully</div>
+                            <div class="log-success">✓ 2024-07-13 02:14:45 - Payment webhook delivered successfully</div>
+                            <div class="log-warning">⚠ 2024-07-13 02:13:12 - Order webhook retry attempt 2/3</div>
+                            <div class="log-success">✓ 2024-07-13 02:12:34 - User update webhook delivered successfully</div>
+                            <div class="log-error">✗ 2024-07-13 02:11:56 - Order webhook failed - timeout</div>
+                            <div class="log-success">✓ 2024-07-13 02:10:18 - Payment webhook delivered successfully</div>
+                            <div class="log-info">ℹ 2024-07-13 02:09:42 - New webhook endpoint registered</div>
+                            <div class="log-success">✓ 2024-07-13 02:08:15 - User registration webhook delivered successfully</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Webhook Statistics -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="integration-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Total Webhooks</h4>
+                        <div class="text-3xl font-bold text-blue-600 mb-2">8</div>
+                        <div class="text-sm text-gray-600">3 active, 1 pending</div>
+                    </div>
+                    
+                    <div class="integration-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Success Rate</h4>
+                        <div class="text-3xl font-bold text-green-600 mb-2">98.7%</div>
+                        <div class="text-sm text-gray-600">Last 30 days</div>
+                    </div>
+                    
+                    <div class="integration-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Avg Response</h4>
+                        <div class="text-3xl font-bold text-yellow-600 mb-2">245ms</div>
+                        <div class="text-sm text-gray-600">Response time</div>
+                    </div>
+                    
+                    <div class="integration-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Events Today</h4>
+                        <div class="text-3xl font-bold text-purple-600 mb-2">1,247</div>
+                        <div class="text-sm text-gray-600">Webhook deliveries</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Connectors Tab -->
+            <div id="api-connectors-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- REST API Connector -->
+                    <div class="api-connector p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-plug text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">REST API Connector</h3>
+                                    <p class="text-sm text-gray-600">Connect to any REST API endpoint</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Active</span>
+                        </div>
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Endpoints configured:</span>
+                                <span class="font-medium">12</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Requests today:</span>
+                                <span class="font-medium">8,247</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Success rate:</span>
+                                <span class="font-medium text-green-600">99.2%</span>
+                            </div>
+                        </div>
+                        <button onclick="configureApiConnector('rest')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Configure Endpoints
+                        </button>
+                    </div>
+                    
+                    <!-- GraphQL Connector -->
+                    <div class="api-connector p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-project-diagram text-pink-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">GraphQL Connector</h3>
+                                    <p class="text-sm text-gray-600">Connect to GraphQL APIs</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Active</span>
+                        </div>
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Schemas loaded:</span>
+                                <span class="font-medium">3</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Queries today:</span>
+                                <span class="font-medium">2,156</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Success rate:</span>
+                                <span class="font-medium text-green-600">98.8%</span>
+                            </div>
+                        </div>
+                        <button onclick="configureApiConnector('graphql')" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Configure Schemas
+                        </button>
+                    </div>
+                    
+                    <!-- Database Connector -->
+                    <div class="api-connector p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-database text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Database Connector</h3>
+                                    <p class="text-sm text-gray-600">Direct database connections</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-connected">Active</span>
+                        </div>
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Connections:</span>
+                                <span class="font-medium">5</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Queries today:</span>
+                                <span class="font-medium">15,432</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Avg response:</span>
+                                <span class="font-medium text-green-600">45ms</span>
+                            </div>
+                        </div>
+                        <button onclick="configureApiConnector('database')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Manage Connections
+                        </button>
+                    </div>
+                    
+                    <!-- Custom Connector -->
+                    <div class="api-connector p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-code text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Custom Connector</h3>
+                                    <p class="text-sm text-gray-600">Build your own connectors</p>
+                                </div>
+                            </div>
+                            <span class="integration-status status-available">Available</span>
+                        </div>
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Custom connectors:</span>
+                                <span class="font-medium">2</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Templates available:</span>
+                                <span class="font-medium">15</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Documentation:</span>
+                                <span class="font-medium text-blue-600">Available</span>
+                            </div>
+                        </div>
+                        <button onclick="createCustomConnector()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Create Connector
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workflows Tab -->
+            <div id="workflows-tab" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Integration Workflows</h3>
+                    <button onclick="createWorkflow()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Create Workflow
+                    </button>
+                </div>
+                
+                <!-- Workflow Builder -->
+                <div class="integration-flow p-6 mb-6">
+                    <div class="flow-content">
+                        <h4 class="text-lg font-semibold mb-4">Visual Workflow Builder</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                            <div class="flow-step">
+                                <i class="fas fa-play text-2xl mb-2"></i>
+                                <div class="text-sm font-medium">Trigger</div>
+                                <div class="text-xs opacity-80">User signup</div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <i class="fas fa-arrow-right flow-arrow"></i>
+                            </div>
+                            
+                            <div class="flow-step">
+                                <i class="fas fa-filter text-2xl mb-2"></i>
+                                <div class="text-sm font-medium">Filter</div>
+                                <div class="text-xs opacity-80">Check plan</div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <i class="fas fa-arrow-right flow-arrow"></i>
+                            </div>
+                            
+                            <div class="flow-step">
+                                <i class="fas fa-envelope text-2xl mb-2"></i>
+                                <div class="text-sm font-medium">Action</div>
+                                <div class="text-xs opacity-80">Send email</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button onclick="editWorkflow()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-colors mr-2">
+                                Edit Workflow
+                            </button>
+                            <button onclick="testWorkflow()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                Test Workflow
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Workflows -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="config-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Welcome Email Sequence</h4>
+                                <p class="text-sm text-gray-600">Automated onboarding emails for new users</p>
+                            </div>
+                            <label class="integration-toggle">
+                                <input type="checkbox" checked onchange="toggleWorkflow('welcome-email')">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div>Trigger: User registration</div>
+                            <div>Actions: 3 email sequences</div>
+                            <div>Success rate: 94.2%</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editWorkflow('welcome-email')" class="text-blue-600 hover:text-blue-700 font-medium">Edit</button>
+                            <button onclick="viewWorkflowStats('welcome-email')" class="text-gray-600 hover:text-gray-700 font-medium">Stats</button>
+                            <button onclick="duplicateWorkflow('welcome-email')" class="text-green-600 hover:text-green-700 font-medium">Duplicate</button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Payment Notifications</h4>
+                                <p class="text-sm text-gray-600">Slack alerts for successful payments</p>
+                            </div>
+                            <label class="integration-toggle">
+                                <input type="checkbox" checked onchange="toggleWorkflow('payment-notifications')">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div>Trigger: Payment success</div>
+                            <div>Actions: Slack notification</div>
+                            <div>Success rate: 99.8%</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editWorkflow('payment-notifications')" class="text-blue-600 hover:text-blue-700 font-medium">Edit</button>
+                            <button onclick="viewWorkflowStats('payment-notifications')" class="text-gray-600 hover:text-gray-700 font-medium">Stats</button>
+                            <button onclick="duplicateWorkflow('payment-notifications')" class="text-green-600 hover:text-green-700 font-medium">Duplicate</button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Lead Scoring</h4>
+                                <p class="text-sm text-gray-600">Automatic lead scoring and CRM updates</p>
+                            </div>
+                            <label class="integration-toggle">
+                                <input type="checkbox" onchange="toggleWorkflow('lead-scoring')">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div>Trigger: User activity</div>
+                            <div>Actions: Score calculation, CRM update</div>
+                            <div>Status: Inactive</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editWorkflow('lead-scoring')" class="text-blue-600 hover:text-blue-700 font-medium">Edit</button>
+                            <button onclick="viewWorkflowStats('lead-scoring')" class="text-gray-600 hover:text-gray-700 font-medium">Stats</button>
+                            <button onclick="duplicateWorkflow('lead-scoring')" class="text-green-600 hover:text-green-700 font-medium">Duplicate</button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Data Backup</h4>
+                                <p class="text-sm text-gray-600">Daily backup to cloud storage</p>
+                            </div>
+                            <label class="integration-toggle">
+                                <input type="checkbox" checked onchange="toggleWorkflow('data-backup')">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div>Trigger: Daily schedule</div>
+                            <div>Actions: Export data, upload to S3</div>
+                            <div>Success rate: 100%</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editWorkflow('data-backup')" class="text-blue-600 hover:text-blue-700 font-medium">Edit</button>
+                            <button onclick="viewWorkflowStats('data-backup')" class="text-gray-600 hover:text-gray-700 font-medium">Stats</button>
+                            <button onclick="duplicateWorkflow('data-backup')" class="text-green-600 hover:text-green-700 font-medium">Duplicate</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Integration Hub State
+        let integrationState = {
+            currentTab: 'connected',
+            connectedApps: ['slack', 'stripe', 'analytics', 'mailchimp', 'salesforce', 'zapier'],
+            activeWebhooks: 8,
+            notificationsOpen: false
+        };
+
+        // Initialize Integration Hub
+        function initIntegrationHub() {
+            console.log('🔗 July 13, 02:15 - Initializing Integration Hub...');
+            
+            // Load integration data
+            loadIntegrationData();
+            
+            // Setup real-time monitoring
+            setupIntegrationMonitoring();
+            
+            // Show default tab
+            showIntegrationTab('connected');
+            
+            console.log('✅ Integration Hub initialized');
+        }
+
+        function loadIntegrationData() {
+            // Simulate loading integration data
+            updateIntegrationMetrics();
+        }
+
+        function setupIntegrationMonitoring() {
+            // Setup real-time integration monitoring
+            setInterval(() => {
+                updateRealTimeIntegrationData();
+            }, 30000); // Update every 30 seconds
+        }
+
+        // Tab Management
+        function showIntegrationTab(tabName) {
+            integrationState.currentTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'marketplace':
+                    loadMarketplaceData();
+                    break;
+                case 'webhooks':
+                    loadWebhookData();
+                    break;
+                case 'api-connectors':
+                    loadApiConnectorData();
+                    break;
+                case 'workflows':
+                    loadWorkflowData();
+                    break;
+            }
+        }
+
+        // Integration Functions
+        function connectIntegration(integrationName) {
+            showToast(`Connecting to ${integrationName}...`, 'info');
+            
+            // Simulate connection process
+            setTimeout(() => {
+                integrationState.connectedApps.push(integrationName);
+                showToast(`Successfully connected to ${integrationName}!`, 'success');
+            }, 2000);
+        }
+
+        function disconnectIntegration(integrationName) {
+            showConfirmDialog(
+                'Disconnect Integration',
+                `Are you sure you want to disconnect ${integrationName}? This will stop all data syncing.`,
+                () => {
+                    integrationState.connectedApps = integrationState.connectedApps.filter(app => app !== integrationName);
+                    showToast(`Disconnected from ${integrationName}`, 'success');
+                }
+            );
+        }
+
+        function configureIntegration(integrationName) {
+            showToast(`Opening ${integrationName} configuration...`, 'info');
+        }
+
+        // Marketplace Functions
+        function loadMarketplaceData() {
+            showToast('Loading marketplace integrations...', 'info');
+        }
+
+        function filterCategory(category) {
+            showToast(`Filtering by category: ${category}`, 'info');
+        }
+
+        function browseMarketplace() {
+            showIntegrationTab('marketplace');
+        }
+
+        // Webhook Functions
+        function loadWebhookData() {
+            showToast('Loading webhook data...', 'info');
+        }
+
+        function createWebhook() {
+            showToast('Opening webhook creation wizard...', 'info');
+        }
+
+        function toggleWebhook(webhookId) {
+            showToast(`Webhook ${webhookId} toggled`, 'success');
+        }
+
+        function testWebhook(webhookId) {
+            showToast(`Testing webhook: ${webhookId}...`, 'info');
+            
+            setTimeout(() => {
+                showToast(`Webhook test successful!`, 'success');
+            }, 2000);
+        }
+
+        function editWebhook(webhookId) {
+            showToast(`Opening webhook editor: ${webhookId}`, 'info');
+        }
+
+        function deleteWebhook(webhookId) {
+            showConfirmDialog(
+                'Delete Webhook',
+                'Are you sure you want to delete this webhook? This action cannot be undone.',
+                () => {
+                    showToast(`Webhook ${webhookId} deleted`, 'success');
+                }
+            );
+        }
+
+        function retryWebhook(webhookId) {
+            showToast(`Retrying webhook: ${webhookId}...`, 'info');
+        }
+
+        // API Connector Functions
+        function loadApiConnectorData() {
+            showToast('Loading API connector data...', 'info');
+        }
+
+        function configureApiConnector(connectorType) {
+            showToast(`Configuring ${connectorType} connector...`, 'info');
+        }
+
+        function createCustomConnector() {
+            showToast('Opening custom connector builder...', 'info');
+        }
+
+        // Workflow Functions
+        function loadWorkflowData() {
+            showToast('Loading workflow data...', 'info');
+        }
+
+        function createWorkflow() {
+            showToast('Opening workflow builder...', 'info');
+        }
+
+        function editWorkflow(workflowId = null) {
+            const message = workflowId ? `Editing workflow: ${workflowId}` : 'Opening workflow editor';
+            showToast(message, 'info');
+        }
+
+        function testWorkflow(workflowId = null) {
+            const message = workflowId ? `Testing workflow: ${workflowId}` : 'Testing workflow';
+            showToast(message + '...', 'info');
+            
+            setTimeout(() => {
+                showToast('Workflow test completed successfully!', 'success');
+            }, 3000);
+        }
+
+        function toggleWorkflow(workflowId) {
+            showToast(`Workflow ${workflowId} toggled`, 'success');
+        }
+
+        function viewWorkflowStats(workflowId) {
+            showToast(`Opening stats for workflow: ${workflowId}`, 'info');
+        }
+
+        function duplicateWorkflow(workflowId) {
+            showToast(`Duplicating workflow: ${workflowId}`, 'info');
+        }
+
+        // Notification Functions
+        function toggleNotifications() {
+            integrationState.notificationsOpen = !integrationState.notificationsOpen;
+            showToast('Integration notifications panel opened', 'info');
+        }
+
+        // Data Update Functions
+        function updateIntegrationMetrics() {
+            // Update integration metrics with real data
+            console.log('Integration metrics updated');
+        }
+
+        function updateRealTimeIntegrationData() {
+            // Update real-time integration data
+            console.log('Real-time integration data updated');
+        }
+
+        // Utility Functions
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm fade-in`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function showConfirmDialog(title, message, onConfirm) {
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+            
+            dialog.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 fade-in">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">${title}</h3>
+                        <p class="text-gray-600 mb-6">${message}</p>
+                        <div class="flex justify-end space-x-3">
+                            <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                                Cancel
+                            </button>
+                            <button onclick="this.closest('.fixed').remove(); (${onConfirm})()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initIntegrationHub);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e7294324a67394',t:'MTc1MjM5MjczMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
