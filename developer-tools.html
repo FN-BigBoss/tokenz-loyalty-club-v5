@@ -1,0 +1,1494 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Developer Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- July 13, 02:20 - Developer Tools Module -->
+    <style>
+        .developer-hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .developer-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        .developer-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .dev-tool-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .dev-tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        }
+        
+        .dev-tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            border-color: #3B82F6;
+        }
+        
+        .api-endpoint {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .api-endpoint:hover {
+            border-color: #3B82F6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+        
+        .method-get {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+        
+        .method-post {
+            background: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+        }
+        
+        .method-put {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FCD34D;
+        }
+        
+        .method-delete {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .code-editor {
+            background: #1F2937;
+            color: #F9FAFB;
+            font-family: 'Courier New', monospace;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .code-editor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #374151;
+            border-bottom: 1px solid #4B5563;
+        }
+        
+        .code-content {
+            padding-top: 50px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .code-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            padding: 0 1rem;
+            z-index: 10;
+        }
+        
+        .code-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .code-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: #10B981; }
+        
+        .syntax-keyword { color: #C084FC; }
+        .syntax-string { color: #34D399; }
+        .syntax-number { color: #FBBF24; }
+        .syntax-comment { color: #9CA3AF; }
+        .syntax-function { color: #60A5FA; }
+        
+        .sdk-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sdk-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .language-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .js-icon { background: #F7DF1E; color: #000; }
+        .python-icon { background: #3776AB; }
+        .php-icon { background: #777BB4; }
+        .ruby-icon { background: #CC342D; }
+        .go-icon { background: #00ADD8; }
+        .java-icon { background: #ED8B00; color: #000; }
+        
+        .test-console {
+            background: #111827;
+            color: #F9FAFB;
+            font-family: 'Courier New', monospace;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .console-line {
+            padding: 0.25rem 1rem;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .console-success { color: #34D399; }
+        .console-error { color: #F87171; }
+        .console-warning { color: #FBBF24; }
+        .console-info { color: #60A5FA; }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10B981, #34D399);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tab-button:hover {
+            color: #3B82F6;
+        }
+        
+        .tab-button.active {
+            color: #3B82F6;
+            border-bottom: 2px solid #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .documentation-nav {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #F3F4F6;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            background: #F9FAFB;
+            color: #3B82F6;
+        }
+        
+        .nav-item.active {
+            background: #EFF6FF;
+            color: #3B82F6;
+            border-right: 3px solid #3B82F6;
+        }
+        
+        .nav-section {
+            font-weight: 600;
+            color: #374151;
+            background: #F9FAFB;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .playground-editor {
+            background: #1F2937;
+            color: #F9FAFB;
+            font-family: 'Courier New', monospace;
+            border-radius: 8px;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .playground-tabs {
+            background: #374151;
+            border-radius: 8px 8px 0 0;
+            padding: 0.5rem 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .playground-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .playground-tab.active {
+            background: #1F2937;
+            color: #60A5FA;
+        }
+        
+        .playground-tab:hover {
+            background: #4B5563;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online { 
+            background: #10B981; 
+            animation: pulse 2s infinite;
+        }
+        
+        .status-offline { background: #EF4444; }
+        .status-maintenance { background: #F59E0B; }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #3B82F6;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .version-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .version-stable {
+            background: #DCFCE7;
+            color: #166534;
+        }
+        
+        .version-beta {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .version-alpha {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .copy-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-operational {
+            background: #DCFCE7;
+            color: #166534;
+        }
+        
+        .status-degraded {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .status-down {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Developer Tools</h1>
+                    <div class="ml-4 flex items-center">
+                        <div class="status-indicator status-online"></div>
+                        <span class="text-sm text-gray-600">API Status: Operational</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- API Key Display -->
+                    <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                        <i class="fas fa-key text-gray-500 mr-2"></i>
+                        <span class="text-sm font-mono text-gray-700">tk_live_***********</span>
+                        <button onclick="copyApiKey()" class="ml-2 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <button onclick="openApiTester()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-play mr-2"></i>API Tester
+                    </button>
+                    
+                    <button onclick="generateCode()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-code mr-2"></i>Generate Code
+                    </button>
+                    
+                    <!-- Developer Menu -->
+                    <div class="relative">
+                        <button onclick="toggleDeveloperMenu()" class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Developer Hero Section -->
+        <div class="developer-hero rounded-lg mb-6 overflow-hidden">
+            <div class="developer-hero-content p-8 text-center text-white">
+                <h2 class="text-3xl font-bold mb-2">Developer Portal</h2>
+                <p class="text-lg opacity-90 mb-6">Build amazing applications with TokenZ APIs and SDKs</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">v2.1.0</div>
+                        <div class="text-sm opacity-80">Latest API Version</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">99.9%</div>
+                        <div class="text-sm opacity-80">API Uptime</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">6</div>
+                        <div class="text-sm opacity-80">SDK Languages</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">127ms</div>
+                        <div class="text-sm opacity-80">Avg Response Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="metric-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">API Calls Today</h3>
+                    <i class="fas fa-chart-line text-blue-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">15,847</div>
+                <div class="text-sm text-green-600">+12% from yesterday</div>
+            </div>
+            
+            <div class="metric-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Success Rate</h3>
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">99.8%</div>
+                <div class="text-sm text-green-600">Excellent performance</div>
+            </div>
+            
+            <div class="metric-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Rate Limit</h3>
+                    <i class="fas fa-tachometer-alt text-yellow-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">2,847</div>
+                <div class="text-sm text-blue-600">of 10,000 requests</div>
+            </div>
+            
+            <div class="metric-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Active Apps</h3>
+                    <i class="fas fa-mobile-alt text-purple-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">7</div>
+                <div class="text-sm text-green-600">2 new this month</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-button active py-4 px-2 text-sm font-medium" onclick="showDeveloperTab('documentation')">
+                        API Documentation
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showDeveloperTab('sdks')">
+                        SDKs & Libraries
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showDeveloperTab('playground')">
+                        API Playground
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showDeveloperTab('tools')">
+                        Developer Tools
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showDeveloperTab('testing')">
+                        Testing Suite
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- API Documentation Tab -->
+            <div id="documentation-tab" class="tab-content p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Documentation Navigation -->
+                    <div class="lg:col-span-1">
+                        <div class="documentation-nav">
+                            <div class="nav-item nav-section">Getting Started</div>
+                            <div class="nav-item active" onclick="showDocSection('quickstart')">
+                                <i class="fas fa-rocket mr-2"></i>Quick Start
+                            </div>
+                            <div class="nav-item" onclick="showDocSection('authentication')">
+                                <i class="fas fa-key mr-2"></i>Authentication
+                            </div>
+                            <div class="nav-item" onclick="showDocSection('errors')">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Error Handling
+                            </div>
+                            
+                            <div class="nav-item nav-section">API Reference</div>
+                            <div class="nav-item" onclick="showDocSection('users')">
+                                <i class="fas fa-users mr-2"></i>Users API
+                            </div>
+                            <div class="nav-item" onclick="showDocSection('tokens')">
+                                <i class="fas fa-coins mr-2"></i>Tokens API
+                            </div>
+                            <div class="nav-item" onclick="showDocSection('transactions')">
+                                <i class="fas fa-exchange-alt mr-2"></i>Transactions API
+                            </div>
+                            <div class="nav-item" onclick="showDocSection('analytics')">
+                                <i class="fas fa-chart-bar mr-2"></i>Analytics API
+                            </div>
+                            
+                            <div class="nav-item nav-section">Webhooks</div>
+                            <div class="nav-item" onclick="showDocSection('webhook-setup')">
+                                <i class="fas fa-plug mr-2"></i>Setup Guide
+                            </div>
+                            <div class="nav-item" onclick="showDocSection('webhook-events')">
+                                <i class="fas fa-bell mr-2"></i>Event Types
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentation Content -->
+                    <div class="lg:col-span-3">
+                        <div id="doc-content">
+                            <!-- Quick Start Documentation -->
+                            <div id="quickstart-doc" class="doc-section">
+                                <h2 class="text-2xl font-bold text-gray-900 mb-4">Quick Start Guide</h2>
+                                <p class="text-gray-600 mb-6">Get up and running with TokenZ API in minutes.</p>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-3">1. Get Your API Key</h3>
+                                        <p class="text-gray-600 mb-3">First, you'll need to obtain your API key from the developer dashboard.</p>
+                                        <div class="code-editor">
+                                            <div class="code-header">
+                                                <div class="code-dots">
+                                                    <div class="code-dot dot-red"></div>
+                                                    <div class="code-dot dot-yellow"></div>
+                                                    <div class="code-dot dot-green"></div>
+                                                </div>
+                                                <button class="copy-button" onclick="copyCode('api-key-example')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                            <div class="code-content p-4" id="api-key-example">
+                                                <div><span class="syntax-comment"># Your API key</span></div>
+                                                <div><span class="syntax-keyword">const</span> apiKey = <span class="syntax-string">'tk_live_1234567890abcdef'</span>;</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-3">2. Make Your First Request</h3>
+                                        <p class="text-gray-600 mb-3">Here's how to make a simple API call to get user information.</p>
+                                        <div class="code-editor">
+                                            <div class="code-header">
+                                                <div class="code-dots">
+                                                    <div class="code-dot dot-red"></div>
+                                                    <div class="code-dot dot-yellow"></div>
+                                                    <div class="code-dot dot-green"></div>
+                                                </div>
+                                                <button class="copy-button" onclick="copyCode('first-request')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                            <div class="code-content p-4" id="first-request">
+                                                <div><span class="syntax-keyword">const</span> response = <span class="syntax-keyword">await</span> <span class="syntax-function">fetch</span>(<span class="syntax-string">'https://api.tokenz.com/v2/users/me'</span>, {</div>
+                                                <div>&nbsp;&nbsp;method: <span class="syntax-string">'GET'</span>,</div>
+                                                <div>&nbsp;&nbsp;headers: {</div>
+                                                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">'Authorization'</span>: <span class="syntax-string">`Bearer ${apiKey}`</span>,</div>
+                                                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">'Content-Type'</span>: <span class="syntax-string">'application/json'</span></div>
+                                                <div>&nbsp;&nbsp;}</div>
+                                                <div>});</div>
+                                                <div></div>
+                                                <div><span class="syntax-keyword">const</span> user = <span class="syntax-keyword">await</span> response.<span class="syntax-function">json</span>();</div>
+                                                <div><span class="syntax-function">console</span>.<span class="syntax-function">log</span>(user);</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-3">3. Handle the Response</h3>
+                                        <p class="text-gray-600 mb-3">All API responses follow a consistent format.</p>
+                                        <div class="code-editor">
+                                            <div class="code-header">
+                                                <div class="code-dots">
+                                                    <div class="code-dot dot-red"></div>
+                                                    <div class="code-dot dot-yellow"></div>
+                                                    <div class="code-dot dot-green"></div>
+                                                </div>
+                                                <button class="copy-button" onclick="copyCode('response-example')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                            <div class="code-content p-4" id="response-example">
+                                                <div>{</div>
+                                                <div>&nbsp;&nbsp;<span class="syntax-string">"success"</span>: <span class="syntax-keyword">true</span>,</div>
+                                                <div>&nbsp;&nbsp;<span class="syntax-string">"data"</span>: {</div>
+                                                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"id"</span>: <span class="syntax-string">"user_1234567890"</span>,</div>
+                                                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"email"</span>: <span class="syntax-string">"developer@example.com"</span>,</div>
+                                                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"name"</span>: <span class="syntax-string">"John Developer"</span>,</div>
+                                                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"created_at"</span>: <span class="syntax-string">"2024-07-13T02:20:00Z"</span></div>
+                                                <div>&nbsp;&nbsp;}</div>
+                                                <div>}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- API Endpoints -->
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Popular API Endpoints</h3>
+                            <div class="space-y-3">
+                                <div class="api-endpoint p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <span class="method-get px-2 py-1 rounded text-xs font-medium mr-3">GET</span>
+                                            <code class="text-sm font-mono">/v2/users/me</code>
+                                        </div>
+                                        <span class="api-status status-operational">Operational</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Get current user information</p>
+                                </div>
+                                
+                                <div class="api-endpoint p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <span class="method-post px-2 py-1 rounded text-xs font-medium mr-3">POST</span>
+                                            <code class="text-sm font-mono">/v2/tokens</code>
+                                        </div>
+                                        <span class="api-status status-operational">Operational</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Create a new token</p>
+                                </div>
+                                
+                                <div class="api-endpoint p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <span class="method-get px-2 py-1 rounded text-xs font-medium mr-3">GET</span>
+                                            <code class="text-sm font-mono">/v2/transactions</code>
+                                        </div>
+                                        <span class="api-status status-operational">Operational</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">List all transactions</p>
+                                </div>
+                                
+                                <div class="api-endpoint p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <span class="method-put px-2 py-1 rounded text-xs font-medium mr-3">PUT</span>
+                                            <code class="text-sm font-mono">/v2/users/{id}</code>
+                                        </div>
+                                        <span class="api-status status-operational">Operational</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Update user information</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SDKs & Libraries Tab -->
+            <div id="sdks-tab" class="tab-content hidden p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Official SDKs</h3>
+                    <p class="text-gray-600">Choose from our officially supported SDKs and libraries.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- JavaScript SDK -->
+                    <div class="sdk-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="language-icon js-icon mr-4">JS</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">JavaScript SDK</h4>
+                                <p class="text-sm text-gray-600">For web and Node.js applications</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="version-badge version-stable">v2.1.0 Stable</span>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-download mr-1"></i>
+                                <span>12.4k downloads</span>
+                            </div>
+                        </div>
+                        <div class="code-editor mb-4">
+                            <div class="code-content p-3">
+                                <div class="text-sm">npm install @tokenz/sdk</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadSDK('javascript')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                Download
+                            </button>
+                            <button onclick="viewSDKDocs('javascript')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                                Docs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Python SDK -->
+                    <div class="sdk-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="language-icon python-icon mr-4">PY</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Python SDK</h4>
+                                <p class="text-sm text-gray-600">For Python applications</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="version-badge version-stable">v1.8.2 Stable</span>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-download mr-1"></i>
+                                <span>8.7k downloads</span>
+                            </div>
+                        </div>
+                        <div class="code-editor mb-4">
+                            <div class="code-content p-3">
+                                <div class="text-sm">pip install tokenz-sdk</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadSDK('python')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                Download
+                            </button>
+                            <button onclick="viewSDKDocs('python')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                                Docs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PHP SDK -->
+                    <div class="sdk-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="language-icon php-icon mr-4">PHP</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">PHP SDK</h4>
+                                <p class="text-sm text-gray-600">For PHP applications</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="version-badge version-stable">v1.5.1 Stable</span>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-download mr-1"></i>
+                                <span>5.2k downloads</span>
+                            </div>
+                        </div>
+                        <div class="code-editor mb-4">
+                            <div class="code-content p-3">
+                                <div class="text-sm">composer require tokenz/sdk</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadSDK('php')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                Download
+                            </button>
+                            <button onclick="viewSDKDocs('php')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                                Docs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Ruby SDK -->
+                    <div class="sdk-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="language-icon ruby-icon mr-4">RB</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Ruby SDK</h4>
+                                <p class="text-sm text-gray-600">For Ruby applications</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="version-badge version-beta">v1.3.0 Beta</span>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-download mr-1"></i>
+                                <span>2.1k downloads</span>
+                            </div>
+                        </div>
+                        <div class="code-editor mb-4">
+                            <div class="code-content p-3">
+                                <div class="text-sm">gem install tokenz-sdk</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadSDK('ruby')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                Download
+                            </button>
+                            <button onclick="viewSDKDocs('ruby')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                                Docs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Go SDK -->
+                    <div class="sdk-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="language-icon go-icon mr-4">GO</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Go SDK</h4>
+                                <p class="text-sm text-gray-600">For Go applications</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="version-badge version-stable">v1.2.3 Stable</span>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-download mr-1"></i>
+                                <span>3.8k downloads</span>
+                            </div>
+                        </div>
+                        <div class="code-editor mb-4">
+                            <div class="code-content p-3">
+                                <div class="text-sm">go get github.com/tokenz/sdk-go</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadSDK('go')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                Download
+                            </button>
+                            <button onclick="viewSDKDocs('go')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                                Docs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Java SDK -->
+                    <div class="sdk-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="language-icon java-icon mr-4">JAVA</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Java SDK</h4>
+                                <p class="text-sm text-gray-600">For Java applications</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="version-badge version-alpha">v0.9.1 Alpha</span>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-download mr-1"></i>
+                                <span>1.4k downloads</span>
+                            </div>
+                        </div>
+                        <div class="code-editor mb-4">
+                            <div class="code-content p-3">
+                                <div class="text-sm">Maven: com.tokenz:sdk:0.9.1</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadSDK('java')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                Download
+                            </button>
+                            <button onclick="viewSDKDocs('java')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                                Docs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Playground Tab -->
+            <div id="playground-tab" class="tab-content hidden p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">API Playground</h3>
+                    <p class="text-gray-600">Test API endpoints directly from your browser.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Request Builder -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Request Builder</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">HTTP Method</label>
+                                <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option>GET</option>
+                                    <option>POST</option>
+                                    <option>PUT</option>
+                                    <option>DELETE</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Endpoint</label>
+                                <div class="flex">
+                                    <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                        https://api.tokenz.com
+                                    </span>
+                                    <input type="text" value="/v2/users/me" class="flex-1 border border-gray-300 rounded-r-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Headers</label>
+                                <div class="playground-editor">
+                                    <div class="playground-tabs">
+                                        <div class="playground-tab active">Headers</div>
+                                        <div class="playground-tab">Body</div>
+                                    </div>
+                                    <div class="p-4">
+                                        <div class="text-sm">
+                                            <div><span class="syntax-string">"Authorization"</span>: <span class="syntax-string">"Bearer tk_live_***********"</span>,</div>
+                                            <div><span class="syntax-string">"Content-Type"</span>: <span class="syntax-string">"application/json"</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="sendApiRequest()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                <i class="fas fa-play mr-2"></i>Send Request
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Response Viewer -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Response</h4>
+                        <div class="playground-editor">
+                            <div class="playground-tabs">
+                                <div class="playground-tab active">Response</div>
+                                <div class="playground-tab">Headers</div>
+                            </div>
+                            <div class="p-4">
+                                <div class="text-sm">
+                                    <div>{</div>
+                                    <div>&nbsp;&nbsp;<span class="syntax-string">"success"</span>: <span class="syntax-keyword">true</span>,</div>
+                                    <div>&nbsp;&nbsp;<span class="syntax-string">"data"</span>: {</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"id"</span>: <span class="syntax-string">"user_1234567890"</span>,</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"email"</span>: <span class="syntax-string">"developer@example.com"</span>,</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"name"</span>: <span class="syntax-string">"John Developer"</span>,</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"created_at"</span>: <span class="syntax-string">"2024-07-13T02:20:00Z"</span></div>
+                                    <div>&nbsp;&nbsp;},</div>
+                                    <div>&nbsp;&nbsp;<span class="syntax-string">"meta"</span>: {</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"request_id"</span>: <span class="syntax-string">"req_abc123def456"</span>,</div>
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-string">"response_time"</span>: <span class="syntax-number">127</span></div>
+                                    <div>&nbsp;&nbsp;}</div>
+                                    <div>}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex items-center justify-between text-sm text-gray-600">
+                            <span>Status: <span class="text-green-600 font-medium">200 OK</span></span>
+                            <span>Response Time: <span class="font-medium">127ms</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Developer Tools Tab -->
+            <div id="tools-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Code Generator -->
+                    <div class="dev-tool-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-code text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Code Generator</h3>
+                                <p class="text-sm text-gray-600">Generate code snippets</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Automatically generate code snippets for popular programming languages and frameworks.</p>
+                        <button onclick="openCodeGenerator()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Generate Code
+                        </button>
+                    </div>
+                    
+                    <!-- API Explorer -->
+                    <div class="dev-tool-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-search text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">API Explorer</h3>
+                                <p class="text-sm text-gray-600">Interactive API browser</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Browse and test all available API endpoints with an interactive interface.</p>
+                        <button onclick="openApiExplorer()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Explore APIs
+                        </button>
+                    </div>
+                    
+                    <!-- Webhook Tester -->
+                    <div class="dev-tool-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-plug text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Webhook Tester</h3>
+                                <p class="text-sm text-gray-600">Test webhook endpoints</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Test your webhook endpoints and validate payload handling with simulated events.</p>
+                        <button onclick="openWebhookTester()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Test Webhooks
+                        </button>
+                    </div>
+                    
+                    <!-- Schema Validator -->
+                    <div class="dev-tool-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-check-circle text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Schema Validator</h3>
+                                <p class="text-sm text-gray-600">Validate JSON schemas</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Validate your JSON payloads against our API schemas to ensure compatibility.</p>
+                        <button onclick="openSchemaValidator()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Validate Schema
+                        </button>
+                    </div>
+                    
+                    <!-- Rate Limit Monitor -->
+                    <div class="dev-tool-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-tachometer-alt text-red-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Rate Limit Monitor</h3>
+                                <p class="text-sm text-gray-600">Monitor API usage</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Monitor your API usage and rate limits in real-time to optimize performance.</p>
+                        <button onclick="openRateLimitMonitor()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Monitor Usage
+                        </button>
+                    </div>
+                    
+                    <!-- Error Debugger -->
+                    <div class="dev-tool-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-bug text-indigo-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Error Debugger</h3>
+                                <p class="text-sm text-gray-600">Debug API errors</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Analyze and debug API errors with detailed error traces and suggestions.</p>
+                        <button onclick="openErrorDebugger()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Debug Errors
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testing Suite Tab -->
+            <div id="testing-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Test Runner -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">API Test Suite</h4>
+                        <div class="space-y-4">
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="font-medium text-gray-900">Authentication Tests</h5>
+                                    <span class="text-sm text-green-600">✓ Passed</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Testing API key validation and token refresh</p>
+                                <div class="mt-2 text-xs text-gray-500">Last run: 2 minutes ago</div>
+                            </div>
+                            
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="font-medium text-gray-900">User Management Tests</h5>
+                                    <span class="text-sm text-green-600">✓ Passed</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Testing user CRUD operations</p>
+                                <div class="mt-2 text-xs text-gray-500">Last run: 5 minutes ago</div>
+                            </div>
+                            
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="font-medium text-gray-900">Token Operations Tests</h5>
+                                    <span class="text-sm text-yellow-600">⚠ Warning</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Testing token creation and transfers</p>
+                                <div class="mt-2 text-xs text-gray-500">Last run: 10 minutes ago</div>
+                            </div>
+                            
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="font-medium text-gray-900">Webhook Delivery Tests</h5>
+                                    <span class="text-sm text-red-600">✗ Failed</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Testing webhook event delivery</p>
+                                <div class="mt-2 text-xs text-gray-500">Last run: 15 minutes ago</div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="runAllTests()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-play mr-2"></i>Run All Tests
+                        </button>
+                    </div>
+                    
+                    <!-- Test Console -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Test Console</h4>
+                        <div class="test-console">
+                            <div class="console-line console-info">[INFO] Starting test suite execution...</div>
+                            <div class="console-line console-success">[PASS] Authentication test completed successfully</div>
+                            <div class="console-line console-success">[PASS] User management tests completed successfully</div>
+                            <div class="console-line console-warning">[WARN] Token operations test completed with warnings</div>
+                            <div class="console-line console-warning">[WARN] Rate limit approaching for test endpoint</div>
+                            <div class="console-line console-error">[FAIL] Webhook delivery test failed - timeout</div>
+                            <div class="console-line console-error">[ERROR] Connection refused to webhook endpoint</div>
+                            <div class="console-line console-info">[INFO] Test suite completed in 2.34 seconds</div>
+                            <div class="console-line console-info">[INFO] 3 passed, 1 warning, 1 failed</div>
+                        </div>
+                        
+                        <div class="mt-4 grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-green-600">3</div>
+                                <div class="text-sm text-green-600">Passed</div>
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-yellow-600">1</div>
+                                <div class="text-sm text-yellow-600">Warnings</div>
+                            </div>
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-red-600">1</div>
+                                <div class="text-sm text-red-600">Failed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Developer Tools State
+        let developerState = {
+            currentTab: 'documentation',
+            currentDocSection: 'quickstart',
+            apiKey: 'tk_live_1234567890abcdef',
+            testResults: {
+                passed: 3,
+                warnings: 1,
+                failed: 1
+            }
+        };
+
+        // Initialize Developer Tools
+        function initDeveloperTools() {
+            console.log('🛠️ July 13, 02:20 - Initializing Developer Tools...');
+            
+            // Load developer data
+            loadDeveloperData();
+            
+            // Setup real-time monitoring
+            setupDeveloperMonitoring();
+            
+            // Show default tab
+            showDeveloperTab('documentation');
+            
+            console.log('✅ Developer Tools initialized');
+        }
+
+        function loadDeveloperData() {
+            // Simulate loading developer data
+            updateDeveloperMetrics();
+        }
+
+        function setupDeveloperMonitoring() {
+            // Setup real-time developer monitoring
+            setInterval(() => {
+                updateRealTimeDeveloperData();
+            }, 30000); // Update every 30 seconds
+        }
+
+        // Tab Management
+        function showDeveloperTab(tabName) {
+            developerState.currentTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'sdks':
+                    loadSDKData();
+                    break;
+                case 'playground':
+                    loadPlaygroundData();
+                    break;
+                case 'tools':
+                    loadToolsData();
+                    break;
+                case 'testing':
+                    loadTestingData();
+                    break;
+            }
+        }
+
+        // Documentation Functions
+        function showDocSection(sectionName) {
+            developerState.currentDocSection = sectionName;
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            showToast(`Loading ${sectionName} documentation...`, 'info');
+        }
+
+        // API Functions
+        function copyApiKey() {
+            navigator.clipboard.writeText(developerState.apiKey);
+            showToast('API key copied to clipboard!', 'success');
+        }
+
+        function openApiTester() {
+            showDeveloperTab('playground');
+        }
+
+        function sendApiRequest() {
+            showToast('Sending API request...', 'info');
+            
+            setTimeout(() => {
+                showToast('API request completed successfully!', 'success');
+            }, 2000);
+        }
+
+        // Code Functions
+        function generateCode() {
+            showToast('Opening code generator...', 'info');
+        }
+
+        function copyCode(elementId) {
+            const codeElement = document.getElementById(elementId);
+            const codeText = codeElement.textContent;
+            navigator.clipboard.writeText(codeText);
+            showToast('Code copied to clipboard!', 'success');
+        }
+
+        function openCodeGenerator() {
+            showToast('Opening code generator tool...', 'info');
+        }
+
+        // SDK Functions
+        function loadSDKData() {
+            showToast('Loading SDK information...', 'info');
+        }
+
+        function downloadSDK(language) {
+            showToast(`Downloading ${language} SDK...`, 'info');
+        }
+
+        function viewSDKDocs(language) {
+            showToast(`Opening ${language} SDK documentation...`, 'info');
+        }
+
+        // Playground Functions
+        function loadPlaygroundData() {
+            showToast('Loading API playground...', 'info');
+        }
+
+        // Tools Functions
+        function loadToolsData() {
+            showToast('Loading developer tools...', 'info');
+        }
+
+        function openApiExplorer() {
+            showToast('Opening API explorer...', 'info');
+        }
+
+        function openWebhookTester() {
+            showToast('Opening webhook tester...', 'info');
+        }
+
+        function openSchemaValidator() {
+            showToast('Opening schema validator...', 'info');
+        }
+
+        function openRateLimitMonitor() {
+            showToast('Opening rate limit monitor...', 'info');
+        }
+
+        function openErrorDebugger() {
+            showToast('Opening error debugger...', 'info');
+        }
+
+        // Testing Functions
+        function loadTestingData() {
+            showToast('Loading testing suite...', 'info');
+        }
+
+        function runAllTests() {
+            showToast('Running all API tests...', 'info');
+            
+            setTimeout(() => {
+                showToast('Test suite completed! Check console for results.', 'success');
+            }, 5000);
+        }
+
+        // Menu Functions
+        function toggleDeveloperMenu() {
+            showToast('Developer menu opened', 'info');
+        }
+
+        // Data Update Functions
+        function updateDeveloperMetrics() {
+            // Update developer metrics with real data
+            console.log('Developer metrics updated');
+        }
+
+        function updateRealTimeDeveloperData() {
+            // Update real-time developer data
+            console.log('Real-time developer data updated');
+        }
+
+        // Utility Functions
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm fade-in`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initDeveloperTools);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e7346547a81689',t:'MTc1MjM5MzE4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
