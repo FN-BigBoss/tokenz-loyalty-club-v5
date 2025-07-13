@@ -1,0 +1,1546 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenZ - Security & Compliance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- July 13, 01:45 - Security & Compliance Module -->
+    <style>
+        .security-hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .security-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        .security-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .security-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid transparent;
+        }
+        
+        .security-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .security-card.critical {
+            border-left-color: #DC2626;
+            background: linear-gradient(135deg, #FEF2F2, #FFFFFF);
+        }
+        
+        .security-card.warning {
+            border-left-color: #D97706;
+            background: linear-gradient(135deg, #FFFBEB, #FFFFFF);
+        }
+        
+        .security-card.success {
+            border-left-color: #059669;
+            background: linear-gradient(135deg, #ECFDF5, #FFFFFF);
+        }
+        
+        .security-card.info {
+            border-left-color: #2563EB;
+            background: linear-gradient(135deg, #EFF6FF, #FFFFFF);
+        }
+        
+        .threat-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .threat-critical { background: #DC2626; }
+        .threat-high { background: #EA580C; }
+        .threat-medium { background: #D97706; }
+        .threat-low { background: #059669; }
+        
+        .compliance-gauge {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .compliance-excellent {
+            background: conic-gradient(#10B981 0deg 324deg, #E5E7EB 324deg 360deg);
+        }
+        
+        .compliance-good {
+            background: conic-gradient(#F59E0B 0deg 288deg, #E5E7EB 288deg 360deg);
+        }
+        
+        .compliance-needs-attention {
+            background: conic-gradient(#EF4444 0deg 216deg, #E5E7EB 216deg 360deg);
+        }
+        
+        .gauge-center {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .audit-log {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .audit-log:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .log-entry {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .log-entry:hover {
+            background: #F9FAFB;
+        }
+        
+        .log-critical {
+            border-left: 4px solid #DC2626;
+            background: linear-gradient(90deg, #FEF2F2, #FFFFFF);
+        }
+        
+        .log-warning {
+            border-left: 4px solid #D97706;
+            background: linear-gradient(90deg, #FFFBEB, #FFFFFF);
+        }
+        
+        .log-info {
+            border-left: 4px solid #2563EB;
+            background: linear-gradient(90deg, #EFF6FF, #FFFFFF);
+        }
+        
+        .log-success {
+            border-left: 4px solid #059669;
+            background: linear-gradient(90deg, #ECFDF5, #FFFFFF);
+        }
+        
+        .security-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .security-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #10B981;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .vulnerability-scanner {
+            background: linear-gradient(135deg, #7C3AED, #A855F7);
+            color: white;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vulnerability-scanner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .scanner-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .scan-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .scan-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #34D399);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            animation: scanning 2s infinite;
+        }
+        
+        @keyframes scanning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .compliance-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .badge-compliant {
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+        
+        .badge-partial {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FCD34D;
+        }
+        
+        .badge-non-compliant {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .security-metric {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .security-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        }
+        
+        .security-metric:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-banner {
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .alert-critical {
+            background: linear-gradient(135deg, #FEE2E2, #FECACA);
+            border: 1px solid #F87171;
+            color: #991B1B;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #FEF3C7, #FCD34D);
+            border: 1px solid #FBBF24;
+            color: #92400E;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #DBEAFE, #93C5FD);
+            border: 1px solid #60A5FA;
+            color: #1E40AF;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tab-button:hover {
+            color: #3B82F6;
+        }
+        
+        .tab-button.active {
+            color: #3B82F6;
+            border-bottom: 2px solid #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #3B82F6;
+        }
+        
+        .security-chart {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .security-status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-secure { background: #10B981; }
+        .status-warning { background: #F59E0B; }
+        .status-critical { background: #EF4444; }
+        
+        .config-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
+        }
+        
+        .config-item {
+            transition: all 0.2s ease;
+        }
+        
+        .config-item:hover {
+            background: #F9FAFB;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Security & Compliance</h1>
+                    <div class="ml-4 flex items-center">
+                        <div class="security-status-indicator status-secure pulse-animation"></div>
+                        <span class="text-sm text-gray-600">System Secure</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Security Actions -->
+                    <button onclick="runSecurityScan()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-shield-alt mr-2"></i>Run Scan
+                    </button>
+                    
+                    <button onclick="generateSecurityReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-file-shield mr-2"></i>Security Report
+                    </button>
+                    
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" class="p-2 text-gray-600 hover:text-gray-900 transition-colors relative">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Security Alerts -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div id="security-alerts">
+            <div class="alert-banner alert-warning">
+                <i class="fas fa-exclamation-triangle mr-3"></i>
+                <div class="flex-1">
+                    <strong>Security Notice:</strong> 2 failed login attempts detected from unusual locations in the last hour.
+                </div>
+                <button onclick="dismissAlert(this)" class="ml-4 text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Security Hero Section -->
+        <div class="security-hero rounded-lg mb-6 overflow-hidden">
+            <div class="security-hero-content p-8 text-center text-white">
+                <h2 class="text-3xl font-bold mb-2">Security Dashboard</h2>
+                <p class="text-lg opacity-90 mb-6">Comprehensive security monitoring and compliance management</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">98.7%</div>
+                        <div class="text-sm opacity-80">Security Score</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">0</div>
+                        <div class="text-sm opacity-80">Critical Threats</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">2</div>
+                        <div class="text-sm opacity-80">Warnings</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">24/7</div>
+                        <div class="text-sm opacity-80">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="security-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Threat Level</h3>
+                    <i class="fas fa-shield-alt text-green-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">Low</div>
+                <div class="flex items-center">
+                    <span class="threat-indicator threat-low"></span>
+                    <span class="text-sm text-gray-600">All systems secure</span>
+                </div>
+            </div>
+            
+            <div class="security-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Failed Logins</h3>
+                    <i class="fas fa-user-lock text-yellow-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">2</div>
+                <div class="text-sm text-yellow-600">Last 24 hours</div>
+            </div>
+            
+            <div class="security-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Active Sessions</h3>
+                    <i class="fas fa-users text-blue-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">847</div>
+                <div class="text-sm text-green-600">+12% from yesterday</div>
+            </div>
+            
+            <div class="security-metric p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-gray-600">Compliance Score</h3>
+                    <i class="fas fa-certificate text-purple-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900 mb-2">94%</div>
+                <div class="text-sm text-green-600">Excellent</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-button active py-4 px-2 text-sm font-medium" onclick="showSecurityTab('monitoring')">
+                        Security Monitoring
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showSecurityTab('compliance')">
+                        Compliance
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showSecurityTab('audit')">
+                        Audit Logs
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showSecurityTab('configuration')">
+                        Security Config
+                    </button>
+                    <button class="tab-button py-4 px-2 text-sm font-medium" onclick="showSecurityTab('incidents')">
+                        Incidents
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Security Monitoring Tab -->
+            <div id="monitoring-tab" class="tab-content p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Main Monitoring -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Vulnerability Scanner -->
+                        <div class="vulnerability-scanner p-6">
+                            <div class="scanner-content">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold">Vulnerability Scanner</h3>
+                                    <button onclick="startVulnerabilityScan()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                        <i class="fas fa-play mr-2"></i>Start Scan
+                                    </button>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="flex justify-between text-sm mb-2">
+                                        <span>Last scan: 2 hours ago</span>
+                                        <span>Progress: 100%</span>
+                                    </div>
+                                    <div class="scan-progress">
+                                        <div class="scan-progress-bar" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <div class="text-2xl font-bold">0</div>
+                                        <div class="text-sm opacity-90">Critical</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-2xl font-bold">2</div>
+                                        <div class="text-sm opacity-90">Medium</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-2xl font-bold">5</div>
+                                        <div class="text-sm opacity-90">Low</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Threat Detection -->
+                        <div class="security-card info p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Real-time Threat Detection</h3>
+                            <div class="security-chart">
+                                <div class="chart-overlay">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold mb-2">Active Monitoring</div>
+                                        <div class="text-sm opacity-90">All systems protected</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Security Events -->
+                        <div class="security-card success p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Security Events</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <span class="threat-indicator threat-low"></span>
+                                        <div>
+                                            <div class="font-medium text-gray-900">Successful login</div>
+                                            <div class="text-sm text-gray-600">User: admin@tokenz.com</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500">2 min ago</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <span class="threat-indicator threat-medium"></span>
+                                        <div>
+                                            <div class="font-medium text-gray-900">Failed login attempt</div>
+                                            <div class="text-sm text-gray-600">IP: 192.168.1.100</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500">15 min ago</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <span class="threat-indicator threat-low"></span>
+                                        <div>
+                                            <div class="font-medium text-gray-900">API key generated</div>
+                                            <div class="text-sm text-gray-600">User: developer@company.com</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500">1 hour ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Security Score -->
+                        <div class="security-card success p-6 text-center">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Security Score</h3>
+                            <div class="compliance-gauge compliance-excellent mx-auto mb-4">
+                                <div class="gauge-center">
+                                    <div class="text-2xl font-bold text-gray-900">98.7</div>
+                                    <div class="text-xs text-gray-600">Score</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-green-600 font-medium">Excellent Security</div>
+                        </div>
+                        
+                        <!-- Active Protections -->
+                        <div class="security-card info p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Active Protections</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-700">Firewall</span>
+                                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-700">DDoS Protection</span>
+                                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-700">SSL/TLS</span>
+                                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-700">Rate Limiting</span>
+                                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-700">Intrusion Detection</span>
+                                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="security-card warning p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button onclick="lockAllSessions()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-lock mr-2"></i>Lock All Sessions
+                                </button>
+                                <button onclick="resetApiKeys()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-key mr-2"></i>Reset API Keys
+                                </button>
+                                <button onclick="enableMaintenanceMode()" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-tools mr-2"></i>Maintenance Mode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Compliance Tab -->
+            <div id="compliance-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Compliance Overview -->
+                    <div class="security-card success p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Compliance Overview</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">GDPR Compliance</div>
+                                    <div class="text-sm text-gray-600">General Data Protection Regulation</div>
+                                </div>
+                                <span class="compliance-badge badge-compliant">Compliant</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">SOC 2 Type II</div>
+                                    <div class="text-sm text-gray-600">Security & Availability</div>
+                                </div>
+                                <span class="compliance-badge badge-compliant">Compliant</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">ISO 27001</div>
+                                    <div class="text-sm text-gray-600">Information Security Management</div>
+                                </div>
+                                <span class="compliance-badge badge-partial">Partial</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">PCI DSS</div>
+                                    <div class="text-sm text-gray-600">Payment Card Industry</div>
+                                </div>
+                                <span class="compliance-badge badge-compliant">Compliant</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Compliance Score -->
+                    <div class="security-card info p-6 text-center">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Overall Compliance Score</h3>
+                        <div class="compliance-gauge compliance-excellent mx-auto mb-4">
+                            <div class="gauge-center">
+                                <div class="text-2xl font-bold text-gray-900">94%</div>
+                                <div class="text-xs text-gray-600">Score</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-green-600 font-medium mb-4">Excellent Compliance</div>
+                        <button onclick="generateComplianceReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Compliance Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="security-card warning p-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Action Required</h4>
+                        <div class="text-sm text-gray-600 mb-4">ISO 27001 certification renewal due in 30 days</div>
+                        <button onclick="scheduleAudit()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Schedule Audit
+                        </button>
+                    </div>
+                    
+                    <div class="security-card success p-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Recent Achievement</h4>
+                        <div class="text-sm text-gray-600 mb-4">SOC 2 Type II audit completed successfully</div>
+                        <button onclick="viewCertificate()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            View Certificate
+                        </button>
+                    </div>
+                    
+                    <div class="security-card info p-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Next Review</h4>
+                        <div class="text-sm text-gray-600 mb-4">GDPR compliance review scheduled for next month</div>
+                        <button onclick="prepareReview()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                            Prepare Review
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Audit Logs Tab -->
+            <div id="audit-tab" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Audit Logs</h3>
+                    <div class="flex space-x-4">
+                        <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>All Events</option>
+                            <option>Authentication</option>
+                            <option>API Access</option>
+                            <option>Configuration</option>
+                            <option>Data Access</option>
+                        </select>
+                        <button onclick="exportAuditLogs()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="audit-log">
+                    <div class="divide-y divide-gray-200">
+                        <div class="log-entry log-success p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-sign-in-alt text-green-500 mr-2"></i>
+                                        <span class="font-medium text-gray-900">User Login</span>
+                                        <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">SUCCESS</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">User admin@tokenz.com logged in successfully</div>
+                                    <div class="text-xs text-gray-500">IP: 192.168.1.50 | Location: Cape Town, South Africa</div>
+                                </div>
+                                <div class="text-sm text-gray-500">2 min ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-entry log-warning p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                                        <span class="font-medium text-gray-900">Failed Login Attempt</span>
+                                        <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">WARNING</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">Failed login attempt for user admin@tokenz.com</div>
+                                    <div class="text-xs text-gray-500">IP: 192.168.1.100 | Reason: Invalid password</div>
+                                </div>
+                                <div class="text-sm text-gray-500">15 min ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-entry log-info p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-key text-blue-500 mr-2"></i>
+                                        <span class="font-medium text-gray-900">API Key Generated</span>
+                                        <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">INFO</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">New API key generated for developer@company.com</div>
+                                    <div class="text-xs text-gray-500">Key ID: tk_1234567890abcdef | Permissions: Read/Write</div>
+                                </div>
+                                <div class="text-sm text-gray-500">1 hour ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-entry log-critical p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-shield-alt text-red-500 mr-2"></i>
+                                        <span class="font-medium text-gray-900">Security Policy Updated</span>
+                                        <span class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">CRITICAL</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">Password policy updated by admin@tokenz.com</div>
+                                    <div class="text-xs text-gray-500">Changes: Minimum length increased to 12 characters</div>
+                                </div>
+                                <div class="text-sm text-gray-500">2 hours ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-entry log-info p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-database text-blue-500 mr-2"></i>
+                                        <span class="font-medium text-gray-900">Data Export</span>
+                                        <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">INFO</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">User data exported by admin@tokenz.com</div>
+                                    <div class="text-xs text-gray-500">Records: 1,247 | Format: CSV | Size: 2.3 MB</div>
+                                </div>
+                                <div class="text-sm text-gray-500">3 hours ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-6">
+                    <div class="text-sm text-gray-600">Showing 1-5 of 1,247 entries</div>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Previous</button>
+                        <button class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm">1</button>
+                        <button class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">2</button>
+                        <button class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">3</button>
+                        <button class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Next</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Configuration Tab -->
+            <div id="configuration-tab" class="tab-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Authentication Settings -->
+                    <div class="config-section p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Authentication Settings</h3>
+                        <div class="space-y-4">
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Two-Factor Authentication</div>
+                                    <div class="text-sm text-gray-600">Require 2FA for all users</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked onchange="toggleSetting('2fa')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Session Timeout</div>
+                                    <div class="text-sm text-gray-600">Auto-logout after inactivity</div>
+                                </div>
+                                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option>15 minutes</option>
+                                    <option selected>30 minutes</option>
+                                    <option>1 hour</option>
+                                    <option>2 hours</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Password Complexity</div>
+                                    <div class="text-sm text-gray-600">Enforce strong passwords</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked onchange="toggleSetting('password-complexity')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Login Attempts Limit</div>
+                                    <div class="text-sm text-gray-600">Lock account after failed attempts</div>
+                                </div>
+                                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option>3 attempts</option>
+                                    <option selected>5 attempts</option>
+                                    <option>10 attempts</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- API Security Settings -->
+                    <div class="config-section p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">API Security Settings</h3>
+                        <div class="space-y-4">
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Rate Limiting</div>
+                                    <div class="text-sm text-gray-600">Limit API requests per minute</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked onchange="toggleSetting('rate-limiting')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">IP Whitelisting</div>
+                                    <div class="text-sm text-gray-600">Restrict API access by IP</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" onchange="toggleSetting('ip-whitelist')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">API Key Rotation</div>
+                                    <div class="text-sm text-gray-600">Automatic key rotation period</div>
+                                </div>
+                                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option>30 days</option>
+                                    <option selected>90 days</option>
+                                    <option>180 days</option>
+                                    <option>Never</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Request Logging</div>
+                                    <div class="text-sm text-gray-600">Log all API requests</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked onchange="toggleSetting('request-logging')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Protection Settings -->
+                    <div class="config-section p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Data Protection Settings</h3>
+                        <div class="space-y-4">
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Data Encryption</div>
+                                    <div class="text-sm text-gray-600">Encrypt data at rest</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked disabled>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Data Backup</div>
+                                    <div class="text-sm text-gray-600">Automatic backup frequency</div>
+                                </div>
+                                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option selected>Daily</option>
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Data Retention</div>
+                                    <div class="text-sm text-gray-600">Automatic data deletion period</div>
+                                </div>
+                                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option>1 year</option>
+                                    <option selected>2 years</option>
+                                    <option>5 years</option>
+                                    <option>Never</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Monitoring Settings -->
+                    <div class="config-section p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Monitoring Settings</h3>
+                        <div class="space-y-4">
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Real-time Alerts</div>
+                                    <div class="text-sm text-gray-600">Instant security notifications</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked onchange="toggleSetting('real-time-alerts')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Anomaly Detection</div>
+                                    <div class="text-sm text-gray-600">AI-powered threat detection</div>
+                                </div>
+                                <label class="security-toggle">
+                                    <input type="checkbox" checked onchange="toggleSetting('anomaly-detection')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="config-item flex justify-between items-center p-3 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900">Vulnerability Scanning</div>
+                                    <div class="text-sm text-gray-600">Automated security scans</div>
+                                </div>
+                                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option selected>Daily</option>
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Configuration -->
+                <div class="mt-6 flex justify-end">
+                    <button onclick="saveSecurityConfig()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Configuration
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Security Incidents Tab -->
+            <div id="incidents-tab" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Security Incidents</h3>
+                    <button onclick="createIncident()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Report Incident
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="security-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Open Incidents</h4>
+                        <div class="text-3xl font-bold text-red-600 mb-2">0</div>
+                        <div class="text-sm text-gray-600">All resolved</div>
+                    </div>
+                    
+                    <div class="security-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">This Month</h4>
+                        <div class="text-3xl font-bold text-yellow-600 mb-2">3</div>
+                        <div class="text-sm text-gray-600">-2 from last month</div>
+                    </div>
+                    
+                    <div class="security-metric p-6 text-center">
+                        <h4 class="font-semibold text-gray-900 mb-2">Avg Resolution</h4>
+                        <div class="text-3xl font-bold text-green-600 mb-2">2.4h</div>
+                        <div class="text-sm text-gray-600">Response time</div>
+                    </div>
+                </div>
+                
+                <!-- Recent Incidents -->
+                <div class="space-y-4">
+                    <div class="security-card success p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">INC-2024-001: Suspicious Login Activity</h4>
+                                <div class="text-sm text-gray-600">Multiple failed login attempts from foreign IP</div>
+                            </div>
+                            <span class="compliance-badge badge-compliant">Resolved</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Severity:</span>
+                                <span class="font-medium text-yellow-600">Medium</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Reported:</span>
+                                <span class="font-medium">July 10, 2024</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Resolution Time:</span>
+                                <span class="font-medium">1.5 hours</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="viewIncident('INC-2024-001')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">View Details</button>
+                            <button onclick="downloadIncidentReport('INC-2024-001')" class="text-gray-600 hover:text-gray-700 text-sm font-medium">Download Report</button>
+                        </div>
+                    </div>
+                    
+                    <div class="security-card success p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">INC-2024-002: API Rate Limit Exceeded</h4>
+                                <div class="text-sm text-gray-600">Potential DDoS attempt detected and blocked</div>
+                            </div>
+                            <span class="compliance-badge badge-compliant">Resolved</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Severity:</span>
+                                <span class="font-medium text-red-600">High</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Reported:</span>
+                                <span class="font-medium">July 8, 2024</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Resolution Time:</span>
+                                <span class="font-medium">45 minutes</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="viewIncident('INC-2024-002')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">View Details</button>
+                            <button onclick="downloadIncidentReport('INC-2024-002')" class="text-gray-600 hover:text-gray-700 text-sm font-medium">Download Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Security & Compliance State
+        let securityState = {
+            currentTab: 'monitoring',
+            scanInProgress: false,
+            notificationsOpen: false,
+            securityScore: 98.7,
+            complianceScore: 94
+        };
+
+        // Initialize Security & Compliance Module
+        function initSecurityModule() {
+            console.log('🔒 July 13, 01:45 - Initializing Security & Compliance Module...');
+            
+            // Load security data
+            loadSecurityData();
+            
+            // Setup real-time monitoring
+            setupSecurityMonitoring();
+            
+            // Show default tab
+            showSecurityTab('monitoring');
+            
+            console.log('✅ Security & Compliance Module initialized');
+        }
+
+        function loadSecurityData() {
+            // Simulate loading security data
+            updateSecurityMetrics();
+        }
+
+        function setupSecurityMonitoring() {
+            // Setup real-time security monitoring
+            setInterval(() => {
+                updateRealTimeSecurityData();
+            }, 30000); // Update every 30 seconds
+        }
+
+        // Tab Management
+        function showSecurityTab(tabName) {
+            securityState.currentTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'compliance':
+                    loadComplianceData();
+                    break;
+                case 'audit':
+                    loadAuditLogs();
+                    break;
+                case 'configuration':
+                    loadSecurityConfig();
+                    break;
+                case 'incidents':
+                    loadIncidentData();
+                    break;
+            }
+        }
+
+        // Security Functions
+        function runSecurityScan() {
+            if (securityState.scanInProgress) {
+                showToast('Security scan already in progress', 'warning');
+                return;
+            }
+            
+            securityState.scanInProgress = true;
+            showToast('Starting comprehensive security scan...', 'info');
+            
+            // Update scan progress
+            const progressBar = document.querySelector('.scan-progress-bar');
+            let progress = 0;
+            
+            const scanInterval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(scanInterval);
+                    securityState.scanInProgress = false;
+                    showToast('Security scan completed successfully', 'success');
+                }
+                progressBar.style.width = progress + '%';
+            }, 500);
+        }
+
+        function startVulnerabilityScan() {
+            runSecurityScan();
+        }
+
+        function generateSecurityReport() {
+            showToast('Generating comprehensive security report...', 'info');
+            
+            setTimeout(() => {
+                showToast('Security report generated and ready for download', 'success');
+            }, 3000);
+        }
+
+        function lockAllSessions() {
+            showConfirmDialog(
+                'Lock All Sessions',
+                'This will immediately log out all users. Are you sure?',
+                () => {
+                    showToast('All user sessions have been locked', 'success');
+                }
+            );
+        }
+
+        function resetApiKeys() {
+            showConfirmDialog(
+                'Reset API Keys',
+                'This will invalidate all existing API keys. Users will need to generate new keys. Continue?',
+                () => {
+                    showToast('All API keys have been reset', 'success');
+                }
+            );
+        }
+
+        function enableMaintenanceMode() {
+            showConfirmDialog(
+                'Enable Maintenance Mode',
+                'This will temporarily disable API access for all users. Continue?',
+                () => {
+                    showToast('Maintenance mode enabled', 'info');
+                }
+            );
+        }
+
+        // Compliance Functions
+        function loadComplianceData() {
+            showToast('Loading compliance data...', 'info');
+        }
+
+        function generateComplianceReport() {
+            showToast('Generating compliance report...', 'info');
+            
+            setTimeout(() => {
+                showToast('Compliance report generated successfully', 'success');
+            }, 2000);
+        }
+
+        function scheduleAudit() {
+            showToast('Opening audit scheduler...', 'info');
+        }
+
+        function viewCertificate() {
+            showToast('Opening certificate viewer...', 'info');
+        }
+
+        function prepareReview() {
+            showToast('Preparing compliance review materials...', 'info');
+        }
+
+        // Audit Functions
+        function loadAuditLogs() {
+            showToast('Loading audit logs...', 'info');
+        }
+
+        function exportAuditLogs() {
+            showToast('Exporting audit logs...', 'info');
+            
+            setTimeout(() => {
+                showToast('Audit logs exported successfully', 'success');
+            }, 2000);
+        }
+
+        // Configuration Functions
+        function loadSecurityConfig() {
+            showToast('Loading security configuration...', 'info');
+        }
+
+        function toggleSetting(settingName) {
+            showToast(`Security setting '${settingName}' updated`, 'success');
+        }
+
+        function saveSecurityConfig() {
+            showToast('Saving security configuration...', 'info');
+            
+            setTimeout(() => {
+                showToast('Security configuration saved successfully', 'success');
+            }, 1500);
+        }
+
+        // Incident Functions
+        function loadIncidentData() {
+            showToast('Loading incident data...', 'info');
+        }
+
+        function createIncident() {
+            showToast('Opening incident report form...', 'info');
+        }
+
+        function viewIncident(incidentId) {
+            showToast(`Opening incident details: ${incidentId}`, 'info');
+        }
+
+        function downloadIncidentReport(incidentId) {
+            showToast(`Downloading incident report: ${incidentId}`, 'info');
+        }
+
+        // Notification Functions
+        function toggleNotifications() {
+            securityState.notificationsOpen = !securityState.notificationsOpen;
+            showToast('Security notifications panel opened', 'info');
+        }
+
+        function dismissAlert(alertElement) {
+            alertElement.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => {
+                alertElement.remove();
+            }, 300);
+        }
+
+        // Data Update Functions
+        function updateSecurityMetrics() {
+            // Update security metrics with real data
+            console.log('Security metrics updated');
+        }
+
+        function updateRealTimeSecurityData() {
+            // Update real-time security data
+            console.log('Real-time security data updated');
+        }
+
+        // Utility Functions
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 bg-white border-l-4 ${getToastColor(type)} rounded-lg shadow-lg p-4 max-w-sm fade-in`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${getToastIcon(type)} ${getToastTextColor(type)}"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function showConfirmDialog(title, message, onConfirm) {
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+            
+            dialog.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 fade-in">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">${title}</h3>
+                        <p class="text-gray-600 mb-6">${message}</p>
+                        <div class="flex justify-end space-x-3">
+                            <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                                Cancel
+                            </button>
+                            <button onclick="this.closest('.fixed').remove(); (${onConfirm})()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+        }
+
+        function getToastColor(type) {
+            const colors = {
+                success: 'border-green-500',
+                error: 'border-red-500',
+                warning: 'border-yellow-500',
+                info: 'border-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastTextColor(type) {
+            const colors = {
+                success: 'text-green-500',
+                error: 'text-red-500',
+                warning: 'text-yellow-500',
+                info: 'text-blue-500'
+            };
+            return colors[type] || colors.info;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initSecurityModule);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95e6fcfdf2bc73ae',t:'MTc1MjM5MDkxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
